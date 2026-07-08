@@ -57,10 +57,10 @@ Labels:
 mvp, docs
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 6
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -79,10 +79,10 @@ Labels:
 mvp, database
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 2
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -100,10 +100,10 @@ Labels:
 mvp, auth
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 1
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -122,10 +122,10 @@ Labels:
 mvp, dataset
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 3
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -144,10 +144,10 @@ Labels:
 mvp, admin, dataset
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 3
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -166,10 +166,10 @@ Labels:
 mvp, catalog
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 4
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -188,10 +188,10 @@ Labels:
 mvp, catalog, dataset
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 4
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -210,10 +210,10 @@ Labels:
 mvp, citation
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 5
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -231,10 +231,10 @@ Labels:
 mvp, recommendation
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 5
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -253,10 +253,10 @@ Labels:
 mvp, dataset
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 3
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -275,10 +275,10 @@ Labels:
 mvp, ui
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 6
+Unassigned / shared
 ```
 
 Acceptance criteria:
@@ -297,10 +297,10 @@ Labels:
 mvp, qa, docs
 ```
 
-Owner:
+Responsibility:
 
 ```text
-Member 6
+Unassigned / shared
 ```
 
 Acceptance criteria:

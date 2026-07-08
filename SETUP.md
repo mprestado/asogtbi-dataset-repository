@@ -155,7 +155,7 @@ docs/setup-guide
 Use short, descriptive branch names:
 
 ```text
-feature/member-area-specific-task
+feature/area-specific-task
 fix/problem-being-fixed
 docs/document-being-updated
 ```
@@ -262,7 +262,7 @@ Only merge when:
 - The branch is up to date with `develop`.
 - The app still runs locally.
 - Migrations are included for database changes.
-- The feature does not break another member's route or model.
+- The feature does not break another teammate's route or model.
 - The pull request has manual test steps.
 - The work matches the assigned MVP task.
 
@@ -389,20 +389,20 @@ Use the existing starter design system:
 
 Follow the dark navy, gold, sky-blue, and warm off-white direction from the design file.
 
-## Six-Member Ownership
+## Shared Work Areas
 
-Recommended ownership:
+Responsibilities are shared. These areas exist to keep branches and pull requests organized, not to lock work to one person.
 
-| Member | Area | Branch |
-|---|---|---|
-| Member 1 | Auth, roles, access guards | `feature/auth-rbac` |
-| Member 2 | Database, models, migrations, seeders | `feature/database-foundation` |
-| Member 3 | Upload, approval, update, archive | `feature/dataset-lifecycle` |
-| Member 4 | Catalog, search, filtering, detail, download | `feature/catalog-detail-download` |
-| Member 5 | Citation, BibTeX, recommendations | `feature/citation-recommendations` |
-| Member 6 | UI integration, QA, docs, demo readiness | `feature/ui-qa-docs` |
+| Area | Suggested Branch |
+|---|---|
+| Auth, roles, access guards | `feature/auth-rbac` |
+| Database, models, migrations, seeders | `feature/database-foundation` |
+| Upload, approval, update, archive | `feature/dataset-lifecycle` |
+| Catalog, search, filtering, detail, download | `feature/catalog-detail-download` |
+| Citation, BibTeX, recommendations | `feature/citation-recommendations` |
+| UI integration, QA, docs, demo readiness | `feature/ui-qa-docs` |
 
-Members can help each other, but every pull request should have a clear owner.
+Anyone can take any task. Every pull request should still have one accountable author for review and follow-up.
 
 ## Before Opening a Pull Request
 

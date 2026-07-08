@@ -3,7 +3,7 @@
 <?= $this->section('content') ?>
 <section class="panel">
     <h1>Dataset #<?= esc((string) $datasetId) ?></h1>
-    <p class="muted">Member 4 will connect full metadata and file records here.</p>
+    <p class="muted">The team will connect full metadata and file records here.</p>
     <dl>
         <dt>Category</dt>
         <dd>Sample category</dd>
@@ -29,7 +29,7 @@
     </div>
     <div class="panel">
         <h2>Recommendations</h2>
-        <p class="muted">Member 5 will connect metadata-based recommendations here.</p>
+        <p class="muted">The team will connect metadata-based recommendations here.</p>
     </div>
 </section>
 <?= $this->endSection() ?>

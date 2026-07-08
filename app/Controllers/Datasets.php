@@ -23,7 +23,7 @@ class Datasets extends BaseController
     {
         return redirect()
             ->to('/datasets/' . $id)
-            ->with('info', 'Download authorization and file response are ready for Member 4 implementation.');
+            ->with('info', 'Download authorization and file response are ready for team implementation.');
     }
 
     public function edit(int $id): string
@@ -38,13 +38,13 @@ class Datasets extends BaseController
     {
         return redirect()
             ->to('/datasets/' . $id . '/edit')
-            ->with('info', 'Dataset update logic is ready for Member 3 implementation.');
+            ->with('info', 'Dataset update logic is ready for team implementation.');
     }
 
     public function archive(int $id)
     {
         return redirect()
             ->to('/datasets/' . $id)
-            ->with('info', 'Dataset archive logic is ready for Member 3 implementation.');
+            ->with('info', 'Dataset archive logic is ready for team implementation.');
     }
 }

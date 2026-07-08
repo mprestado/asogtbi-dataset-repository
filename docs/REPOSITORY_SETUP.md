@@ -148,7 +148,7 @@ Commit these:
 
 A task is ready to start when it has:
 
-- A clear owner.
+- A clear accountable author or reviewer.
 - SRS requirement IDs.
 - Expected routes or files.
 - Acceptance criteria.
