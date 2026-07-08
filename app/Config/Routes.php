@@ -11,7 +11,9 @@ $routes->get('register', 'Auth::register');
 $routes->post('register', 'Auth::attemptRegister');
 $routes->post('logout', 'Auth::logout');
 
-$routes->group('', ['filter' => 'auth'], static function (RouteCollection $routes): void {
+// MVP development mode: keep all skeleton views reachable while Google school-email auth is pending.
+// Re-enable the auth and role filters when authentication becomes part of the implementation sprint.
+$routes->group('', static function (RouteCollection $routes): void {
     $routes->get('dashboard', 'Dashboard::index');
 
     $routes->get('datasets', 'Datasets::index');
@@ -25,7 +27,7 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
     $routes->post('upload', 'DatasetUpload::store');
 });
 
-$routes->group('admin', ['filter' => 'role:admin'], static function (RouteCollection $routes): void {
+$routes->group('admin', static function (RouteCollection $routes): void {
     $routes->get('/', 'Admin::index');
     $routes->get('users', 'Admin::users');
     $routes->post('users/(:num)/activate', 'Admin::activateUser/$1');

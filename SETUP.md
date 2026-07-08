@@ -8,8 +8,8 @@ Build the two-week MVP for the ASOG TBI Dataset Repository with Recommendation S
 
 The MVP focuses on:
 
-- User login and logout.
-- Basic roles and protected pages.
+- Google school-email authentication planning.
+- Basic roles and route guards after the core views are usable.
 - Dataset upload with required metadata and ZIP file.
 - Admin approval before publication.
 - Dataset catalog with pagination, search, and filtering.
@@ -101,6 +101,25 @@ Open:
 ```text
 http://localhost:8080
 ```
+
+## Authentication During MVP Build
+
+For the early implementation sprint, skeleton views are intentionally not locked behind login. This lets everyone build and review pages without being blocked by authentication.
+
+The filters still exist in:
+
+```text
+app/Filters/AuthFilter.php
+app/Filters/RoleFilter.php
+```
+
+When the team is ready to connect school-provided Google emails, re-enable the filters in:
+
+```text
+app/Config/Routes.php
+```
+
+Do not treat the open routes as the final security model.
 
 ## Branch Rules
 

@@ -46,8 +46,8 @@ This skeleton gives the team real files and routes to implement before the first
 ## Implementation Notes
 
 - Current controller methods are placeholders.
-- Auth and role filters are wired, but login logic still needs to set `user_id` and `role` in session.
-- Admin routes require `role:admin`.
+- Auth and role filters exist, but routes are intentionally open during early MVP development so the team can build pages before Google school-email authentication is wired.
+- Admin routes are not currently locked behind `role:admin`; re-enable route filters when authentication becomes part of the implementation sprint.
 - File upload pages accept ZIP files in the UI, but server-side validation still needs implementation.
 - Uploaded files should stay under `writable/uploads`, not `public/`.
 - Migrations give the MVP schema foundation, but teammates can revise fields as implementation details become clearer.
@@ -56,7 +56,7 @@ This skeleton gives the team real files and routes to implement before the first
 ## Suggested First Technical Tasks
 
 1. Member 2 runs and adjusts migrations locally.
-2. Member 1 implements login using `UserModel` and password verification.
+2. Member 1 plans Google school-email authentication and then re-enables `AuthFilter` and `RoleFilter`.
 3. Member 3 connects upload form to `DatasetModel` and `DatasetFileModel`.
 4. Member 4 replaces placeholder catalog pages with database queries.
 5. Member 5 integrates citation and recommendation helpers into the detail page.

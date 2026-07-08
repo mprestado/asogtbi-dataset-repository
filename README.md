@@ -13,6 +13,7 @@ The implementation should stay focused on the MVP. Advanced institutional featur
 ## Documentation
 
 - [Setup Guide](SETUP.md)
+- [MVP Task Tracker](TASKS.md)
 - [Repository Setup](docs/REPOSITORY_SETUP.md)
 - [MVP Scope](docs/MVP_SCOPE.md)
 - [Two-Week MVP Plan](docs/MVP_2_WEEK_PLAN.md)
