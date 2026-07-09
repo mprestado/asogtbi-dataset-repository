@@ -3,7 +3,7 @@
 <?= $this->section('content') ?>
 <section class="panel">
     <h1>Upload Dataset</h1>
-    <p class="muted">Member 3 will connect validation, ZIP storage, pending status, and audit logging here.</p>
+    <p class="muted">The team will connect validation, ZIP storage, pending status, and audit logging here.</p>
     <form method="post" action="<?= site_url('upload') ?>" enctype="multipart/form-data">
         <?= csrf_field() ?>
         <div class="grid">

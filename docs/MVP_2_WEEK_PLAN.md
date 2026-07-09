@@ -18,7 +18,7 @@ By the end of Week 1, the app should have the core database, auth, dataset submi
 
 | Day | Main Target | Expected Output |
 |---|---|---|
-| Day 1 | Repository setup and task assignment | GitHub repo, project board, branches, owners |
+| Day 1 | Repository setup and task selection | GitHub repo, project board, branches, shared work areas |
 | Day 2 | Database foundation | migrations for users, roles, datasets, files, logs |
 | Day 3 | Auth and role guards | login, logout, registration/admin-created user path, filters |
 | Day 4 | Dataset upload | metadata form, ZIP validation, protected file storage |

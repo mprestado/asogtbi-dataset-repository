@@ -1,0 +1,502 @@
+name: Bootstrap GitHub Project Assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: "Classic project board name"
+        required: true
+        default: "ASOG TBI Dataset Repository MVP"
+
+permissions:
+  contents: read
+  issues: write
+  repository-projects: write
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create labels, milestones, project board, columns, and issues
+        uses: actions/github-script@v8
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const projectName = core.getInput("project_name");
+
+            const labels = [
+              { name: "mvp", color: "0e8a16", description: "Core MVP work" },
+              { name: "auth", color: "5319e7", description: "Authentication and access control" },
+              { name: "database", color: "1d76db", description: "Schema, models, and seed data" },
+              { name: "dataset", color: "fbca04", description: "Dataset submission, storage, and management" },
+              { name: "admin", color: "b60205", description: "Admin-facing work" },
+              { name: "catalog", color: "0052cc", description: "Catalog, listing, and dataset discovery" },
+              { name: "recommendation", color: "c2e0c6", description: "Recommendation-related work" },
+              { name: "citation", color: "bfd4f2", description: "Citation and BibTeX output" },
+              { name: "ui", color: "f9d0c4", description: "UI implementation and refinement" },
+              { name: "qa", color: "d4c5f9", description: "Validation, rehearsal, and final checks" },
+              { name: "docs", color: "0075ca", description: "Repository and demo documentation" },
+              { name: "bug", color: "d73a4a", description: "Behavioral fix work" },
+              { name: "blocked", color: "000000", description: "Work that is waiting on something else" },
+              { name: "future", color: "ededed", description: "Post-MVP or dependency-gated work" }
+            ];
+
+            const milestones = [
+              {
+                title: "MVP Week 1 Foundation",
+                due_on: "2026-07-18T23:59:59Z",
+                description: "database, upload foundation, shared UI, and initial repository-ready MVP structure"
+              },
+              {
+                title: "MVP Final Demo",
+                due_on: "2026-07-24T23:59:59Z",
+                description: "complete demo flow, connected screens, QA, and final documentation"
+              },
+              {
+                title: "Future Enhancements",
+                due_on: "2026-08-31T23:59:59Z",
+                description: "deferred work that depends on policy, credentials, or post-MVP scope"
+              }
+            ];
+
+            const columns = [
+              "Backlog",
+              "Ready",
+              "In Progress",
+              "In Review",
+              "Testing",
+              "Done",
+              "Blocked"
+            ];
+
+            const issues = [
+              {
+                title: "T-014 Build shared UI foundation and mockup-following rules",
+                milestone: "MVP Week 1 Foundation",
+                labels: ["mvp", "ui", "docs"],
+                body: [
+                  "Source tasks: `T-014` to `T-020`.",
+                  "",
+                  "This issue keeps only contribution-worthy system work from the tracker and skips developer-side setup tasks.",
+                  "",
+                  "Scope:",
+                  "- Adapt CSS tokens to the approved mockup while preserving the ASOG design direction.",
+                  "- Refine the shared app shell: header, navigation, main container, and footer.",
+                  "- Define reusable button, link, badge, tag, status, form, helper, file input, card, panel, table, toolbar, and modal styles.",
+                  "- Add reusable partials only if they reduce duplication.",
+                  "- Document the UI implementation rules in repo docs.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Core pages share one consistent layout shell.",
+                  "- Reusable UI primitives exist and can be reused across views.",
+                  "- The mockup-following rules are documented for contributors."
+                ].join("\n")
+              },
+              {
+                title: "T-021 Build the core MVP windows from the approved mockup",
+                milestone: "MVP Week 1 Foundation",
+                labels: ["mvp", "ui"],
+                body: [
+                  "Source tasks: `T-021` to `T-031`.",
+                  "",
+                  "Scope:",
+                  "- Build the dashboard, dataset catalog, dataset detail, upload, edit, admin dashboard, admin approval, admin users, and admin audit log windows.",
+                  "- Include the login placeholder and registration-flow softening only where it affects the visible MVP UI.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Each MVP window exists in the repository and matches the approved mockup direction closely enough for review.",
+                  "- Placeholder data is acceptable where backend wiring is not finished.",
+                  "- Views avoid implying non-final auth behavior beyond the agreed placeholder copy."
+                ].join("\n")
+              },
+              {
+                title: "T-032 Add the full set of MVP UI states",
+                milestone: "MVP Week 1 Foundation",
+                labels: ["mvp", "ui", "qa"],
+                body: [
+                  "Source tasks: `T-032` to `T-036`.",
+                  "",
+                  "Scope:",
+                  "- Add empty states for catalog, recommendations, approval, users, and audit logs.",
+                  "- Add validation and error states for upload and edit forms.",
+                  "- Add loading or skeleton states for data-heavy screens.",
+                  "- Add success, confirmation, blocked, and disabled states for MVP actions.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Each list or action-heavy surface shows a usable non-happy-path state.",
+                  "- Validation, success, and blocked states are visually consistent with the shared UI system."
+                ].join("\n")
+              },
+              {
+                title: "T-042 Finalize MVP schema, validation models, and demo seed data",
+                milestone: "MVP Week 1 Foundation",
+                labels: ["mvp", "database"],
+                body: [
+                  "Source tasks: `T-042` to `T-048`, excluding local-only verification steps.",
+                  "",
+                  "Scope:",
+                  "- Finalize user, role, dataset, file, version, view, download, and audit-log migrations.",
+                  "- Add model validation rules for all MVP entities.",
+                  "- Update `MvpSeeder` to match the finalized UI and schema.",
+                  "- Document seed-data and local demo assumptions in repo docs.",
+                  "",
+                  "Acceptance criteria:",
+                  "- The MVP schema supports the visible UI fields and workflows.",
+                  "- Validation rejects invalid data consistently.",
+                  "- Seed data populates the main UI and demo flows."
+                ].join("\n")
+              },
+              {
+                title: "T-049 Wire dashboard, catalog, and detail pages to repository data",
+                milestone: "MVP Final Demo",
+                labels: ["mvp", "catalog", "dataset"],
+                body: [
+                  "Source tasks: `T-049` to `T-053`.",
+                  "",
+                  "Scope:",
+                  "- Wire dashboard metrics to seeded or real repository data.",
+                  "- Show approved dataset records in the catalog.",
+                  "- Implement catalog search, filters, and pagination.",
+                  "- Show real dataset metadata on the detail page.",
+                  "- Record dataset detail views.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Dashboard, catalog, and detail pages display real repository-backed content.",
+                  "- Catalog discovery controls work together.",
+                  "- Opening a detail page records a view."
+                ].join("\n")
+              },
+              {
+                title: "T-054 Implement dataset upload, file storage, and pending submission records",
+                milestone: "MVP Final Demo",
+                labels: ["mvp", "dataset", "database"],
+                body: [
+                  "Source tasks: `T-054` to `T-056`.",
+                  "",
+                  "Scope:",
+                  "- Add server-side validation for dataset submission.",
+                  "- Store uploaded ZIP files outside `public/`.",
+                  "- Create pending dataset, file, and initial version records after upload.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Required metadata and ZIP validation run on submit.",
+                  "- Uploads are stored under a non-public writable path.",
+                  "- Successful submissions create pending repository records."
+                ].join("\n")
+              },
+              {
+                title: "T-057 Implement admin approval flow, controlled downloads, and action tracking",
+                milestone: "MVP Final Demo",
+                labels: ["mvp", "admin", "dataset", "catalog"],
+                body: [
+                  "Source tasks: `T-057` to `T-062`.",
+                  "",
+                  "Scope:",
+                  "- Wire the admin approval list to pending datasets.",
+                  "- Implement approve and reject actions with stored approval metadata.",
+                  "- Serve approved ZIP downloads only when the dataset state allows it.",
+                  "- Record downloads in download tracking and audit logs.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Admin can review and change pending dataset states.",
+                  "- Approved items become visible where expected.",
+                  "- Invalid download states fail cleanly.",
+                  "- Download actions are logged."
+                ].join("\n")
+              },
+              {
+                title: "T-063 Finalize citation and BibTeX generation with copy feedback",
+                milestone: "MVP Final Demo",
+                labels: ["mvp", "citation", "catalog", "ui"],
+                body: [
+                  "Source tasks: `T-063` to `T-064`.",
+                  "",
+                  "Scope:",
+                  "- Finalize citation helper output.",
+                  "- Finalize BibTeX helper output.",
+                  "- Add UI feedback for copy citation and copy BibTeX actions.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Dataset detail pages show useful citation text and BibTeX output.",
+                  "- Copy actions work and show clear feedback."
+                ].join("\n")
+              },
+              {
+                title: "T-065 Implement metadata-based dataset recommendations",
+                milestone: "MVP Final Demo",
+                labels: ["mvp", "recommendation", "catalog", "dataset"],
+                body: [
+                  "Source tasks: `T-065` to `T-066`.",
+                  "",
+                  "Scope:",
+                  "- Finalize the recommendation scoring helper.",
+                  "- Query and display recommended datasets on the detail page.",
+                  "- Exclude the current dataset and any non-browsable states from recommendations.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Similar approved datasets appear on the detail page.",
+                  "- Recommendation scoring uses repository metadata fields.",
+                  "- Recommended items are valid, clickable, and filtered correctly."
+                ].join("\n")
+              },
+              {
+                title: "T-067 Implement dataset update, versioning, archive flow, and admin audit wiring",
+                milestone: "MVP Final Demo",
+                labels: ["mvp", "dataset", "admin", "database"],
+                body: [
+                  "Source tasks: `T-067` to `T-073`.",
+                  "",
+                  "Scope:",
+                  "- Prefill and save dataset edit metadata.",
+                  "- Support optional new ZIP versions during update.",
+                  "- Implement dataset archive behavior.",
+                  "- Record upload, approval, update, archive, view, and download audit entries.",
+                  "- Wire admin audit-log and user-management windows to real records.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Existing datasets can be edited and archived.",
+                  "- Version history records new uploaded files where provided.",
+                  "- Audit and user admin screens display real repository data."
+                ].join("\n")
+              },
+              {
+                title: "T-076 Enable authentication flow and route protection when credentials are available",
+                milestone: "Future Enhancements",
+                labels: ["mvp", "auth", "future"],
+                body: [
+                  "Source tasks: `T-076` to `T-077`.",
+                  "",
+                  "Scope:",
+                  "- Implement the Google sign-in entry point once credentials exist.",
+                  "- Re-enable `AuthFilter` and `RoleFilter` only after the auth flow is actually working.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Users can enter the agreed authentication flow.",
+                  "- Protected and admin routes are gated again without blocking unfinished MVP development prematurely."
+                ].join("\n")
+              },
+              {
+                title: "T-082 Run final QA fixes and complete demo-facing documentation",
+                milestone: "MVP Final Demo",
+                labels: ["mvp", "qa", "docs", "bug"],
+                body: [
+                  "Source tasks: `T-082` to `T-085`.",
+                  "",
+                  "Scope:",
+                  "- Fix route, label, and copy mismatches found during rehearsal.",
+                  "- Update `README.md`, `SETUP.md`, and tracker notes to match final behavior.",
+                  "- Write the final demo script.",
+                  "- Document known limitations and future enhancements honestly.",
+                  "",
+                  "Acceptance criteria:",
+                  "- Rehearsal issues are resolved or explicitly documented.",
+                  "- Demo-facing docs match the shipped MVP behavior.",
+                  "- Known limitations are captured for reviewers and teammates."
+                ].join("\n")
+              }
+            ];
+
+            async function ensureLabel(label) {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name: label.name });
+                await github.rest.issues.updateLabel({
+                  owner,
+                  repo,
+                  name: label.name,
+                  new_name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+                await github.rest.issues.createLabel({
+                  owner,
+                  repo,
+                  name: label.name,
+                  color: label.color,
+                  description: label.description
+                });
+              }
+            }
+
+            async function ensureMilestone(milestone) {
+              const { data } = await github.rest.issues.listMilestones({
+                owner,
+                repo,
+                state: "all",
+                per_page: 100
+              });
+              const existing = data.find((item) => item.title === milestone.title);
+              if (existing) {
+                await github.rest.issues.updateMilestone({
+                  owner,
+                  repo,
+                  milestone_number: existing.number,
+                  title: milestone.title,
+                  description: milestone.description,
+                  due_on: milestone.due_on,
+                  state: "open"
+                });
+                return existing.number;
+              }
+
+              const created = await github.rest.issues.createMilestone({
+                owner,
+                repo,
+                title: milestone.title,
+                description: milestone.description,
+                due_on: milestone.due_on
+              });
+              return created.data.number;
+            }
+
+            async function ensureProject() {
+              try {
+                const { data } = await github.request("GET /repos/{owner}/{repo}/projects", {
+                  owner,
+                  repo,
+                  per_page: 100,
+                  headers: {
+                    accept: "application/vnd.github.inertia-preview+json"
+                  }
+                });
+
+                const existing = data.find((item) => item.name === projectName);
+                if (existing) return existing.id;
+
+                const created = await github.request("POST /repos/{owner}/{repo}/projects", {
+                  owner,
+                  repo,
+                  name: projectName,
+                  body: "Generated from filtered system-building tasks for the ASOG TBI Dataset Repository.",
+                  headers: {
+                    accept: "application/vnd.github.inertia-preview+json"
+                  }
+                });
+
+                return created.data.id;
+              } catch (error) {
+                if (error.status === 404 || error.status === 410) {
+                  core.warning(
+                    "Classic repository project boards are unavailable for this repository. " +
+                    "Labels, milestones, and issues will still be created."
+                  );
+                  return null;
+                }
+                throw error;
+              }
+            }
+
+            async function ensureColumns(projectId) {
+              const { data } = await github.request("GET /projects/{project_id}/columns", {
+                project_id: projectId,
+                per_page: 100,
+                headers: {
+                  accept: "application/vnd.github.inertia-preview+json"
+                }
+              });
+
+              const byName = new Map(data.map((column) => [column.name, column]));
+
+              for (const name of columns) {
+                if (!byName.has(name)) {
+                  const created = await github.request("POST /projects/{project_id}/columns", {
+                    project_id: projectId,
+                    name,
+                    headers: {
+                      accept: "application/vnd.github.inertia-preview+json"
+                    }
+                  });
+                  byName.set(name, created.data);
+                }
+              }
+
+              return byName;
+            }
+
+            async function ensureIssue(issue, milestoneMap) {
+              const { data } = await github.rest.issues.listForRepo({
+                owner,
+                repo,
+                state: "all",
+                per_page: 100
+              });
+
+              const existing = data.find((item) => item.title === issue.title);
+              if (existing) {
+                await github.rest.issues.update({
+                  owner,
+                  repo,
+                  issue_number: existing.number,
+                  title: issue.title,
+                  body: issue.body,
+                  milestone: milestoneMap.get(issue.milestone),
+                  labels: issue.labels,
+                  state: "open"
+                });
+                return { number: existing.number, id: existing.id };
+              }
+
+              const created = await github.rest.issues.create({
+                owner,
+                repo,
+                title: issue.title,
+                body: issue.body,
+                milestone: milestoneMap.get(issue.milestone),
+                labels: issue.labels
+              });
+
+              return { number: created.data.number, id: created.data.id };
+            }
+
+            async function ensureCard(columnId, issueRef) {
+              const cards = await github.request("GET /projects/columns/{column_id}/cards", {
+                column_id: columnId,
+                per_page: 100,
+                headers: {
+                  accept: "application/vnd.github.inertia-preview+json"
+                }
+              });
+
+              const issueUrl = `https://api.github.com/repos/${owner}/${repo}/issues/${issueRef.number}`;
+              const exists = cards.data.some((card) => card.content_url === issueUrl);
+              if (exists) return;
+
+              await github.request("POST /projects/columns/{column_id}/cards", {
+                column_id: columnId,
+                content_id: issueRef.id,
+                content_type: "Issue",
+                headers: {
+                  accept: "application/vnd.github.inertia-preview+json"
+                }
+              });
+            }
+
+            for (const label of labels) {
+              await ensureLabel(label);
+            }
+
+            const milestoneMap = new Map();
+            for (const milestone of milestones) {
+              const number = await ensureMilestone(milestone);
+              milestoneMap.set(milestone.title, number);
+            }
+
+            const issueRefs = [];
+            for (const issue of issues) {
+              issueRefs.push(await ensureIssue(issue, milestoneMap));
+            }
+
+            const projectId = await ensureProject();
+            if (projectId) {
+              const columnMap = await ensureColumns(projectId);
+              const backlogColumn = columnMap.get("Backlog");
+
+              for (const issueRef of issueRefs) {
+                await ensureCard(backlogColumn.id, issueRef);
+              }
+            }
+
+            core.notice(`Bootstrapped ${issues.length} filtered issues in ${owner}/${repo}.`);

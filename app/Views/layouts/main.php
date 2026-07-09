@@ -11,39 +11,36 @@
 </head>
 <body>
 <header class="site-header">
-    <div class="container header-inner">
+    <div class="shell header-inner">
+        <nav class="nav-links nav-left" aria-label="Primary navigation left">
+            <a href="<?= site_url('/') ?>">About</a>
+            <a href="<?= site_url('datasets') ?>">Browse</a>
+        </nav>
         <a class="brand" href="<?= site_url('/') ?>" aria-label="ASOG TBI Dataset Repository home">
-            <span class="brand-mark">ASOG</span>
+            <span class="brand-mark" aria-hidden="true"></span>
             <span>
-                <strong>TBI Dataset Repository</strong>
-                <small>Research data for incubation and innovation</small>
+                <small>DOST-SEI PTP</small>
+                <strong>ASOG</strong>
             </span>
         </a>
-        <nav class="nav-links" aria-label="Primary navigation">
-            <a href="<?= site_url('/') ?>">Home</a>
-            <a href="<?= site_url('dashboard') ?>">Dashboard</a>
-            <a href="<?= site_url('datasets') ?>">Datasets</a>
-            <a href="<?= site_url('upload') ?>">Upload</a>
-            <a href="<?= site_url('admin') ?>">Admin</a>
+        <nav class="nav-links nav-right" aria-label="Primary navigation right">
+            <a href="<?= site_url('admin') ?>">Contact</a>
             <a class="nav-cta" href="<?= site_url('login') ?>">Login</a>
         </nav>
     </div>
 </header>
-<main class="container page-shell">
-    <?php if (session()->getFlashdata('info')): ?>
-        <div class="notice"><?= esc(session()->getFlashdata('info')) ?></div>
-    <?php endif; ?>
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="notice error"><?= esc(session()->getFlashdata('error')) ?></div>
-    <?php endif; ?>
-
+<main class="page-shell">
+    <div class="shell flash-shell">
+        <?php if (session()->getFlashdata('info')): ?>
+            <div class="notice"><?= esc(session()->getFlashdata('info')) ?></div>
+        <?php endif; ?>
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="notice error"><?= esc(session()->getFlashdata('error')) ?></div>
+        <?php endif; ?>
+    </div>
     <?= $this->renderSection('content') ?>
 </main>
 <footer class="site-footer">
-    <div class="container footer-inner">
-        <span>ASOG TBI Dataset Repository MVP</span>
-        <span>CodeIgniter 4 + MySQL</span>
-    </div>
 </footer>
 </body>
 </html>

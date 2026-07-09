@@ -1,8 +1,8 @@
-# Six-Member MVP Task Breakdown
+# Shared MVP Work Areas
 
-Each member owns a clear vertical area. Members should still review each other's pull requests, but this split reduces merge conflicts and keeps the two-week MVP realistic.
+Responsibilities are shared across the team. These work areas exist to keep tasks organized, reduce merge conflicts, and make pull requests easier to review without locking any area to one person.
 
-## Member 1: Authentication, Roles, and Access Guards
+## Authentication, Roles, and Access Guards
 
 Primary goal: make sure users can securely access the app and only see what their role allows.
 
@@ -41,10 +41,10 @@ Acceptance checklist:
 
 Dependencies:
 
-- Needs database migrations from Member 2.
-- Must coordinate routes with all members.
+- Needs database migrations.
+- Coordinate route changes with contributors touching the same flow.
 
-## Member 2: Database, Models, Migrations, and Seed Data
+## Database, Models, Migrations, and Seed Data
 
 Primary goal: create the data foundation so the rest of the team can build without inventing table structures separately.
 
@@ -79,9 +79,9 @@ Acceptance checklist:
 Dependencies:
 
 - This is the first feature branch to merge.
-- Must coordinate field names with Members 3, 4, and 5.
+- Coordinate field names with upload, catalog, detail, citation, and recommendation work.
 
-## Member 3: Dataset Upload, Approval, Update, and Archive
+## Dataset Upload, Approval, Update, and Archive
 
 Primary goal: implement the dataset lifecycle from user submission to admin approval and later update/archive.
 
@@ -121,11 +121,11 @@ Acceptance checklist:
 
 Dependencies:
 
-- Needs Member 1 auth/roles.
-- Needs Member 2 database tables.
-- Must coordinate detail-page routes with Member 4.
+- Needs auth/role decisions.
+- Needs database tables.
+- Coordinate detail-page routes with catalog/detail work.
 
-## Member 4: Catalog, Search, Filtering, Detail Page, and Download
+## Catalog, Search, Filtering, Detail Page, and Download
 
 Primary goal: make approved datasets discoverable and usable.
 
@@ -167,11 +167,11 @@ Acceptance checklist:
 
 Dependencies:
 
-- Needs Member 2 seed data.
-- Needs Member 3 upload/file records.
-- Must coordinate recommendation placement with Member 5.
+- Needs seed data.
+- Needs upload/file records.
+- Coordinate recommendation placement with detail-page work.
 
-## Member 5: Citation, BibTeX, and Metadata-Based Recommendations
+## Citation, BibTeX, and Metadata-Based Recommendations
 
 Primary goal: deliver the SRS-specific repository value: proper citation and similar dataset discovery.
 
@@ -206,10 +206,10 @@ Acceptance checklist:
 
 Dependencies:
 
-- Needs Member 2 field names.
-- Needs Member 4 detail page integration.
+- Needs finalized field names.
+- Needs detail page integration.
 
-## Member 6: UI Integration, QA, Documentation, and Demo Readiness
+## UI Integration, QA, Documentation, and Demo Readiness
 
 Primary goal: make the MVP coherent, testable, and presentable.
 
@@ -246,7 +246,7 @@ Acceptance checklist:
 
 Dependencies:
 
-- Needs integration with all members.
+- Needs integration with all active work areas.
 - Should start early with layout and keep updating as features merge.
 
 ## Cross-Team Rules
@@ -262,13 +262,13 @@ Dependencies:
 
 ## Suggested Pairing
 
-| Pair | Reason |
+| Pairing Area | Reason |
 |---|---|
-| Member 1 + Member 2 | Auth depends on user and role tables |
-| Member 3 + Member 4 | Upload records must appear correctly in catalog/detail |
-| Member 4 + Member 5 | Recommendations and citations live on detail pages |
-| Member 6 + Everyone | UI, QA, and docs need current behavior |
+| Auth + Database | Auth depends on user and role tables |
+| Upload + Catalog/Detail | Upload records must appear correctly in catalog/detail |
+| Detail + Citation/Recommendations | Recommendations and citations live on detail pages |
+| UI/QA/Docs + All Work Areas | UI, QA, and docs need current behavior |
 
-## Final Integration Owner
+## Final Integration
 
-Member 6 should coordinate final integration, but each member remains responsible for fixing bugs in their own feature area.
+Final integration should be coordinated as a team. Each pull request author remains responsible for fixing bugs introduced by their change.

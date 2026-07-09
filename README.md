@@ -17,7 +17,7 @@ The implementation should stay focused on the MVP. Advanced institutional featur
 - [Repository Setup](docs/REPOSITORY_SETUP.md)
 - [MVP Scope](docs/MVP_SCOPE.md)
 - [Two-Week MVP Plan](docs/MVP_2_WEEK_PLAN.md)
-- [Six-Member Task Breakdown](docs/MVP_TASKS_6_MEMBERS.md)
+- [Shared MVP Work Areas](docs/MVP_SHARED_WORK_AREAS.md)
 - [GitHub Project Board and Issues](docs/GITHUB_PROJECT_BOARD.md)
 - [Starting Repository Checklist](docs/STARTING_REPOSITORY_CHECKLIST.md)
 - [System Skeleton](docs/SYSTEM_SKELETON.md)

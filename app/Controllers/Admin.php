@@ -22,14 +22,14 @@ class Admin extends BaseController
     {
         return redirect()
             ->to('/admin/users')
-            ->with('info', "User {$id} activation is ready for Member 1 implementation.");
+            ->with('info', "User {$id} activation is ready for team implementation.");
     }
 
     public function deactivateUser(int $id)
     {
         return redirect()
             ->to('/admin/users')
-            ->with('info', "User {$id} deactivation is ready for Member 1 implementation.");
+            ->with('info', "User {$id} deactivation is ready for team implementation.");
     }
 
     public function datasets(): string
@@ -43,14 +43,14 @@ class Admin extends BaseController
     {
         return redirect()
             ->to('/admin/datasets')
-            ->with('info', "Dataset {$id} approval is ready for Member 3 implementation.");
+            ->with('info', "Dataset {$id} approval is ready for team implementation.");
     }
 
     public function rejectDataset(int $id)
     {
         return redirect()
             ->to('/admin/datasets')
-            ->with('info', "Dataset {$id} rejection is ready for Member 3 implementation.");
+            ->with('info', "Dataset {$id} rejection is ready for team implementation.");
     }
 
     public function auditLogs(): string

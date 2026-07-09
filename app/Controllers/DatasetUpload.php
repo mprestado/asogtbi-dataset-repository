@@ -15,6 +15,6 @@ class DatasetUpload extends BaseController
     {
         return redirect()
             ->to('/upload')
-            ->with('info', 'Dataset upload validation and storage are ready for Member 3 implementation.');
+            ->with('info', 'Dataset upload validation and storage are ready for team implementation.');
     }
 }

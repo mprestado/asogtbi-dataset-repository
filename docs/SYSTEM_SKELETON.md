@@ -17,31 +17,31 @@ This skeleton gives the team real files and routes to implement before the first
 
 ## Route Map
 
-| Method | URI | Controller | Owner |
+| Method | URI | Controller | Responsibility |
 |---|---|---|---|
-| GET | `/` | `Home::index` | Member 6 |
-| GET | `/login` | `Auth::login` | Member 1 |
-| POST | `/login` | `Auth::attemptLogin` | Member 1 |
-| GET | `/register` | `Auth::register` | Member 1 |
-| POST | `/register` | `Auth::attemptRegister` | Member 1 |
-| POST | `/logout` | `Auth::logout` | Member 1 |
-| GET | `/dashboard` | `Dashboard::index` | Member 6 |
-| GET | `/datasets` | `Datasets::index` | Member 4 |
-| GET | `/datasets/{id}` | `Datasets::show` | Member 4 |
-| GET | `/datasets/{id}/download` | `Datasets::download` | Member 4 |
-| GET | `/datasets/{id}/edit` | `Datasets::edit` | Member 3 |
-| POST | `/datasets/{id}/update` | `Datasets::update` | Member 3 |
-| POST | `/datasets/{id}/archive` | `Datasets::archive` | Member 3 |
-| GET | `/upload` | `DatasetUpload::create` | Member 3 |
-| POST | `/upload` | `DatasetUpload::store` | Member 3 |
-| GET | `/admin` | `Admin::index` | Member 6 |
-| GET | `/admin/users` | `Admin::users` | Member 1 |
-| POST | `/admin/users/{id}/activate` | `Admin::activateUser` | Member 1 |
-| POST | `/admin/users/{id}/deactivate` | `Admin::deactivateUser` | Member 1 |
-| GET | `/admin/datasets` | `Admin::datasets` | Member 3 |
-| POST | `/admin/datasets/{id}/approve` | `Admin::approveDataset` | Member 3 |
-| POST | `/admin/datasets/{id}/reject` | `Admin::rejectDataset` | Member 3 |
-| GET | `/admin/audit-logs` | `Admin::auditLogs` | Member 6 |
+| GET | `/` | `Home::index` | Shared / any contributor |
+| GET | `/login` | `Auth::login` | Shared / any contributor |
+| POST | `/login` | `Auth::attemptLogin` | Shared / any contributor |
+| GET | `/register` | `Auth::register` | Shared / any contributor |
+| POST | `/register` | `Auth::attemptRegister` | Shared / any contributor |
+| POST | `/logout` | `Auth::logout` | Shared / any contributor |
+| GET | `/dashboard` | `Dashboard::index` | Shared / any contributor |
+| GET | `/datasets` | `Datasets::index` | Shared / any contributor |
+| GET | `/datasets/{id}` | `Datasets::show` | Shared / any contributor |
+| GET | `/datasets/{id}/download` | `Datasets::download` | Shared / any contributor |
+| GET | `/datasets/{id}/edit` | `Datasets::edit` | Shared / any contributor |
+| POST | `/datasets/{id}/update` | `Datasets::update` | Shared / any contributor |
+| POST | `/datasets/{id}/archive` | `Datasets::archive` | Shared / any contributor |
+| GET | `/upload` | `DatasetUpload::create` | Shared / any contributor |
+| POST | `/upload` | `DatasetUpload::store` | Shared / any contributor |
+| GET | `/admin` | `Admin::index` | Shared / any contributor |
+| GET | `/admin/users` | `Admin::users` | Shared / any contributor |
+| POST | `/admin/users/{id}/activate` | `Admin::activateUser` | Shared / any contributor |
+| POST | `/admin/users/{id}/deactivate` | `Admin::deactivateUser` | Shared / any contributor |
+| GET | `/admin/datasets` | `Admin::datasets` | Shared / any contributor |
+| POST | `/admin/datasets/{id}/approve` | `Admin::approveDataset` | Shared / any contributor |
+| POST | `/admin/datasets/{id}/reject` | `Admin::rejectDataset` | Shared / any contributor |
+| GET | `/admin/audit-logs` | `Admin::auditLogs` | Shared / any contributor |
 
 ## Implementation Notes
 
@@ -55,9 +55,9 @@ This skeleton gives the team real files and routes to implement before the first
 
 ## Suggested First Technical Tasks
 
-1. Member 2 runs and adjusts migrations locally.
-2. Member 1 plans Google school-email authentication and then re-enables `AuthFilter` and `RoleFilter`.
-3. Member 3 connects upload form to `DatasetModel` and `DatasetFileModel`.
-4. Member 4 replaces placeholder catalog pages with database queries.
-5. Member 5 integrates citation and recommendation helpers into the detail page.
-6. Member 6 keeps layout, docs, and demo flow updated as each feature lands.
+1. Run and adjust migrations locally.
+2. Plan Google school-email authentication, then re-enable `AuthFilter` and `RoleFilter`.
+3. Connect the upload form to `DatasetModel` and `DatasetFileModel`.
+4. Replace placeholder catalog pages with database queries.
+5. Integrate citation and recommendation helpers into the detail page.
+6. Keep layout, docs, and demo flow updated as each feature lands.
