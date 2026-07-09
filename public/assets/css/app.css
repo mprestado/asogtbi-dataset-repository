@@ -502,6 +502,85 @@ a {
     justify-content: center;
 }
 
+.split-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(260px, 1fr);
+    gap: 16px;
+    margin-top: 34px;
+}
+
+.panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.panel-head p {
+    margin: 0;
+}
+
+.stack-list,
+.record-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding-left: 18px;
+}
+
+.record-list {
+    padding-left: 0;
+    list-style: none;
+}
+
+.record-list li {
+    display: grid;
+    gap: 2px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(12, 70, 104, .10);
+}
+
+.record-list li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.stat-card .stat-value {
+    margin: 0;
+    color: var(--blue-deep);
+    font-size: clamp(34px, 4vw, 48px);
+    line-height: 1;
+}
+
+.meta-list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+}
+
+.meta-list div {
+    display: grid;
+    gap: 4px;
+}
+
+.meta-list dt {
+    color: var(--blue-deep);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.meta-list dd {
+    margin: 0;
+}
+
+.compact-actions {
+    margin-top: 0;
+}
+
 input,
 textarea,
 select {
@@ -583,6 +662,10 @@ pre {
 @media (max-width: 860px) {
     .shell {
         width: min(100% - 32px, 1180px);
+    }
+
+    .split-grid {
+        grid-template-columns: 1fr;
     }
 
     .header-inner {

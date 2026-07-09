@@ -1,76 +1,70 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<section class="landing-hero">
-    <div class="shell hero-content">
-        <h1>
-            <span>Institutional</span>
-            <em>Dataset Repository</em>
-        </h1>
-        <p>Discover and access datasets created, generated, and collected by student researchers from CSPC. Your gateway to academic excellence.</p>
-        <form class="hero-search" action="<?= site_url('datasets') ?>" method="get">
-            <label class="sr-only" for="home-search">Search dataset</label>
-            <input id="home-search" name="q" type="search" placeholder="Search dataset">
-            <button type="submit" aria-label="Search datasets">⌕</button>
-        </form>
+<section class="hero-panel">
+    <p class="eyebrow">Workspace Overview</p>
+    <h1>Dataset Repository Dashboard</h1>
+    <p class="lead">Track the MVP-ready repository flow across authentication, dataset submission, approval, discovery, citation, and download windows.</p>
+    <div class="actions">
+        <a class="button" href="<?= site_url('datasets') ?>">Browse Catalog</a>
+        <a class="button secondary" href="<?= site_url('upload') ?>">Submit Dataset</a>
+        <a class="button secondary" href="<?= site_url('admin') ?>">Open Admin</a>
     </div>
 </section>
 
-<section class="landing-grid-section">
-    <div class="shell">
-        <section class="find-panel" aria-labelledby="find-heading">
-            <h2 id="find-heading">What you can find here</h2>
-            <div class="find-grid">
-                <article>
-                    <span class="circle-icon"></span>
-                    <h3>Text</h3>
-                    <p>Lorem ipsum</p>
-                </article>
-                <article>
-                    <span class="circle-icon"></span>
-                    <h3>Audio</h3>
-                    <p>Lorem ipsum</p>
-                </article>
-                <article>
-                    <span class="circle-icon"></span>
-                    <h3>Images</h3>
-                    <p>Lorem ipsum</p>
-                </article>
-                <article>
-                    <span class="circle-icon"></span>
-                    <h3>Others</h3>
-                    <p>Lorem ipsum</p>
-                </article>
+<section class="shell grid">
+    <article class="panel stat-card">
+        <p class="tag">Approved</p>
+        <h2 class="stat-value"><?= esc((string) ($approvedCount ?? 0)) ?></h2>
+        <p class="muted">Published datasets currently visible in normal browsing.</p>
+    </article>
+    <article class="panel stat-card">
+        <p class="tag">Pending</p>
+        <h2 class="stat-value"><?= esc((string) ($pendingCount ?? 0)) ?></h2>
+        <p class="muted">Submitted datasets waiting for administrative review.</p>
+    </article>
+    <article class="panel stat-card">
+        <p class="tag">Users</p>
+        <h2 class="stat-value"><?= esc((string) ($userCount ?? 0)) ?></h2>
+        <p class="muted">Seeded account records available for MVP walkthroughs.</p>
+    </article>
+</section>
+
+<section class="shell split-grid">
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="tag">MVP Flow</p>
+                <h2>Current repository responsibilities</h2>
             </div>
-        </section>
-
-        <p class="landing-copy">Access a comprehensive collection of academic works, research outputs, and scholarly materials.</p>
-    </div>
-</section>
-
-<section class="domains-section">
-    <div class="shell">
-        <h2>Domains</h2>
-        <p>Access a comprehensive collection of academic works, research outputs, and scholarly materials.</p>
-        <div class="domains-grid">
-            <article>
-                <span class="domain-orb"></span>
-                <h3>Climate and Environment</h3>
-            </article>
-            <article>
-                <span class="domain-orb"></span>
-                <h3>Text & Natural Language Processing (NLP)</h3>
-            </article>
-            <article>
-                <span class="domain-orb"></span>
-                <h3>Geospatial & Spatial</h3>
-            </article>
-            <article>
-                <span class="domain-orb"></span>
-                <h3>Computer Vision (CV)</h3>
-            </article>
+            <p class="muted">Aligned to the MVP scope and system skeleton docs.</p>
         </div>
-        <a class="see-more" href="<?= site_url('datasets') ?>">See more</a>
-    </div>
+        <ul class="stack-list">
+            <?php foreach (($mvpAreas ?? []) as $area): ?>
+                <li><?= esc($area) ?></li>
+            <?php endforeach; ?>
+        </ul>
+    </article>
+
+    <article class="panel">
+        <div class="panel-head">
+            <div>
+                <p class="tag">Recent Records</p>
+                <h2>Newest dataset entries</h2>
+            </div>
+        </div>
+        <?php if (empty($recentDatasets)): ?>
+            <p class="muted">No dataset records are available yet.</p>
+        <?php else: ?>
+            <ul class="record-list">
+                <?php foreach ($recentDatasets as $dataset): ?>
+                    <li>
+                        <strong><?= esc($dataset['title']) ?></strong>
+                        <span class="muted"><?= esc($dataset['category'] ?: 'Uncategorized') ?> · <?= esc($dataset['status']) ?></span>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </article>
 </section>
 <?= $this->endSection() ?>
