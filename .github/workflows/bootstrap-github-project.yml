@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create labels, milestones, project board, columns, and issues
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -353,29 +353,40 @@ jobs:
             }
 
             async function ensureProject() {
-              const { data } = await github.request("GET /repos/{owner}/{repo}/projects", {
-                owner,
-                repo,
-                per_page: 100,
-                headers: {
-                  accept: "application/vnd.github.inertia-preview+json"
+              try {
+                const { data } = await github.request("GET /repos/{owner}/{repo}/projects", {
+                  owner,
+                  repo,
+                  per_page: 100,
+                  headers: {
+                    accept: "application/vnd.github.inertia-preview+json"
+                  }
+                });
+
+                const existing = data.find((item) => item.name === projectName);
+                if (existing) return existing.id;
+
+                const created = await github.request("POST /repos/{owner}/{repo}/projects", {
+                  owner,
+                  repo,
+                  name: projectName,
+                  body: "Generated from filtered system-building tasks for the ASOG TBI Dataset Repository.",
+                  headers: {
+                    accept: "application/vnd.github.inertia-preview+json"
+                  }
+                });
+
+                return created.data.id;
+              } catch (error) {
+                if (error.status === 404 || error.status === 410) {
+                  core.warning(
+                    "Classic repository project boards are unavailable for this repository. " +
+                    "Labels, milestones, and issues will still be created."
+                  );
+                  return null;
                 }
-              });
-
-              const existing = data.find((item) => item.name === projectName);
-              if (existing) return existing.id;
-
-              const created = await github.request("POST /repos/{owner}/{repo}/projects", {
-                owner,
-                repo,
-                name: projectName,
-                body: "Generated from filtered system-building tasks for the ASOG TBI Dataset Repository.",
-                headers: {
-                  accept: "application/vnd.github.inertia-preview+json"
-                }
-              });
-
-              return created.data.id;
+                throw error;
+              }
             }
 
             async function ensureColumns(projectId) {
@@ -473,13 +484,19 @@ jobs:
               milestoneMap.set(milestone.title, number);
             }
 
-            const projectId = await ensureProject();
-            const columnMap = await ensureColumns(projectId);
-            const backlogColumn = columnMap.get("Backlog");
-
+            const issueRefs = [];
             for (const issue of issues) {
-              const issueRef = await ensureIssue(issue, milestoneMap);
-              await ensureCard(backlogColumn.id, issueRef);
+              issueRefs.push(await ensureIssue(issue, milestoneMap));
+            }
+
+            const projectId = await ensureProject();
+            if (projectId) {
+              const columnMap = await ensureColumns(projectId);
+              const backlogColumn = columnMap.get("Backlog");
+
+              for (const issueRef of issueRefs) {
+                await ensureCard(backlogColumn.id, issueRef);
+              }
             }
 
             core.notice(`Bootstrapped ${issues.length} filtered issues in ${owner}/${repo}.`);
