@@ -62,6 +62,9 @@
             <label for="members">Research Members or Contributors</label>
             <textarea id="members" name="members" rows="3" placeholder="List the student researchers, faculty collaborators, or project contributors"></textarea>
 
+            <label for="source_link">Source Link</label>
+            <input id="source_link" name="source_link" placeholder="Optional reference URL for the dataset source">
+
             <label for="dataset_file">Dataset ZIP File</label>
             <input id="dataset_file" type="file" name="dataset_file" accept=".zip">
 

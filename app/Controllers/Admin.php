@@ -40,16 +40,22 @@ class Admin extends BaseController
 
     public function activateUser(int $id)
     {
+        model(UserModel::class)->update($id, ['status' => 'active']);
+        $this->recordAudit('user_activate', 'user', $id, 'Administrator activated a user account.');
+
         return redirect()
             ->to('/admin/users')
-            ->with('info', "User {$id} activation is ready for Member 1 implementation.");
+            ->with('info', "User {$id} has been activated.");
     }
 
     public function deactivateUser(int $id)
     {
+        model(UserModel::class)->update($id, ['status' => 'inactive']);
+        $this->recordAudit('user_deactivate', 'user', $id, 'Administrator deactivated a user account.');
+
         return redirect()
             ->to('/admin/users')
-            ->with('info', "User {$id} deactivation is ready for Member 1 implementation.");
+            ->with('info', "User {$id} has been deactivated.");
     }
 
     public function datasets(): string
@@ -76,16 +82,31 @@ class Admin extends BaseController
 
     public function approveDataset(int $id)
     {
+        model(DatasetModel::class)->update($id, [
+            'status' => DatasetModel::STATUS_APPROVED,
+            'approved_by' => $this->currentUserId(),
+            'approved_at' => date('Y-m-d H:i:s'),
+            'archived_at' => null,
+        ]);
+        $this->recordAudit('dataset_approve', 'dataset', $id, 'Administrator approved a dataset.');
+
         return redirect()
             ->to('/admin/datasets')
-            ->with('info', "Dataset {$id} approval is ready for Member 3 implementation.");
+            ->with('info', "Dataset {$id} has been approved.");
     }
 
     public function rejectDataset(int $id)
     {
+        model(DatasetModel::class)->update($id, [
+            'status' => DatasetModel::STATUS_REJECTED,
+            'approved_by' => null,
+            'approved_at' => null,
+        ]);
+        $this->recordAudit('dataset_reject', 'dataset', $id, 'Administrator rejected a dataset.');
+
         return redirect()
             ->to('/admin/datasets')
-            ->with('info', "Dataset {$id} rejection is ready for Member 3 implementation.");
+            ->with('info', "Dataset {$id} has been rejected.");
     }
 
     public function auditLogs(): string

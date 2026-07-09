@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Models\AuditLogModel;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -38,5 +39,51 @@ abstract class BaseController extends Controller
         parent::initController($request, $response, $logger);
 
         $this->session = service('session');
+    }
+
+    protected function currentUserId(): ?int
+    {
+        $userId = $this->session->get('user_id');
+
+        return is_numeric($userId) ? (int) $userId : null;
+    }
+
+    protected function currentRole(): ?string
+    {
+        $role = $this->session->get('role');
+
+        return is_string($role) && $role !== '' ? $role : null;
+    }
+
+    protected function isAuthenticated(): bool
+    {
+        return $this->currentUserId() !== null;
+    }
+
+    protected function isAdminUser(): bool
+    {
+        return $this->currentRole() === 'admin';
+    }
+
+    /**
+     * @param array<string, mixed> $dataset
+     */
+    protected function canManageDataset(array $dataset): bool
+    {
+        return $this->isAdminUser() || (int) ($dataset['contributor_id'] ?? 0) === $this->currentUserId();
+    }
+
+    protected function recordAudit(string $action, ?string $entityType = null, ?int $entityId = null, ?string $details = null): void
+    {
+        $auditModel = new AuditLogModel();
+        $auditModel->insert([
+            'user_id' => $this->currentUserId(),
+            'action' => $action,
+            'entity_type' => $entityType,
+            'entity_id' => $entityId,
+            'details' => $details,
+            'ip_address' => $this->request->getIPAddress(),
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
     }
 }

@@ -47,12 +47,18 @@
             <label for="project_head">Project Head or Adviser</label>
             <input id="project_head" name="project_head" value="<?= esc($dataset['project_head'] ?? '') ?>">
 
+            <label for="members">Research Members or Contributors</label>
+            <textarea id="members" name="members" rows="3"><?= esc($dataset['members'] ?? '') ?></textarea>
+
             <label for="source_type">Source Type</label>
             <select id="source_type" name="source_type">
                 <?php foreach (($sourceTypes ?? []) as $sourceType): ?>
                     <option value="<?= esc($sourceType) ?>" <?= ($dataset['source_type'] ?? '') === $sourceType ? 'selected' : '' ?>><?= esc($sourceType) ?></option>
                 <?php endforeach; ?>
             </select>
+
+            <label for="source_link">Source Link</label>
+            <input id="source_link" name="source_link" value="<?= esc($dataset['source_link'] ?? '') ?>">
 
             <label for="change_summary">Change Summary</label>
             <textarea id="change_summary" name="change_summary" rows="3" placeholder="Describe what changed in this revision"></textarea>

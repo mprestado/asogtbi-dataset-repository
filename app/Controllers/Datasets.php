@@ -2,7 +2,11 @@
 
 namespace App\Controllers;
 
+use App\Models\DatasetDownloadModel;
+use App\Models\DatasetFileModel;
 use App\Models\DatasetModel;
+use App\Models\DatasetVersionModel;
+use App\Models\DatasetViewModel;
 
 class Datasets extends BaseController
 {
@@ -39,7 +43,7 @@ class Datasets extends BaseController
         $datasets = $query
             ->orderBy('datasets.approved_at', 'DESC')
             ->orderBy('datasets.created_at', 'DESC')
-            ->findAll();
+            ->paginate(9);
 
         $categories = $datasetModel
             ->select('category')
@@ -57,6 +61,7 @@ class Datasets extends BaseController
             'selectedDataType' => $dataType,
             'selectedCategory' => $category,
             'categories' => $categories ?: [],
+            'pager' => $datasetModel->pager,
         ]);
     }
 
@@ -75,18 +80,81 @@ class Datasets extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        model(DatasetViewModel::class)->insert([
+            'dataset_id' => $id,
+            'user_id' => $this->currentUserId(),
+            'viewed_at' => date('Y-m-d H:i:s'),
+            'ip_address' => $this->request->getIPAddress(),
+        ]);
+
+        $latestFile = model(DatasetFileModel::class)
+            ->where('dataset_id', $id)
+            ->orderBy('created_at', 'DESC')
+            ->first();
+
+        $recommendations = $this->findRecommendations($dataset);
+
         return view('datasets/show', [
             'title' => $dataset['title'],
             'datasetId' => $id,
             'dataset' => $dataset,
+            'latestFile' => $latestFile,
+            'recommendations' => $recommendations,
+            'viewCount' => $this->countDatasetEvents(new DatasetViewModel(), $id, 'viewed_at'),
+            'downloadCount' => $this->countDatasetEvents(new DatasetDownloadModel(), $id, 'downloaded_at'),
+            'canEdit' => $this->isAuthenticated() && $this->canManageDataset($dataset),
         ]);
     }
 
     public function download(int $id)
     {
-        return redirect()
-            ->to('/datasets/' . $id)
-            ->with('info', 'Download authorization and file response are ready for Member 4 implementation.');
+        $dataset = model(DatasetModel::class)->find($id);
+        if (! is_array($dataset)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        $canDownload = (($dataset['status'] ?? '') === DatasetModel::STATUS_APPROVED && ($dataset['archived_at'] ?? null) === null)
+            || ($this->isAuthenticated() && $this->canManageDataset($dataset));
+
+        if (! $canDownload) {
+            return redirect()
+                ->to('/datasets')
+                ->with('error', 'That dataset is not available for download.');
+        }
+
+        if (($dataset['access_type'] ?? 'public') === 'restricted' && ! $this->isAuthenticated()) {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'Please log in to download this restricted dataset.');
+        }
+
+        $latestFile = model(DatasetFileModel::class)
+            ->where('dataset_id', $id)
+            ->orderBy('created_at', 'DESC')
+            ->first();
+
+        if (! is_array($latestFile)) {
+            return redirect()
+                ->to('/datasets/' . $id)
+                ->with('error', 'No uploaded dataset file is available for this record yet.');
+        }
+
+        $absolutePath = WRITEPATH . str_replace('/', DIRECTORY_SEPARATOR, (string) $latestFile['file_path']);
+        if (! is_file($absolutePath)) {
+            return redirect()
+                ->to('/datasets/' . $id)
+                ->with('error', 'The dataset file record exists, but the file is missing from storage.');
+        }
+
+        model(DatasetDownloadModel::class)->insert([
+            'dataset_id' => $id,
+            'user_id' => $this->currentUserId(),
+            'downloaded_at' => date('Y-m-d H:i:s'),
+            'ip_address' => $this->request->getIPAddress(),
+        ]);
+        $this->recordAudit('dataset_download', 'dataset', $id, 'Dataset file download served.');
+
+        return $this->response->download($absolutePath, null)->setFileName((string) $latestFile['original_name']);
     }
 
     public function edit(int $id): string
@@ -96,6 +164,12 @@ class Datasets extends BaseController
 
         if (! is_array($dataset)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        if (! $this->canManageDataset($dataset)) {
+            return redirect()
+                ->to('/datasets/' . $id)
+                ->with('error', 'You are not allowed to edit this dataset.');
         }
 
         return view('datasets/edit', [
@@ -110,15 +184,175 @@ class Datasets extends BaseController
 
     public function update(int $id)
     {
+        $datasetModel = new DatasetModel();
+        $dataset = $datasetModel->find($id);
+
+        if (! is_array($dataset)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        if (! $this->canManageDataset($dataset)) {
+            return redirect()
+                ->to('/datasets/' . $id)
+                ->with('error', 'You are not allowed to update this dataset.');
+        }
+
+        $rules = [
+            'title' => 'required|max_length[255]',
+            'description' => 'required',
+            'category' => 'required|max_length[120]',
+            'tags' => 'required|max_length[255]',
+            'data_type' => 'required|max_length[80]',
+            'research_title' => 'required|max_length[255]',
+            'project_head' => 'required|max_length[150]',
+            'source_type' => 'required|max_length[80]',
+            'access_type' => 'required|in_list[public,restricted]',
+        ];
+
+        $uploadedFile = $this->request->getFile('dataset_file');
+        if ($uploadedFile && $uploadedFile->isValid() && ! $uploadedFile->hasMoved()) {
+            $rules['dataset_file'] = 'ext_in[dataset_file,zip]|max_size[dataset_file,10240]';
+        }
+
+        if (! $this->validate($rules)) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', implode(' ', $this->validator->getErrors()));
+        }
+
+        $latestFile = model(DatasetFileModel::class)
+            ->where('dataset_id', $id)
+            ->orderBy('created_at', 'DESC')
+            ->first();
+
+        $fileRecordId = is_array($latestFile) ? (int) $latestFile['id'] : null;
+        if ($uploadedFile && $uploadedFile->isValid() && ! $uploadedFile->hasMoved()) {
+            $fileRecordId = $this->storeDatasetFile($id, $uploadedFile, (int) $this->currentUserId());
+        }
+
+        $newVersion = $this->incrementVersion((string) ($dataset['version'] ?? '1.0'));
+        $newStatus = $this->isAdminUser()
+            ? (string) $dataset['status']
+            : (($dataset['status'] ?? '') === DatasetModel::STATUS_APPROVED ? DatasetModel::STATUS_REVISION : (string) $dataset['status']);
+
+        $datasetModel->update($id, [
+            'title' => trim((string) $this->request->getPost('title')),
+            'description' => trim((string) $this->request->getPost('description')),
+            'category' => trim((string) $this->request->getPost('category')),
+            'tags' => trim((string) $this->request->getPost('tags')),
+            'data_type' => trim((string) $this->request->getPost('data_type')),
+            'access_type' => trim((string) $this->request->getPost('access_type')),
+            'research_title' => trim((string) $this->request->getPost('research_title')),
+            'project_head' => trim((string) $this->request->getPost('project_head')),
+            'members' => trim((string) $this->request->getPost('members')),
+            'source_type' => trim((string) $this->request->getPost('source_type')),
+            'source_link' => trim((string) $this->request->getPost('source_link')),
+            'version' => $newVersion,
+            'status' => $newStatus,
+            'approved_at' => $newStatus === DatasetModel::STATUS_REVISION ? null : ($dataset['approved_at'] ?? null),
+            'approved_by' => $newStatus === DatasetModel::STATUS_REVISION ? null : ($dataset['approved_by'] ?? null),
+        ]);
+
+        model(DatasetVersionModel::class)->insert([
+            'dataset_id' => $id,
+            'version' => $newVersion,
+            'change_summary' => trim((string) $this->request->getPost('change_summary')) ?: 'Dataset metadata updated.',
+            'dataset_file_id' => $fileRecordId,
+            'created_by' => (int) $this->currentUserId(),
+        ]);
+        $this->recordAudit('dataset_update', 'dataset', $id, 'Dataset metadata was updated.');
+
         return redirect()
             ->to('/datasets/' . $id . '/edit')
-            ->with('info', 'Dataset update logic is ready for Member 3 implementation.');
+            ->with('info', 'Dataset changes have been saved.');
     }
 
     public function archive(int $id)
     {
+        $dataset = model(DatasetModel::class)->find($id);
+        if (! is_array($dataset)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+
+        if (! $this->canManageDataset($dataset)) {
+            return redirect()
+                ->to('/datasets/' . $id)
+                ->with('error', 'You are not allowed to archive this dataset.');
+        }
+
+        model(DatasetModel::class)->update($id, [
+            'status' => DatasetModel::STATUS_ARCHIVED,
+            'archived_at' => date('Y-m-d H:i:s'),
+        ]);
+        $this->recordAudit('dataset_archive', 'dataset', $id, 'Dataset archived from normal browsing.');
+
         return redirect()
-            ->to('/datasets/' . $id)
-            ->with('info', 'Dataset archive logic is ready for Member 3 implementation.');
+            ->to('/dashboard')
+            ->with('info', 'Dataset archived successfully.');
+    }
+
+    private function storeDatasetFile(int $datasetId, object $uploadedFile, int $userId): int
+    {
+        $targetDir = WRITEPATH . 'uploads/datasets/' . $datasetId;
+        if (! is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $storedName = $uploadedFile->getRandomName();
+        $uploadedFile->move($targetDir, $storedName);
+        $relativePath = 'uploads/datasets/' . $datasetId . '/' . $storedName;
+
+        return (int) model(DatasetFileModel::class)->insert([
+            'dataset_id' => $datasetId,
+            'stored_name' => $storedName,
+            'original_name' => $uploadedFile->getClientName(),
+            'file_path' => $relativePath,
+            'file_size' => (int) $uploadedFile->getSize(),
+            'file_type' => (string) $uploadedFile->getClientMimeType(),
+            'uploaded_by' => $userId,
+        ], true);
+    }
+
+    private function incrementVersion(string $currentVersion): string
+    {
+        if (preg_match('/^(\d+)\.(\d+)$/', $currentVersion, $matches) === 1) {
+            return $matches[1] . '.' . ((int) $matches[2] + 1);
+        }
+
+        return '1.1';
+    }
+
+    private function countDatasetEvents(object $model, int $datasetId, string $dateField): int
+    {
+        return $model->where('dataset_id', $datasetId)->countAllResults();
+    }
+
+    /**
+     * @param array<string, mixed> $dataset
+     * @return array<int, array<string, mixed>>
+     */
+    private function findRecommendations(array $dataset): array
+    {
+        $candidates = model(DatasetModel::class)
+            ->select('datasets.*, users.name AS author_name')
+            ->join('users', 'users.id = datasets.contributor_id', 'left')
+            ->where('datasets.status', DatasetModel::STATUS_APPROVED)
+            ->where('datasets.archived_at', null)
+            ->where('datasets.id !=', (int) $dataset['id'])
+            ->findAll();
+
+        $scored = [];
+        foreach ($candidates as $candidate) {
+            $score = metadata_similarity_score($dataset, $candidate);
+            if ($score > 0) {
+                $candidate['score'] = $score;
+                $scored[] = $candidate;
+            }
+        }
+
+        usort($scored, static fn (array $a, array $b): int => (int) $b['score'] <=> (int) $a['score']);
+
+        return array_slice($scored, 0, 3);
     }
 }

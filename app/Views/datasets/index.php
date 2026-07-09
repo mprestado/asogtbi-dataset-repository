@@ -72,5 +72,10 @@
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+    <?php if (isset($pager)): ?>
+        <div class="actions">
+            <?= $pager->links() ?>
+        </div>
+    <?php endif; ?>
 </section>
 <?= $this->endSection() ?>

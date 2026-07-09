@@ -80,5 +80,81 @@ class MvpSeeder extends Seeder
                 'version' => '1.0',
             ],
         ]);
+
+        $baseDir = WRITEPATH . 'uploads/datasets';
+        if (! is_dir($baseDir)) {
+            mkdir($baseDir, 0777, true);
+        }
+
+        $emptyZip = base64_decode('UEsFBgAAAAAAAAAAAAAAAAAAAAAAAA==');
+
+        $files = [
+            1 => 'startup-survey-responses.zip',
+            2 => 'innovation-program-interviews.zip',
+            3 => 'pending-prototype-dataset.zip',
+        ];
+
+        foreach ($files as $datasetId => $fileName) {
+            $datasetDir = $baseDir . DIRECTORY_SEPARATOR . $datasetId;
+            if (! is_dir($datasetDir)) {
+                mkdir($datasetDir, 0777, true);
+            }
+
+            file_put_contents($datasetDir . DIRECTORY_SEPARATOR . $fileName, $emptyZip);
+        }
+
+        $this->db->table('dataset_files')->insertBatch([
+            [
+                'dataset_id' => 1,
+                'stored_name' => 'startup-survey-responses.zip',
+                'original_name' => 'startup-survey-responses.zip',
+                'file_path' => 'uploads/datasets/1/startup-survey-responses.zip',
+                'file_size' => strlen((string) $emptyZip),
+                'file_type' => 'application/zip',
+                'uploaded_by' => 2,
+            ],
+            [
+                'dataset_id' => 2,
+                'stored_name' => 'innovation-program-interviews.zip',
+                'original_name' => 'innovation-program-interviews.zip',
+                'file_path' => 'uploads/datasets/2/innovation-program-interviews.zip',
+                'file_size' => strlen((string) $emptyZip),
+                'file_type' => 'application/zip',
+                'uploaded_by' => 2,
+            ],
+            [
+                'dataset_id' => 3,
+                'stored_name' => 'pending-prototype-dataset.zip',
+                'original_name' => 'pending-prototype-dataset.zip',
+                'file_path' => 'uploads/datasets/3/pending-prototype-dataset.zip',
+                'file_size' => strlen((string) $emptyZip),
+                'file_type' => 'application/zip',
+                'uploaded_by' => 2,
+            ],
+        ]);
+
+        $this->db->table('dataset_versions')->insertBatch([
+            [
+                'dataset_id' => 1,
+                'version' => '1.0',
+                'change_summary' => 'Initial seeded dataset.',
+                'dataset_file_id' => 1,
+                'created_by' => 2,
+            ],
+            [
+                'dataset_id' => 2,
+                'version' => '1.0',
+                'change_summary' => 'Initial seeded dataset.',
+                'dataset_file_id' => 2,
+                'created_by' => 2,
+            ],
+            [
+                'dataset_id' => 3,
+                'version' => '1.0',
+                'change_summary' => 'Initial seeded dataset.',
+                'dataset_file_id' => 3,
+                'created_by' => 2,
+            ],
+        ]);
     }
 }
