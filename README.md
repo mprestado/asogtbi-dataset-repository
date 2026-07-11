@@ -38,10 +38,11 @@ Those belong to a separate Admin Portal application that shares the database. Th
 Read these first:
 
 - [SETUP.md](SETUP.md) - local setup, database charset/collation, migrations, seed data, and run commands.
-- [TASKS.md](TASKS.md) - current rapid-MVP audit checklist and known follow-ups.
 - [docs/CONTEXT.md](docs/CONTEXT.md) - product scope and Admin Portal boundary.
 - [docs/DESIGN.md](docs/DESIGN.md) - ASOG TBI visual system.
 - [docs/SKILL.md](docs/SKILL.md) - concise agent instructions for applying the scope and design.
+
+Task assignment and progress tracking live in the team's Google Sheets task tracker, not in this repository.
 
 The older planning documents were removed from this branch because they conflicted with the Admin Portal split.
 
@@ -136,4 +137,4 @@ php -l app/Controllers/Datasets.php
 
 Every change should answer one question: does this help the team demo and audit the working public/user-facing MVP?
 
-If the answer is no, move it to `TASKS.md` as a later follow-up instead of adding it now.
+If the answer is no, record it in the team's Google Sheets task tracker as a later follow-up instead of adding it now.
