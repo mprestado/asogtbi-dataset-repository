@@ -1,45 +1,75 @@
 # ASOG TBI Dataset Repository
 
-Starter repository for the ASOG TBI Dataset Repository with Recommendation System.
+This repository is the `rapid-mvp` branch of the ASOG TBI Dataset Repository: a public and user-facing CodeIgniter 4 + MySQL website for browsing, citing, downloading, and contributing institutional datasets.
 
-This project is a CodeIgniter 4 and MySQL web application focused on the MVP described in `Database-Repo-SRS.md`. The MVP target is a functional dataset repository that supports login, basic role access, dataset upload, approval, browsing, search, filtering, detail pages, citation/BibTeX, downloads, updates, archiving, and metadata-based recommendations.
+The goal of this branch is a working rapid MVP that teammates can audit and build on. Keep the implementation pragmatic, runnable, and clear. Avoid speculative architecture and do not add Admin Portal screens here.
 
-## Current Status
+## Branch Scope
 
-This repository currently contains the CodeIgniter 4 application starter plus planning documents for the first two-week MVP build.
+Build and maintain only these public/user-facing flows:
 
-The implementation should stay focused on the MVP. Advanced institutional features such as full ethics review workflows, multiple reviewer roles, restricted access requests, email notifications, automated backups, annual compliance reports, and AI recommendation methods are future enhancements.
+- Home
+- Login, registration, logout, and password reset
+- Browse/search/filter Published datasets
+- Dataset preview modal from browse results
+- Dataset detail pages with citation and BibTeX
+- Detail-page download flow with download logging
+- Upload Dataset
+- My Datasets
+- Update own datasets
+- Self-archive own datasets
+- Metadata-based similar dataset recommendations
 
-## Documentation
+Do not build these in this repository:
 
-- [Setup Guide](SETUP.md)
-- [MVP Task Tracker](TASKS.md)
-- [Repository Setup](docs/REPOSITORY_SETUP.md)
-- [MVP Scope](docs/MVP_SCOPE.md)
-- [Two-Week MVP Plan](docs/MVP_2_WEEK_PLAN.md)
-- [Six-Member Task Breakdown](docs/MVP_TASKS_6_MEMBERS.md)
-- [GitHub Project Board and Issues](docs/GITHUB_PROJECT_BOARD.md)
-- [Starting Repository Checklist](docs/STARTING_REPOSITORY_CHECKLIST.md)
-- [System Skeleton](docs/SYSTEM_SKELETON.md)
-- [Design Adaptation](docs/DESIGN_ADAPTATION.md)
+- Admin dashboard
+- Reviewer dashboard
+- Approval or rejection controls
+- User management
+- Audit-log viewer
+- Backup controls
+- Reports
+- Restricted access request approval workflow
+
+Those belong to a separate Admin Portal application that shares the database. This website may read shared fields such as `status`, `approved_by`, and `approved_at`, but it should not provide admin/reviewer controls.
+
+## Documentation For Humans And Agents
+
+Read these first:
+
+- [SETUP.md](SETUP.md) - local setup, database charset/collation, migrations, seed data, and run commands.
+- [TASKS.md](TASKS.md) - current rapid-MVP audit checklist and known follow-ups.
+- [docs/CONTEXT.md](docs/CONTEXT.md) - product scope and Admin Portal boundary.
+- [docs/DESIGN.md](docs/DESIGN.md) - ASOG TBI visual system.
+- [docs/SKILL.md](docs/SKILL.md) - concise agent instructions for applying the scope and design.
+
+The older planning documents were removed from this branch because they conflicted with the Admin Portal split.
 
 ## Tech Stack
 
 - CodeIgniter 4
 - PHP 8.2 or newer
-- MySQL
-- Apache, Nginx, XAMPP, Laragon, or WAMP for local development
+- MySQL or MariaDB
+- Composer
+- XAMPP, Laragon, WAMP, or another local PHP/MySQL stack
 
-## Local Setup
+## Quick Start
 
 ```powershell
 composer install
 Copy-Item .env.example .env
 php spark key:generate
-php spark serve
 ```
 
-Update `.env` before running database-backed features:
+Create the database with the expected character set and collation:
+
+```sql
+CREATE DATABASE asog_dataset_repo
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+```
+
+Set the local database values in `.env`:
 
 ```ini
 CI_ENVIRONMENT = development
@@ -50,10 +80,60 @@ database.default.database = asog_dataset_repo
 database.default.username = root
 database.default.password =
 database.default.DBDriver = MySQLi
+database.default.DBPrefix =
+database.default.charset = utf8mb4
+database.default.DBCollat = utf8mb4_unicode_ci
+database.default.port = 3306
+```
+
+Then run:
+
+```powershell
+php spark migrate
+php spark db:seed MvpSeeder
+php spark serve
+```
+
+Open:
+
+```text
+http://localhost:8080
+```
+
+Demo account after seeding:
+
+```text
+Email: user@example.test
+Password: change-me
+```
+
+## Rapid MVP Notes
+
+- Uploaded dataset ZIP files are stored under `writable/uploads/`, not `public/`.
+- Browse results use a Preview modal. Downloads are intentionally available from the dataset detail page so citation and metadata are seen first.
+- Password reset stores a hashed, expiring token. Email delivery is not configured in this branch; in `development`, the reset link is shown after a valid reset request.
+- CSRF protection is enabled globally, and forms should include `csrf_field()`.
+- Tests are still light. Treat manual smoke testing as required until feature tests are added.
+
+## Useful Commands
+
+```powershell
+php -v
+composer install
+php spark routes
+php spark migrate:status
+composer test
+```
+
+Run syntax checks on touched PHP files:
+
+```powershell
+php -l app/Controllers/Auth.php
+php -l app/Controllers/Datasets.php
 ```
 
 ## MVP Rule
 
-Every task should answer one question: does this help the team demo the working MVP in two weeks?
+Every change should answer one question: does this help the team demo and audit the working public/user-facing MVP?
 
-If the answer is no, move it to future enhancements.
+If the answer is no, move it to `TASKS.md` as a later follow-up instead of adding it now.

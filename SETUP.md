@@ -1,73 +1,78 @@
-# ASOG TBI Dataset Repository Setup Guide
+# ASOG TBI Dataset Repository Setup Guide - rapid-mvp
 
-This is the working guide for everyone who will make changes in this repository. Read this before writing code, creating branches, opening pull requests, or pushing anything to GitHub.
+This guide is for the `rapid-mvp` branch.
 
-## Project Goal
+This branch is the public and user-facing CodeIgniter 4 website for the ASOG TBI Dataset Repository. It includes guest browsing, user login/registration, dataset upload, My Datasets, dataset detail pages, citation/BibTeX, downloads, self-service archive, and simple metadata-based recommendations.
 
-Build the two-week MVP for the ASOG TBI Dataset Repository with Recommendation System.
-
-The MVP focuses on:
-
-- Google school-email authentication planning.
-- Basic roles and route guards after the core views are usable.
-- Dataset upload with required metadata and ZIP file.
-- Admin approval before publication.
-- Dataset catalog with pagination, search, and filtering.
-- Dataset detail pages with metadata, citation, BibTeX, download, and recommendations.
-- Dataset update and archive.
-- Basic audit logs for important actions.
-
-Do not spend MVP time on future features unless the team lead approves it.
-
-Future features include full ethics review workflows, multiple reviewer roles, restricted access requests, email notifications, automated backups, advanced audit dashboards, AI recommendations, and institutional single sign-on.
+Do not build or expect Admin Portal screens in this branch. Dataset approval, rejection, reviewer queues, user management, audit-log viewers, backups, and reports belong to a separate Admin Portal application that shares the database.
 
 ## Required Tools
 
-Install these before working:
+Install these before running the project:
 
 - Git
 - PHP 8.2 or newer
 - Composer
-- MySQL
-- XAMPP, Laragon, WAMP, Apache, Nginx, or another PHP/MySQL local stack
-- A code editor such as VS Code or PhpStorm
+- MySQL or MariaDB
+- XAMPP, Laragon, WAMP, or another PHP/MySQL local stack
 
-Check PHP:
+Check PHP from PowerShell:
 
 ```powershell
 php -v
 ```
 
-The app requires PHP 8.2 or newer. PHP 8.0 is not enough for this CodeIgniter version.
+If this fails with `php is not recognized`, add your PHP folder to Windows `PATH`. Common local paths are:
 
-## First Local Setup
-
-Clone your fork, not the main organization repository:
-
-```powershell
-git clone https://github.com/YOUR_USERNAME/asog-tbi-dataset-repository.git
-cd asog-tbi-dataset-repository
+```text
+C:\xampp\php
+C:\laragon\bin\php\php-8.x.x
 ```
 
-Add the main repository as `upstream`:
+Then open a new terminal and run `php -v` again.
+
+## Get This Branch
+
+From the repository folder:
 
 ```powershell
-git remote add upstream https://github.com/ORG_OR_OWNER/asog-tbi-dataset-repository.git
-git remote -v
+git fetch origin
+git switch rapid-mvp
 ```
 
-Install dependencies:
+If you do not have the branch locally yet:
+
+```powershell
+git switch -c rapid-mvp origin/rapid-mvp
+```
+
+## Install Dependencies
 
 ```powershell
 composer install
+```
+
+If `composer install` fails because PHP is missing, fix PHP on `PATH` first.
+
+## Create `.env`
+
+Copy the example file:
+
+```powershell
 Copy-Item .env.example .env
+```
+
+Generate the app key:
+
+```powershell
 php spark key:generate
 ```
 
-Update `.env`:
+Update `.env` with local development values:
 
 ```ini
 CI_ENVIRONMENT = development
+
 app.baseURL = 'http://localhost:8080/'
 
 database.default.hostname = localhost
@@ -75,22 +80,76 @@ database.default.database = asog_dataset_repo
 database.default.username = root
 database.default.password =
 database.default.DBDriver = MySQLi
+database.default.DBPrefix =
+database.default.port = 3306
+database.default.charset = utf8mb4
+database.default.DBCollat = utf8mb4_unicode_ci
 ```
 
-Create the database:
+Use your real local MySQL username and password if they are not `root` with a blank password.
+
+## Create The Database
+
+Yes, create the database with `CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`.
+
+It is not a `.env` setting by itself. It belongs in the SQL command that creates the database. The matching `.env` charset and collation values above keep the app connection consistent with the database.
+
+Run this in MySQL:
 
 ```sql
-CREATE DATABASE asog_dataset_repo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE asog_dataset_repo
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
 ```
 
-Run migrations and seeders when available:
+Why this matters:
+
+- `utf8mb4` stores the full Unicode range, including symbols and non-English text that may appear in dataset metadata.
+- Setting it explicitly avoids relying on whatever default charset your local MySQL install happens to use.
+- The branch stores searchable titles, descriptions, tags, contributor names, citation text, and research metadata, so consistent text storage matters.
+
+If the database already exists, check it with:
+
+```sql
+SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME
+FROM information_schema.SCHEMATA
+WHERE SCHEMA_NAME = 'asog_dataset_repo';
+```
+
+If it is not `utf8mb4` / `utf8mb4_unicode_ci`, either recreate the local database or run:
+
+```sql
+ALTER DATABASE asog_dataset_repo
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+```
+
+For an empty local database, recreating it is usually simpler.
+
+## Run Migrations And Demo Seed Data
 
 ```powershell
 php spark migrate
 php spark db:seed MvpSeeder
 ```
 
-Run the app:
+The demo seeder creates:
+
+- one User account
+- two Published sample datasets
+- one Pending Review sample dataset
+- placeholder ZIP files under `writable/uploads/datasets/`
+
+Demo login:
+
+```text
+Email: user@example.test
+Password: change-me
+```
+
+There is no demo admin account in this branch because admin/reviewer functionality is out of scope here.
+
+## Run The App
 
 ```powershell
 php spark serve
@@ -102,253 +161,97 @@ Open:
 http://localhost:8080
 ```
 
-## Authentication During MVP Build
+## Expected User-Facing Flows
 
-For the early implementation sprint, skeleton views are intentionally not locked behind login. This lets everyone build and review pages without being blocked by authentication.
+Guests can:
 
-The filters still exist in:
+- open the Home page
+- browse Published public datasets
+- search and filter the catalog
+- view public dataset detail pages
+- generate citation/BibTeX text
+- download public Published ZIP files
+- request a password reset link for an active account
 
-```text
-app/Filters/AuthFilter.php
-app/Filters/RoleFilter.php
-```
+Logged-in users can:
 
-When the team is ready to connect school-provided Google emails, re-enable the filters in:
+- browse Published public, institutional, and restricted datasets
+- upload a dataset, which starts as Pending Review
+- view My Datasets
+- view their own Pending Review, Revision Requested, Published, Rejected, or Archived datasets
+- edit their own dataset metadata
+- upload a new ZIP version
+- archive their own dataset
 
-```text
-app/Config/Routes.php
-```
+This branch does not approve, reject, restore, or review datasets. Those actions happen in the separate Admin Portal.
 
-Do not treat the open routes as the final security model.
+Password reset is implemented as a token-based MVP flow. It stores a hashed reset token that expires after 30 minutes and can only be used once. Email delivery is not configured in this branch; when `CI_ENVIRONMENT = development`, the reset request page displays the prepared reset link so the local flow can be audited.
 
-## Branch Rules
+## Useful Commands
 
-Never commit directly to `main`.
-
-Never push directly to `main`.
-
-Never force-push `main` or `develop`.
-
-All members work from their own forks and submit pull requests to the shared repository.
-
-Recommended shared branches:
-
-```text
-main       stable branch for demo-ready code
-develop    integration branch for accepted MVP work
-```
-
-Normal work branches:
-
-```text
-feature/auth-rbac
-feature/database-foundation
-feature/dataset-lifecycle
-feature/catalog-detail-download
-feature/citation-recommendations
-feature/ui-qa-docs
-fix/login-validation
-fix/upload-errors
-docs/setup-guide
-```
-
-Use short, descriptive branch names:
-
-```text
-feature/member-area-specific-task
-fix/problem-being-fixed
-docs/document-being-updated
-```
-
-## Daily Workflow
-
-Before starting work:
+Show routes:
 
 ```powershell
-git checkout develop
-git pull upstream develop
-git checkout -b feature/your-task-name
+php spark routes
 ```
 
-If your fork is behind:
+Check migration status:
 
 ```powershell
-git fetch upstream
-git checkout develop
-git merge upstream/develop
-git push origin develop
+php spark migrate:status
 ```
 
-Work on your feature branch:
+Reset a local development database:
 
 ```powershell
-git checkout feature/your-task-name
-git status --short
+php spark migrate:rollback
+php spark migrate
+php spark db:seed MvpSeeder
 ```
 
-Commit only related files:
+Run PHP syntax checks on a changed file:
 
 ```powershell
-git add path/to/file.php path/to/view.php
-git commit -m "feat: add dataset catalog search"
-git push origin feature/your-task-name
+php -l app/Controllers/Datasets.php
 ```
 
-Then open a pull request from your fork branch into the shared repository `develop` branch.
-
-## Commit Message Rules
-
-Use clear commit messages:
-
-```text
-feat: add login form validation
-feat: create dataset migrations
-fix: block inactive users from login
-fix: hide archived datasets from catalog
-docs: add setup workflow
-style: align dataset cards with design system
-test: add dataset model tests
-```
-
-Keep commits focused. One commit should explain one meaningful change.
-
-Avoid vague messages:
-
-```text
-update
-changes
-final
-fix stuff
-my part
-```
-
-## Pull Request Rules
-
-Every pull request must target `develop`, not `main`.
-
-Every pull request should include:
-
-- Summary of what changed.
-- SRS or MVP requirement reference.
-- Screenshots for UI changes.
-- Migration or seeder notes for database changes.
-- Manual test steps.
-- Known limitations or unfinished items.
-
-Pull request template:
-
-```md
-## Summary
-
-## SRS / MVP References
-
-## Screenshots
-
-## Database Changes
-
-## Manual Test Steps
-
-## Known Limitations
-```
-
-Do not merge your own pull request unless the team has explicitly agreed to that rule.
-
-At least one teammate should review each pull request.
-
-## Merge Rules
-
-Only merge when:
-
-- The branch is up to date with `develop`.
-- The app still runs locally.
-- Migrations are included for database changes.
-- The feature does not break another member's route or model.
-- The pull request has manual test steps.
-- The work matches the assigned MVP task.
-
-Use squash merge if the pull request has messy work-in-progress commits.
-
-## What Should Be Committed
-
-Commit project source files and team-facing setup files:
-
-- `app/Controllers/`
-- `app/Models/`
-- `app/Views/`
-- `app/Filters/`
-- `app/Helpers/`
-- `app/Database/Migrations/`
-- `app/Database/Seeds/`
-- `app/Config/` changes that are required by the app
-- `public/assets/` CSS, JS, and committed static assets
-- `tests/`
-- `composer.json`
-- `composer.lock`
-- `.env.example`
-- `.gitignore`
-- `README.md`
-- `SETUP.md`
-- required planning or design Markdown files
-- `Database-Repo-SRS.md` if the team wants the SRS available inside the repo
-
-Use this before the first commit:
+Run tests:
 
 ```powershell
-git status --short
-git add .
-git status --short
+composer test
 ```
 
-Review the staged list before committing. If you see secrets, local cache, uploaded files, or generated dependencies, stop and fix `.gitignore` first.
+## Project Scope Rules
 
-## What Must Not Be Committed
+Build only public/user-facing screens in this branch:
 
-Never commit:
+- Home
+- Login
+- Register
+- Browse/Search
+- Dataset Detail
+- Upload Dataset
+- Update Dataset
+- My Datasets
 
-- `.env`
-- real passwords, API keys, SMTP credentials, or database credentials
-- `vendor/`
-- `writable/cache/`
-- `writable/logs/`
-- `writable/session/`
-- `writable/uploads/`
-- `writable/debugbar/`
-- `public/null/`
-- local dataset ZIP uploads
-- database dumps containing private data
-- IDE folders such as `.vscode/`, `.idea/`, or `nbproject/`
-- OS files such as `Thumbs.db`, `.DS_Store`, or `Desktop.ini`
-- test coverage output
+Do not add these here:
 
-If you accidentally staged something private:
+- Admin dashboard
+- Review or approval queue
+- Approve/reject controls
+- User management
+- Audit-log viewer
+- Backup controls
+- Reports
+- Restricted access request workflow
 
-```powershell
-git restore --staged path/to/file
-```
+The shared database may still contain fields such as `status`, `approved_by`, and `approved_at` because the separate Admin Portal uses them. This website should read those values and display the correct user-facing state, not provide admin controls for them.
 
-If you accidentally committed a secret, tell the team immediately. Do not just delete it in a later commit and assume it is gone.
+## Upload Rules
 
-## Database Rules
+Dataset uploads must be ZIP files.
 
-All database structure changes must use migrations.
-
-Do not manually tell teammates to create columns without a migration.
-
-Every table used by a feature should have:
-
-- A migration.
-- A model.
-- Seeder data if the feature is needed for the demo.
-
-Seeders must use fake/demo-safe data only.
-
-Do not commit private or real institutional datasets.
-
-## Upload and File Rules
-
-MVP dataset uploads must be ZIP files.
-
-Uploaded files should be stored under:
+Uploaded files are stored under:
 
 ```text
 writable/uploads/
@@ -360,51 +263,31 @@ Do not store uploaded dataset files in:
 public/
 ```
 
-The database should store file references, not raw file contents.
+The database stores file references, not raw file contents.
 
-## Coding Rules
+## What Not To Commit
 
-Use the existing CodeIgniter 4 MVC structure:
+Never commit:
 
-- Controllers handle requests and redirects.
-- Models handle database access.
-- Views display UI.
-- Filters protect routes.
-- Helpers provide reusable formatting or scoring logic.
-- Migrations define schema.
-- Seeders create demo data.
+- `.env`
+- real passwords, API keys, SMTP credentials, or database credentials
+- `vendor/`
+- `writable/cache/`
+- `writable/logs/`
+- `writable/session/`
+- `writable/uploads/`
+- `writable/debugbar/`
+- local dataset ZIP files
+- database dumps containing private data
+- IDE folders such as `.vscode/` or `.idea/`
 
-Keep MVP code simple and readable. Do not add heavy abstractions unless they clearly reduce repeated code.
+If you accidentally stage a private file:
 
-## UI Rules
+```powershell
+git restore --staged path/to/file
+```
 
-Use the existing starter design system:
-
-- `hero-panel` for page introductions.
-- `panel` for forms and content blocks.
-- `grid` for responsive card layouts.
-- `table-shell` for tables.
-- `button`, `button secondary`, and `button warning` for actions.
-- `eyebrow`, `tag`, and `status-pill` for labels.
-
-Follow the dark navy, gold, sky-blue, and warm off-white direction from the design file.
-
-## Six-Member Ownership
-
-Recommended ownership:
-
-| Member | Area | Branch |
-|---|---|---|
-| Member 1 | Auth, roles, access guards | `feature/auth-rbac` |
-| Member 2 | Database, models, migrations, seeders | `feature/database-foundation` |
-| Member 3 | Upload, approval, update, archive | `feature/dataset-lifecycle` |
-| Member 4 | Catalog, search, filtering, detail, download | `feature/catalog-detail-download` |
-| Member 5 | Citation, BibTeX, recommendations | `feature/citation-recommendations` |
-| Member 6 | UI integration, QA, docs, demo readiness | `feature/ui-qa-docs` |
-
-Members can help each other, but every pull request should have a clear owner.
-
-## Before Opening a Pull Request
+## Before Committing
 
 Run:
 
@@ -414,78 +297,15 @@ php spark routes
 php spark migrate:status
 ```
 
-If PHP 8.2 is unavailable locally, state that in the pull request and list what you were able to verify.
+For UI changes, manually check:
 
-For PHP syntax checks:
+- Home page
+- Browse page
+- Dataset detail page
+- Login and Register
+- Upload form
+- My Datasets
+- desktop layout
+- mobile layout
 
-```powershell
-php -l app/Controllers/YourController.php
-```
-
-For UI work, manually check:
-
-- Desktop layout.
-- Mobile layout.
-- Navigation links.
-- Form validation states.
-- Empty states.
-- Button text and actions.
-
-## First Repository Commit
-
-The first commit should include the starter app, MVP skeleton, setup docs, and planning files.
-
-Suggested command:
-
-```powershell
-git branch -M main
-git add .
-git status --short
-git commit -m "chore: initialize ASOG TBI dataset repository"
-```
-
-After creating an empty GitHub repo:
-
-```powershell
-git remote add origin https://github.com/YOUR_USERNAME/asog-tbi-dataset-repository.git
-git push -u origin main
-```
-
-Then create `develop`:
-
-```powershell
-git checkout -b develop
-git push -u origin develop
-```
-
-After this, protect `main` on GitHub and require pull requests for changes.
-
-## Main Branch Protection
-
-Recommended GitHub settings:
-
-- Require pull request before merging.
-- Require at least one approval.
-- Require conversation resolution before merge.
-- Block force pushes.
-- Block branch deletion.
-- Keep `main` as the stable demo branch.
-- Use `develop` for MVP integration work.
-
-## Emergency Rule
-
-If something breaks `develop`, do not rush a direct fix onto `main`.
-
-Create a fix branch:
-
-```text
-fix/short-problem-name
-```
-
-Open a pull request into `develop`, review it, and merge it normally.
-
-## Team Reminder
-
-The MVP is the priority. A small working feature is better than a large unfinished feature.
-
-When in doubt, build the simplest version that helps the final demo.
+If PHP or MySQL is not available locally, say exactly what could not be verified in the commit or pull request notes.

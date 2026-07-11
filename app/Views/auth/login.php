@@ -1,40 +1,48 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<section class="shell split-grid">
-    <section class="panel">
-        <h1>Login</h1>
-        <p class="muted">This window covers MVP-FR-01 and MVP-FR-02. The form is in place for email-and-password login, while the actual authentication guard logic still needs to be completed.</p>
+<section class="hero-panel">
+    <div class="shell">
+        <p class="eyebrow">Account Access</p>
+        <h1>Log In</h1>
+        <p class="lead">Access your ASOG TBI dataset submissions, downloads, citations, and upload tools.</p>
+    </div>
+</section>
+
+<section class="shell auth-shell">
+    <section class="form-card auth-card">
+        <div class="panel-head">
+            <div>
+                <p class="tag">Contributor Login</p>
+                <h2>Welcome back</h2>
+            </div>
+        </div>
         <form method="post" action="<?= site_url('login') ?>">
             <?= csrf_field() ?>
             <label for="email">Email</label>
-            <input id="email" type="email" name="email" autocomplete="email">
+            <input id="email" type="email" name="email" value="<?= old('email') ?>" autocomplete="email" placeholder="user@example.test">
 
             <label for="password">Password</label>
-            <input id="password" type="password" name="password" autocomplete="current-password">
+            <input id="password" type="password" name="password" autocomplete="current-password" placeholder="Enter your password">
 
             <div class="actions">
                 <button class="button" type="submit">Log In</button>
-                <a class="button secondary" href="<?= site_url('register') ?>">Create account</a>
             </div>
         </form>
+        <p class="muted auth-link">No account yet? <a href="<?= site_url('register') ?>">Register</a></p>
+        <p class="muted auth-link">Forgot your password? <a href="<?= site_url('forgot-password') ?>">Reset it</a></p>
     </section>
 
     <aside class="panel">
-        <p class="tag">Demo Access</p>
-        <h2>Seed-backed local accounts</h2>
+        <p class="tag">Local Demo</p>
+        <h2>Seed-backed account</h2>
+        <p class="muted">Use this account after running migrations and `MvpSeeder` locally.</p>
         <ul class="record-list">
             <?php foreach (($demoAccounts ?? []) as $account): ?>
                 <li>
                     <strong><?= esc($account['role']) ?></strong>
                     <span class="muted"><?= esc($account['email']) ?> / <?= esc($account['password']) ?></span>
                 </li>
-            <?php endforeach; ?>
-        </ul>
-        <h3>What this screen should enforce</h3>
-        <ul class="stack-list">
-            <?php foreach (($loginChecks ?? []) as $check): ?>
-                <li><?= esc($check) ?></li>
             <?php endforeach; ?>
         </ul>
     </aside>

@@ -12,9 +12,9 @@ class DatasetUpload extends BaseController
     {
         return view('upload/create', [
             'title' => 'Upload Dataset',
-            'dataTypes' => ['Tabular', 'Text', 'Image', 'Audio', 'Video'],
+            'dataTypes' => ['Text', 'Image', 'Audio', 'Video', 'Tabular'],
             'sourceTypes' => ['Primary', 'Secondary'],
-            'accessTypes' => ['public', 'restricted'],
+            'accessTypes' => DatasetModel::accessOptions(),
             'requiredMetadata' => [
                 'Title',
                 'Description',
@@ -42,7 +42,8 @@ class DatasetUpload extends BaseController
             'source_type' => 'required|max_length[80]',
             'research_title' => 'required|max_length[255]',
             'project_head' => 'required|max_length[150]',
-            'access_type' => 'required|in_list[public,restricted]',
+            'access_type' => 'required|in_list[public,institutional,restricted,private]',
+            'anonymized' => 'required',
             'dataset_file' => 'uploaded[dataset_file]|ext_in[dataset_file,zip]|max_size[dataset_file,10240]',
         ];
 

@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use CodeIgniter\Exceptions\PageNotFoundException;
 use App\Models\DatasetDownloadModel;
 use App\Models\DatasetFileModel;
 use App\Models\DatasetModel;
@@ -16,12 +17,15 @@ class Datasets extends BaseController
         $search = trim((string) ($this->request->getGet('q') ?? ''));
         $dataType = trim((string) ($this->request->getGet('data_type') ?? ''));
         $category = trim((string) ($this->request->getGet('category') ?? ''));
+        $fileFormat = trim((string) ($this->request->getGet('file_format') ?? ''));
+        $dateUploaded = trim((string) ($this->request->getGet('date_uploaded') ?? ''));
 
         $query = $datasetModel
             ->select('datasets.*, users.name AS author_name')
             ->join('users', 'users.id = datasets.contributor_id', 'left')
-            ->where('datasets.status', DatasetModel::STATUS_APPROVED)
+            ->where('datasets.status', DatasetModel::STATUS_PUBLISHED)
             ->where('datasets.archived_at', null);
+        $this->applyPublishedAccessScope($query);
 
         if ($search !== '') {
             $query->groupStart()
@@ -40,19 +44,41 @@ class Datasets extends BaseController
             $query->where('datasets.category', $category);
         }
 
+        if ($fileFormat !== '') {
+            $query->where('datasets.file_format', $fileFormat);
+        }
+
+        $dateCutoff = $this->dateFilterCutoff($dateUploaded);
+        if ($dateCutoff !== null) {
+            $query->where('datasets.created_at >=', $dateCutoff);
+        }
+
         $datasets = $query
             ->orderBy('datasets.approved_at', 'DESC')
             ->orderBy('datasets.created_at', 'DESC')
             ->paginate(9);
 
-        $categories = $datasetModel
+        $categoryQuery = model(DatasetModel::class)
             ->select('category')
-            ->where('status', DatasetModel::STATUS_APPROVED)
+            ->where('status', DatasetModel::STATUS_PUBLISHED)
             ->where('archived_at', null)
-            ->where('category !=', '')
+            ->where('category !=', '');
+        $this->applyPublishedAccessScope($categoryQuery);
+        $categories = $categoryQuery
             ->groupBy('category')
             ->orderBy('category', 'ASC')
             ->findColumn('category');
+
+        $formatQuery = model(DatasetModel::class)
+            ->select('file_format')
+            ->where('status', DatasetModel::STATUS_PUBLISHED)
+            ->where('archived_at', null)
+            ->where('file_format !=', '');
+        $this->applyPublishedAccessScope($formatQuery);
+        $formats = $formatQuery
+            ->groupBy('file_format')
+            ->orderBy('file_format', 'ASC')
+            ->findColumn('file_format');
 
         return view('datasets/index', [
             'title' => 'Dataset Catalog',
@@ -60,7 +86,13 @@ class Datasets extends BaseController
             'search' => $search,
             'selectedDataType' => $dataType,
             'selectedCategory' => $category,
+            'selectedFileFormat' => $fileFormat,
+            'selectedDateUploaded' => $dateUploaded,
             'categories' => $categories ?: [],
+            'formats' => $formats ?: [],
+            'dateOptions' => $this->dateFilterOptions(),
+            'statusLabels' => DatasetModel::statusLabels(),
+            'accessOptions' => DatasetModel::accessOptions(),
             'pager' => $datasetModel->pager,
         ]);
     }
@@ -72,20 +104,20 @@ class Datasets extends BaseController
             ->select('datasets.*, users.name AS author_name')
             ->join('users', 'users.id = datasets.contributor_id', 'left')
             ->where('datasets.id', $id)
-            ->where('datasets.status', DatasetModel::STATUS_APPROVED)
-            ->where('datasets.archived_at', null)
             ->first();
 
-        if (! is_array($dataset)) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        if (! is_array($dataset) || ! $this->canViewDataset($dataset)) {
+            throw PageNotFoundException::forPageNotFound();
         }
 
-        model(DatasetViewModel::class)->insert([
-            'dataset_id' => $id,
-            'user_id' => $this->currentUserId(),
-            'viewed_at' => date('Y-m-d H:i:s'),
-            'ip_address' => $this->request->getIPAddress(),
-        ]);
+        if (($dataset['status'] ?? '') === DatasetModel::STATUS_PUBLISHED) {
+            model(DatasetViewModel::class)->insert([
+                'dataset_id' => $id,
+                'user_id' => $this->currentUserId(),
+                'viewed_at' => date('Y-m-d H:i:s'),
+                'ip_address' => $this->request->getIPAddress(),
+            ]);
+        }
 
         $latestFile = model(DatasetFileModel::class)
             ->where('dataset_id', $id)
@@ -103,6 +135,9 @@ class Datasets extends BaseController
             'viewCount' => $this->countDatasetEvents(new DatasetViewModel(), $id, 'viewed_at'),
             'downloadCount' => $this->countDatasetEvents(new DatasetDownloadModel(), $id, 'downloaded_at'),
             'canEdit' => $this->isAuthenticated() && $this->canManageDataset($dataset),
+            'isOwner' => $this->isAuthenticated() && $this->canManageDataset($dataset),
+            'statusLabel' => DatasetModel::statusLabel((string) ($dataset['status'] ?? '')),
+            'accessLabel' => DatasetModel::accessLabel((string) ($dataset['access_type'] ?? '')),
         ]);
     }
 
@@ -110,22 +145,22 @@ class Datasets extends BaseController
     {
         $dataset = model(DatasetModel::class)->find($id);
         if (! is_array($dataset)) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+            throw PageNotFoundException::forPageNotFound();
         }
 
-        $canDownload = (($dataset['status'] ?? '') === DatasetModel::STATUS_APPROVED && ($dataset['archived_at'] ?? null) === null)
+        $canDownload = (($dataset['status'] ?? '') === DatasetModel::STATUS_PUBLISHED && ($dataset['archived_at'] ?? null) === null && $this->canAccessPublishedDataset($dataset))
             || ($this->isAuthenticated() && $this->canManageDataset($dataset));
 
         if (! $canDownload) {
+            if (! $this->isAuthenticated() && ($dataset['access_type'] ?? DatasetModel::ACCESS_PUBLIC) !== DatasetModel::ACCESS_PUBLIC) {
+                return redirect()
+                    ->to('/login')
+                    ->with('error', 'Please log in to access this dataset.');
+            }
+
             return redirect()
                 ->to('/datasets')
                 ->with('error', 'That dataset is not available for download.');
-        }
-
-        if (($dataset['access_type'] ?? 'public') === 'restricted' && ! $this->isAuthenticated()) {
-            return redirect()
-                ->to('/login')
-                ->with('error', 'Please log in to download this restricted dataset.');
         }
 
         $latestFile = model(DatasetFileModel::class)
@@ -176,9 +211,10 @@ class Datasets extends BaseController
             'title' => 'Edit Dataset',
             'datasetId' => $id,
             'dataset' => $dataset,
-            'dataTypes' => ['Tabular', 'Text', 'Image', 'Audio', 'Video'],
+            'dataTypes' => ['Text', 'Image', 'Audio', 'Video', 'Tabular'],
             'sourceTypes' => ['Primary', 'Secondary'],
-            'accessTypes' => ['public', 'restricted'],
+            'accessTypes' => DatasetModel::accessOptions(),
+            'statusLabel' => DatasetModel::statusLabel((string) ($dataset['status'] ?? '')),
         ]);
     }
 
@@ -203,10 +239,11 @@ class Datasets extends BaseController
             'category' => 'required|max_length[120]',
             'tags' => 'required|max_length[255]',
             'data_type' => 'required|max_length[80]',
+            'file_format' => 'required|max_length[30]',
             'research_title' => 'required|max_length[255]',
             'project_head' => 'required|max_length[150]',
             'source_type' => 'required|max_length[80]',
-            'access_type' => 'required|in_list[public,restricted]',
+            'access_type' => 'required|in_list[public,institutional,restricted,private]',
         ];
 
         $uploadedFile = $this->request->getFile('dataset_file');
@@ -232,9 +269,9 @@ class Datasets extends BaseController
         }
 
         $newVersion = $this->incrementVersion((string) ($dataset['version'] ?? '1.0'));
-        $newStatus = $this->isAdminUser()
-            ? (string) $dataset['status']
-            : (($dataset['status'] ?? '') === DatasetModel::STATUS_APPROVED ? DatasetModel::STATUS_REVISION : (string) $dataset['status']);
+        $newStatus = (($dataset['status'] ?? '') === DatasetModel::STATUS_REVISION_REQUESTED)
+            ? DatasetModel::STATUS_PENDING
+            : (string) $dataset['status'];
 
         $datasetModel->update($id, [
             'title' => trim((string) $this->request->getPost('title')),
@@ -242,6 +279,7 @@ class Datasets extends BaseController
             'category' => trim((string) $this->request->getPost('category')),
             'tags' => trim((string) $this->request->getPost('tags')),
             'data_type' => trim((string) $this->request->getPost('data_type')),
+            'file_format' => trim((string) $this->request->getPost('file_format')),
             'access_type' => trim((string) $this->request->getPost('access_type')),
             'research_title' => trim((string) $this->request->getPost('research_title')),
             'project_head' => trim((string) $this->request->getPost('project_head')),
@@ -250,8 +288,8 @@ class Datasets extends BaseController
             'source_link' => trim((string) $this->request->getPost('source_link')),
             'version' => $newVersion,
             'status' => $newStatus,
-            'approved_at' => $newStatus === DatasetModel::STATUS_REVISION ? null : ($dataset['approved_at'] ?? null),
-            'approved_by' => $newStatus === DatasetModel::STATUS_REVISION ? null : ($dataset['approved_by'] ?? null),
+            'approved_at' => $newStatus === DatasetModel::STATUS_PENDING ? null : ($dataset['approved_at'] ?? null),
+            'approved_by' => $newStatus === DatasetModel::STATUS_PENDING ? null : ($dataset['approved_by'] ?? null),
         ]);
 
         model(DatasetVersionModel::class)->insert([
@@ -337,10 +375,12 @@ class Datasets extends BaseController
         $candidates = model(DatasetModel::class)
             ->select('datasets.*, users.name AS author_name')
             ->join('users', 'users.id = datasets.contributor_id', 'left')
-            ->where('datasets.status', DatasetModel::STATUS_APPROVED)
+            ->where('datasets.status', DatasetModel::STATUS_PUBLISHED)
             ->where('datasets.archived_at', null)
-            ->where('datasets.id !=', (int) $dataset['id'])
-            ->findAll();
+            ->where('datasets.id !=', (int) $dataset['id']);
+        $this->applyPublishedAccessScope($candidates);
+
+        $candidates = $candidates->findAll();
 
         $scored = [];
         foreach ($candidates as $candidate) {
@@ -354,5 +394,76 @@ class Datasets extends BaseController
         usort($scored, static fn (array $a, array $b): int => (int) $b['score'] <=> (int) $a['score']);
 
         return array_slice($scored, 0, 3);
+    }
+
+    /**
+     * @param array<string, mixed> $dataset
+     */
+    private function canViewDataset(array $dataset): bool
+    {
+        if ($this->isAuthenticated() && $this->canManageDataset($dataset)) {
+            return true;
+        }
+
+        return (($dataset['status'] ?? '') === DatasetModel::STATUS_PUBLISHED)
+            && (($dataset['archived_at'] ?? null) === null)
+            && $this->canAccessPublishedDataset($dataset);
+    }
+
+    /**
+     * @param array<string, mixed> $dataset
+     */
+    private function canAccessPublishedDataset(array $dataset): bool
+    {
+        $accessType = (string) ($dataset['access_type'] ?? DatasetModel::ACCESS_PUBLIC);
+
+        if ($accessType === DatasetModel::ACCESS_PUBLIC) {
+            return true;
+        }
+
+        if ($accessType === DatasetModel::ACCESS_PRIVATE) {
+            return false;
+        }
+
+        return $this->isAuthenticated();
+    }
+
+    private function applyPublishedAccessScope(object $query): void
+    {
+        if (! $this->isAuthenticated()) {
+            $query->where('datasets.access_type', DatasetModel::ACCESS_PUBLIC);
+
+            return;
+        }
+
+        $query->groupStart()
+            ->where('datasets.access_type', DatasetModel::ACCESS_PUBLIC)
+            ->orWhere('datasets.access_type', DatasetModel::ACCESS_INSTITUTIONAL)
+            ->orWhere('datasets.access_type', DatasetModel::ACCESS_RESTRICTED)
+            ->groupEnd();
+    }
+
+    private function dateFilterCutoff(string $dateUploaded): ?string
+    {
+        return match ($dateUploaded) {
+            'today' => date('Y-m-d 00:00:00'),
+            'week' => date('Y-m-d 00:00:00', strtotime('-7 days')),
+            'month' => date('Y-m-d 00:00:00', strtotime('-1 month')),
+            'year' => date('Y-m-d 00:00:00', strtotime('-1 year')),
+            default => null,
+        };
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function dateFilterOptions(): array
+    {
+        return [
+            'today' => 'Today',
+            'week' => 'This Week',
+            'month' => 'This Month',
+            'year' => 'This Year',
+        ];
     }
 }

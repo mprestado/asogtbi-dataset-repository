@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\RoleModel;
+use App\Models\PasswordResetModel;
 use App\Models\UserModel;
 use App\Models\UserRoleModel;
 
@@ -13,13 +14,12 @@ class Auth extends BaseController
         return view('auth/login', [
             'title' => 'Login',
             'demoAccounts' => [
-                ['role' => 'Admin', 'email' => 'admin@example.test', 'password' => 'change-me'],
                 ['role' => 'User', 'email' => 'user@example.test', 'password' => 'change-me'],
             ],
             'loginChecks' => [
                 'Email and password authentication for MVP-FR-01 and MVP-FR-02.',
                 'Seeded demo accounts exist for local walkthroughs after migrations and seeding.',
-                'Inactive-account blocking and route guards still need implementation work.',
+                'Inactive accounts are blocked before a session is created.',
             ],
         ]);
     }
@@ -68,7 +68,7 @@ class Auth extends BaseController
         $this->recordAudit('login', 'user', (int) $user['id'], 'User logged into the repository.');
 
         return redirect()
-            ->to($role === 'admin' ? '/admin' : '/dashboard')
+            ->to('/dashboard')
             ->with('info', 'Welcome back, ' . $user['name'] . '.');
     }
 
@@ -78,11 +78,125 @@ class Auth extends BaseController
             'title' => 'Register',
             'requiredFields' => ['Name', 'Email', 'Password'],
             'registerNotes' => [
-                'The MVP allows registration or administrator-created accounts.',
+                'The user-facing MVP supports self-registration for contributors.',
                 'Passwords must remain hashed before persistence.',
-                'Role assignment and activation should stay visible to administrators.',
+                'New accounts receive the User role for browsing, citation, download, upload, update, and archive flows.',
             ],
         ]);
+    }
+
+    public function forgotPassword(): string
+    {
+        return view('auth/forgot_password', [
+            'title' => 'Forgot Password',
+        ]);
+    }
+
+    public function sendResetLink()
+    {
+        $rules = [
+            'email' => 'required|valid_email',
+        ];
+
+        if (! $this->validate($rules)) {
+            $token = rawurlencode((string) $this->request->getPost('token'));
+            $email = rawurlencode((string) $this->request->getPost('email'));
+
+            return redirect()
+                ->to('/reset-password?token=' . $token . '&email=' . $email)
+                ->withInput()
+                ->with('error', implode(' ', $this->validator->getErrors()));
+        }
+
+        $email = trim((string) $this->request->getPost('email'));
+        $user = model(UserModel::class)->where('email', $email)->first();
+
+        if (is_array($user) && ($user['status'] ?? 'inactive') === 'active') {
+            $token = bin2hex(random_bytes(32));
+            $tokenHash = hash('sha256', $token);
+
+            model(PasswordResetModel::class)->insert([
+                'email' => $email,
+                'token_hash' => $tokenHash,
+                'expires_at' => date('Y-m-d H:i:s', strtotime('+30 minutes')),
+            ]);
+
+            if (ENVIRONMENT === 'development') {
+                $this->session->setFlashdata('reset_link', site_url('reset-password?token=' . $token . '&email=' . rawurlencode($email)));
+            }
+        }
+
+        return redirect()
+            ->to('/forgot-password')
+            ->with('info', 'If that active account exists, a password reset link has been prepared.');
+    }
+
+    public function resetPassword(): string
+    {
+        $token = trim((string) $this->request->getGet('token'));
+        $email = trim((string) $this->request->getGet('email'));
+
+        if ($token === '' || $email === '' || ! $this->isValidPasswordResetToken($email, $token)) {
+            return view('auth/reset_password', [
+                'title' => 'Reset Password',
+                'token' => '',
+                'email' => '',
+                'isValidToken' => false,
+            ]);
+        }
+
+        return view('auth/reset_password', [
+            'title' => 'Reset Password',
+            'token' => $token,
+            'email' => $email,
+            'isValidToken' => true,
+        ]);
+    }
+
+    public function updatePassword()
+    {
+        $rules = [
+            'email' => 'required|valid_email',
+            'token' => 'required',
+            'password' => 'required|min_length[8]',
+            'password_confirm' => 'required|matches[password]',
+        ];
+
+        if (! $this->validate($rules)) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', implode(' ', $this->validator->getErrors()));
+        }
+
+        $email = trim((string) $this->request->getPost('email'));
+        $token = trim((string) $this->request->getPost('token'));
+        $reset = $this->findValidPasswordReset($email, $token);
+
+        if (! is_array($reset)) {
+            return redirect()
+                ->to('/forgot-password')
+                ->with('error', 'That password reset link is invalid or expired.');
+        }
+
+        $user = model(UserModel::class)->where('email', $email)->first();
+        if (! is_array($user)) {
+            return redirect()
+                ->to('/forgot-password')
+                ->with('error', 'That password reset link is invalid or expired.');
+        }
+
+        model(UserModel::class)->update((int) $user['id'], [
+            'password_hash' => password_hash((string) $this->request->getPost('password'), PASSWORD_DEFAULT),
+        ]);
+        model(PasswordResetModel::class)->update((int) $reset['id'], [
+            'used_at' => date('Y-m-d H:i:s'),
+        ]);
+        $this->recordAudit('password_reset', 'user', (int) $user['id'], 'User password was reset.');
+
+        return redirect()
+            ->to('/login')
+            ->with('info', 'Password updated. You can now log in.');
     }
 
     public function attemptRegister()
@@ -154,5 +268,27 @@ class Auth extends BaseController
             ->first();
 
         return is_array($roleRow) ? (string) ($roleRow['name'] ?? 'user') : 'user';
+    }
+
+    private function isValidPasswordResetToken(string $email, string $token): bool
+    {
+        return is_array($this->findValidPasswordReset($email, $token));
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function findValidPasswordReset(string $email, string $token): ?array
+    {
+        $tokenHash = hash('sha256', $token);
+        $reset = model(PasswordResetModel::class)
+            ->where('email', $email)
+            ->where('token_hash', $tokenHash)
+            ->where('used_at', null)
+            ->where('expires_at >=', date('Y-m-d H:i:s'))
+            ->orderBy('created_at', 'DESC')
+            ->first();
+
+        return is_array($reset) ? $reset : null;
     }
 }

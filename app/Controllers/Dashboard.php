@@ -3,34 +3,36 @@
 namespace App\Controllers;
 
 use App\Models\DatasetModel;
-use App\Models\UserModel;
 
 class Dashboard extends BaseController
 {
     public function index(): string
     {
         $datasetModel = new DatasetModel();
-        $userModel = new UserModel();
+        $userId = (int) $this->currentUserId();
+        $myDatasets = $datasetModel
+            ->where('contributor_id', $userId)
+            ->orderBy('created_at', 'DESC')
+            ->findAll();
 
         return view('dashboard/index', [
-            'title' => 'Dashboard',
-            'approvedCount' => $datasetModel
-                ->where('status', DatasetModel::STATUS_APPROVED)
-                ->where('archived_at', null)
-                ->countAllResults(),
-            'pendingCount' => $datasetModel
-                ->where('status', DatasetModel::STATUS_PENDING)
-                ->countAllResults(),
-            'userCount' => $userModel->countAllResults(),
-            'recentDatasets' => $datasetModel
-                ->select('title, category, data_type, status, created_at')
-                ->orderBy('created_at', 'DESC')
-                ->findAll(5),
-            'mvpAreas' => [
-                'Authentication and role-aware access',
-                'Dataset submission with required metadata and ZIP upload',
-                'Approved dataset discovery through search and filtering',
-                'Citation, download, update, archive, and recommendations',
+            'title' => 'My Datasets',
+            'myDatasets' => $myDatasets,
+            'statusLabels' => DatasetModel::statusLabels(),
+            'statusCounts' => [
+                'published' => model(DatasetModel::class)
+                    ->where('contributor_id', $userId)
+                    ->where('status', DatasetModel::STATUS_PUBLISHED)
+                    ->where('archived_at', null)
+                    ->countAllResults(),
+                'pending' => model(DatasetModel::class)
+                    ->where('contributor_id', $userId)
+                    ->where('status', DatasetModel::STATUS_PENDING)
+                    ->countAllResults(),
+                'needsRevision' => model(DatasetModel::class)
+                    ->where('contributor_id', $userId)
+                    ->where('status', DatasetModel::STATUS_REVISION_REQUESTED)
+                    ->countAllResults(),
             ],
         ]);
     }

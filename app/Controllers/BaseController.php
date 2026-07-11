@@ -60,17 +60,12 @@ abstract class BaseController extends Controller
         return $this->currentUserId() !== null;
     }
 
-    protected function isAdminUser(): bool
-    {
-        return $this->currentRole() === 'admin';
-    }
-
     /**
      * @param array<string, mixed> $dataset
      */
     protected function canManageDataset(array $dataset): bool
     {
-        return $this->isAdminUser() || (int) ($dataset['contributor_id'] ?? 0) === $this->currentUserId();
+        return (int) ($dataset['contributor_id'] ?? 0) === $this->currentUserId();
     }
 
     protected function recordAudit(string $action, ?string $entityType = null, ?int $entityId = null, ?string $details = null): void
