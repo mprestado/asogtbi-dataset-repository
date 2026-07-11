@@ -1,89 +1,60 @@
-# Rapid MVP Independent Task Tracker
+# Rapid MVP Community Task Board
 
-This tracker replaces the older 90-task plan for the `rapid-mvp` branch. The old tracker was useful for planning, but it included Admin Portal screens, approval workflows, Google auth decisions, and broad UI/backend work that no longer fit the time constraint.
+This is the task board for the `rapid-mvp` branch. It is meant to be copied into a shared sheet where teammates can claim rows, update status, and show evidence.
 
-Use this file as the handoff board for teammates and agents. Each task is designed for one person to complete with minimal coordination.
+The old tracker mixed setup chores, broad planning items, Admin Portal work, and future features. This version focuses on concrete product outcomes. A teammate should be able to read one row and understand what to build or verify without a meeting.
 
-## Working Rules
+## Board Columns
 
-- Read `README.md`, `SETUP.md`, `docs/CONTEXT.md`, and `docs/DESIGN.md` before starting.
-- Pick one task, create one feature branch, and keep the change scoped to the listed files.
-- Ask for help only when blocked by missing credentials, unclear product scope, broken local setup, or a cross-task conflict.
-- Do not add Admin Portal screens, approval controls, reviewer queues, user management, audit-log viewers, backups, reports, or restricted-access approval workflows in this branch.
-- Leave evidence in the PR: screenshots for UI changes, command output for tests/migrations, and a short manual test note.
-- If a task grows past one day, split it and finish the smallest useful version first.
+Use these columns in the sheet:
 
-## Current MVP Baseline
+- `ID`
+- `Status` - Not Started, In Progress, Review, Done, Blocked
+- `Priority` - High, Medium, Low
+- `Feature / Outcome`
+- `Task`
+- `Assignee`
+- `Files / Area`
+- `Definition of Done`
+- `Evidence`
+- `Notes / Blockers`
 
-Already present in `rapid-mvp`:
+## Rules For Updating Status
 
-- Public/user website scope with Admin Portal boundary documented.
-- ASOG TBI styled layout, home, browse, detail, upload, edit, login, register, password reset, and My Datasets pages.
-- Browse Preview modal and detail-page download flow.
-- Dataset upload starts as Pending Review.
-- Metadata citation, BibTeX, view logging, download logging, audit logging, and basic recommendations.
-- CSRF enabled globally.
-- Idempotent `MvpSeeder`.
-- PHP 8.2+ compatible setup; local verification passed on PHP 8.5.7.
-- Basic contract tests.
+- Move to `In Progress` only when someone is actively working on it.
+- Move to `Review` only when there is a branch, commit, or PR with evidence.
+- Move to `Done` only when the Definition of Done is met and another teammate can reproduce or inspect it.
+- Use `Blocked` only when the task cannot continue without a decision, credential, missing file, or another task finishing first.
+- Do not add Admin Portal tasks here. Approval/rejection, reviewer queues, user management, audit-log viewers, backups, reports, and access-request approvals belong to the separate Admin Portal.
 
-## Task Status Legend
+## Feature Tasks
 
-- `Ready` means one person can start without a meeting.
-- `Blocked` means the task needs external credentials, policy, or Admin Portal work.
-- `Future` means do not build it in this branch.
+| ID | Status | Priority | Feature / Outcome | Task | Assignee | Files / Area | Definition of Done | Evidence | Notes / Blockers |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| RMVP-01 | Not Started | High | Browse results feel clear and usable. | Review the Browse Datasets page and improve spacing, result density, empty state, active filter visibility, and mobile layout without changing the core route behavior. |  | `app/Views/datasets/index.php`, `public/assets/css/app.css` | Guest and logged-in browse pages are readable on desktop and mobile; filters do not dominate results; empty state is clear. | Desktop and mobile screenshots. | Do not add Admin filters. |
+| RMVP-02 | Not Started | High | Dataset Preview behaves like a real preview. | Polish the preview modal content, focus behavior, close behavior, and responsive layout so users can scan metadata before opening the detail page. |  | `app/Views/datasets/index.php`, `public/assets/css/app.css` | Preview opens from each result, closes by button/backdrop/Escape, returns focus to the trigger, and does not overlap or clip content. | Short screen recording or screenshots. | Keep download out of preview. |
+| RMVP-03 | Not Started | High | Detail page encourages citation before download. | Improve the dataset detail sidebar and citation area so metadata, citation, BibTeX, and Download ZIP are easy to find in the right order. |  | `app/Views/datasets/show.php`, `public/assets/css/app.css` | Citation and BibTeX are visible before or near download; Download ZIP remains on detail page only; recommendations still render. | Screenshot plus manual download check. | Do not re-add browse direct download. |
+| RMVP-04 | Not Started | Medium | Citation text is easy to reuse. | Add copy-to-clipboard buttons for plain citation and BibTeX with visible success feedback. |  | `app/Views/datasets/show.php`, `public/assets/css/app.css` | Both copy buttons copy the correct text and show a short confirmation. | Manual test note and screenshot. | Keep JavaScript small and local or shared. |
+| RMVP-05 | Not Started | High | Upload form is contributor-friendly. | Improve upload form labels, helper text, validation display, anonymization confirmation, and file guidance. |  | `app/Views/upload/create.php`, `app/Controllers/DatasetUpload.php`, `public/assets/css/app.css` | A new contributor can understand required metadata and ZIP upload rules; invalid submission errors are specific and readable. | Screenshots for normal and validation-error states. | Upload must still create Pending Review. |
+| RMVP-06 | Not Started | High | My Datasets clearly shows ownership and status. | Improve My Datasets cards so status, access type, edit/archive actions, and next step are obvious. |  | `app/Views/dashboard/index.php`, `public/assets/css/app.css` | Owner can distinguish Published, Pending Review, Revision Requested, Rejected, and Archived items at a glance. | Screenshot with seeded or test records. | Status is display-only. |
+| RMVP-07 | Not Started | Medium | Edit/update flow explains review impact. | Improve the edit page copy and states so contributors know when changes preserve status versus return to Pending Review. |  | `app/Views/datasets/edit.php`, `app/Controllers/Datasets.php` | Edit form communicates versioning and review impact; update still increments version and respects owner-only access. | Manual edit test note. | Do not add approve/reject controls. |
+| RMVP-08 | Not Started | High | Password reset is locally auditable. | Verify and refine forgot-password/reset-password pages, invalid token state, expired token state, and success messages. |  | `app/Views/auth/forgot_password.php`, `app/Views/auth/reset_password.php`, `app/Controllers/Auth.php` | Active account can request reset in development, use displayed link, change password, and log in with the new password; invalid token shows a clear message. | Manual test note with routes checked. | Email sending remains out of scope. |
+| RMVP-09 | Not Started | Medium | Login and registration feel polished. | Review login/register forms for labels, autocomplete, helper copy, validation errors, and mobile layout. |  | `app/Views/auth/login.php`, `app/Views/auth/register.php`, `public/assets/css/app.css` | Login/register are clear on desktop and mobile; errors are readable; seeded account remains visible for local demo. | Screenshots and one failed-login test note. | Do not switch to Google auth. |
+| RMVP-10 | Not Started | High | Dataset access rules are protected by tests. | Add feature tests for guest browse, logged-in browse, detail access, private/restricted access behavior, and detail-page download. |  | `tests/`, `app/Controllers/Datasets.php` only if bug fix needed | Tests pass and cover public, institutional, restricted, private, archived, and non-published cases. | `composer test` output. | Prefer tests before controller changes. |
+| RMVP-11 | Not Started | High | Contributor lifecycle is protected by tests. | Add feature tests for upload, owner edit, version increment, owner archive, and non-owner denial. |  | `tests/`, upload/dataset controllers only if bug fix needed | Tests prove contributor can manage own datasets but not others; upload starts Pending Review; archive removes from public browse. | `composer test` output. | Use temporary uploaded ZIP fixtures. |
+| RMVP-12 | Not Started | Medium | Demo data supports UI review. | Expand `MvpSeeder` to include records for all useful public/user states and access labels without duplicating rows when rerun. |  | `app/Database/Seeds/MvpSeeder.php` | Seeder can be run repeatedly; demo includes enough records to inspect access labels and owner statuses. | `php spark db:seed MvpSeeder` plus screenshots. | Do not seed admin users. |
+| RMVP-13 | Not Started | Medium | Validation rules are consistent. | Review controller/model validation for dataset metadata, access type, ZIP upload, password fields, and required fields. |  | `app/Controllers/`, `app/Models/` | Invalid input is rejected with clear messages; status/access values remain closed sets. | Test output or manual validation notes. | Keep scope to user-facing flows. |
+| RMVP-14 | Not Started | Medium | Recommendations are understandable. | Improve recommendation display with category/type context and verify recommendation candidates respect access and published status. |  | `app/Views/datasets/show.php`, `app/Controllers/Datasets.php`, `app/Helpers/recommendation_helper.php` | Similar datasets are relevant enough for MVP and never show unauthorized/archived/rejected records. | Screenshot and test/manual note. | No AI/ML recommender in this branch. |
+| RMVP-15 | Not Started | Medium | Public homepage communicates the product. | Review home page sections, featured datasets, partner logos, calls to action, and mobile layout. |  | `app/Views/home/index.php`, `app/Controllers/Home.php`, `public/assets/css/app.css` | Home page explains browse/upload value, shows real seeded/Published data, and is visually consistent. | Desktop and mobile screenshots. | Avoid marketing-only content. |
+| RMVP-16 | Not Started | Medium | App shell is consistent. | Review header, mobile nav, footer, active links, flash notices, and authenticated/guest states. |  | `app/Views/layouts/main.php`, `public/assets/css/app.css` | Navigation works for guest and logged-in users; logout form works with CSRF; notices are readable. | Screenshots for guest and logged-in nav. | Keep Admin links out. |
+| RMVP-17 | Not Started | Low | Accessibility basics are covered. | Check labels, keyboard focus, modal behavior, contrast, form errors, and skip/screen-reader utility classes. |  | Views and CSS | Main flows can be navigated by keyboard; form fields have labels; modal focus and close behavior are acceptable. | Accessibility checklist notes. | No full WCAG audit required. |
+| RMVP-18 | Not Started | Low | Handoff docs are teammate-ready. | Improve README/SETUP/TASKS wording only where a new teammate would be confused after reading once. |  | `README.md`, `SETUP.md`, `TASKS.md`, `docs/` | A teammate can clone, configure, migrate, seed, run, test, and choose a task without asking for chat history. | Reviewer note or doc diff. | Keep docs short. |
+| RMVP-19 | Not Started | Low | Deployment checklist exists. | Add a deploy checklist for school/shared hosting: PHP version, web root, writable folders, env, database, migrations, HTTPS, and seed policy. |  | `docs/DEPLOYMENT.md`, maybe `SETUP.md` | Checklist exists and separates local dev from deployment. | Link to doc. | Do not deploy from this task. |
+| RMVP-20 | Not Started | Low | Branch audit is repeatable. | Create a short audit template teammates can paste into PRs after testing their task. |  | `docs/` or `TASKS.md` | Template includes what changed, screenshots/tests, manual route checks, and known limits. | Template committed. | Keep it lightweight. |
 
-## Independent Goals
+## Descoped From This Board
 
-| ID | Status | Priority | Goal | Primary Owner | Touch Area | Dependencies | Evidence Required |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| RMVP-01 | Ready | High | Run local setup and smoke test from a fresh clone. | One tester | `README.md`, `SETUP.md`, local `.env` | PHP 8.2+, MySQL | Notes confirming `composer install`, `php spark migrate`, `php spark db:seed MvpSeeder`, `composer test`, and key pages load. |
-| RMVP-02 | Ready | High | Add feature tests for auth and password reset. | One backend dev | `tests/`, `app/Controllers/Auth.php` only if needed | Existing password reset flow | Passing tests for login, invalid login, forgot-password request, invalid reset token, valid reset token, and password update. |
-| RMVP-03 | Ready | High | Add feature tests for browse, detail, and download access rules. | One backend dev | `tests/`, `app/Controllers/Datasets.php` only if needed | Seeded datasets | Passing tests showing guests see public Published datasets, logged-in users see allowed datasets, browse has no direct download, detail download works, unauthorized private access fails. |
-| RMVP-04 | Ready | High | Add feature tests for upload, update, and archive owner flows. | One backend dev | `tests/`, `app/Controllers/DatasetUpload.php`, `app/Controllers/Datasets.php` only if needed | Auth test helpers | Passing tests for ZIP upload, Pending Review status, owner edit, version increment, and archive removal from browse. |
-| RMVP-05 | Ready | Medium | Improve empty, error, and success states across public/user pages. | One UI dev | `app/Views/`, `public/assets/css/app.css` | Current design docs | Screenshots for empty browse, empty My Datasets, upload validation error, successful upload/update/archive, and missing file download error. |
-| RMVP-06 | Ready | Medium | Polish mobile responsiveness for browse, preview modal, upload, and detail. | One UI dev | `app/Views/datasets/`, `app/Views/upload/`, `public/assets/css/app.css` | Current UI baseline | Mobile screenshots at 375px and desktop screenshots at 1440px; no overlap, clipped text, or unusable controls. |
-| RMVP-07 | Ready | Medium | Add copy-to-clipboard buttons for plain citation and BibTeX. | One UI dev | `app/Views/datasets/show.php`, `public/assets/css/app.css` | Existing citation helpers | Detail page screenshot and manual note confirming both copy buttons work. |
-| RMVP-08 | Ready | Medium | Strengthen model validation and constants. | One backend dev | `app/Models/`, `app/Controllers/` validation blocks | Current schema | Tests or lint output confirming access/status values remain closed sets and validation messages are user-safe. |
-| RMVP-09 | Ready | Medium | Add structured seed data for all access/status display cases. | One backend dev | `app/Database/Seeds/MvpSeeder.php`, maybe tests | Current migrations | Rerunnable seeder; demo records for Public, Institutional, Restricted, Private, Pending Review, Revision Requested, Published, Rejected, and Archived owner views. |
-| RMVP-10 | Ready | Low | Improve README handoff with screenshots or a short walkthrough section. | One docs owner | `README.md`, `docs/` | App running locally | README has a concise walkthrough, known limits, and screenshot links or paths. |
-| RMVP-11 | Ready | Low | Add a deployment checklist for shared hosting or school server use. | One ops/docs owner | `docs/DEPLOYMENT.md`, `SETUP.md` | Target hosting info if available | Checklist covers PHP version, web root, writable folders, `.env`, database, migrations, seed policy, and HTTPS. |
-| RMVP-12 | Ready | Low | Review accessibility basics. | One UI/tester | Views and CSS only | App running locally | Notes for keyboard navigation, visible focus, modal close behavior, labels, contrast, and form errors. |
-
-## Manual Audit Script
-
-Use this sequence before a handoff PR is accepted:
-
-```powershell
-php -v
-composer install
-php spark migrate
-php spark db:seed MvpSeeder
-php spark routes
-composer test
-php spark serve
-```
-
-Then manually verify:
-
-- Home loads.
-- Browse loads as guest.
-- Preview opens and closes by button, backdrop, and Escape.
-- Dataset title opens the detail page.
-- `Details & Download` opens the detail page.
-- Detail page shows description, metadata, citation, BibTeX, recommendations, and Download ZIP.
-- Download ZIP works only from the detail page flow.
-- Registration works.
-- Login works with `user@example.test` / `change-me`.
-- Forgot password shows a development reset link when `CI_ENVIRONMENT = development`.
-- My Datasets shows owner submissions.
-- Upload creates a Pending Review dataset.
-- Edit updates metadata and increments version.
-- Archive removes the dataset from public browse.
-
-## Descoped From This Branch
-
-Move these to the separate Admin Portal or a later project. Do not build them in `rapid-mvp`:
+These should not be assigned in this `rapid-mvp` sheet:
 
 - Admin dashboard.
 - Dataset approval/rejection/revision controls.
@@ -96,14 +67,3 @@ Move these to the separate Admin Portal or a later project. Do not build them in
 - Google school-email authentication.
 - Email delivery for password reset.
 - AI/ML recommendations beyond the current metadata scoring.
-
-## Quick Assignment Model
-
-For least interaction, assign by lane:
-
-- Backend tester: RMVP-02, RMVP-03, RMVP-04.
-- UI finisher: RMVP-05, RMVP-06, RMVP-07, RMVP-12.
-- Data/schema owner: RMVP-08, RMVP-09.
-- Docs/ops owner: RMVP-01, RMVP-10, RMVP-11.
-
-Each lane can work independently. Coordination is only needed if two people touch the same controller/view at the same time.
