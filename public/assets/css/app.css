@@ -810,6 +810,57 @@ img {
     margin-top: 24px;
 }
 
+.citation-card {
+    width: min(720px, 100%);
+}
+
+.citation-card h2 {
+    margin-bottom: 28px;
+}
+
+.citation-format + .citation-format {
+    margin-top: 24px;
+}
+
+.citation-format-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.citation-format h3 {
+    margin: 0;
+    color: var(--navy);
+    font-size: 18px;
+}
+
+.copy-citation {
+    padding: 8px 14px;
+    font-size: 12px;
+}
+
+.citation-output {
+    margin: 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--off);
+    padding: 16px;
+    color: var(--navy-ink);
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.citation-output--bibtex {
+    border-color: #0f3f62;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
 .grid {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
