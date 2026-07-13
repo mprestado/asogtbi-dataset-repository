@@ -1,6 +1,15 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
+<?php
+    $citationDataset = [
+        'title' => $dataset['title'],
+        'author' => $dataset['author_name'] ?? '',
+        'year' => ! empty($dataset['created_at']) ? date('Y', strtotime($dataset['created_at'])) : date('Y'),
+    ];
+    $plainTextCitation = dataset_citation($citationDataset);
+    $bibtexCitation = dataset_bibtex($citationDataset);
+?>
 <section class="hero-panel">
     <div class="shell">
         <p class="eyebrow">Dataset Detail</p>
@@ -70,6 +79,15 @@
         </dl>
         <div class="actions">
             <a class="button" href="<?= site_url('datasets/' . $datasetId . '/download') ?>">Download ZIP</a>
+            <button
+                class="button gold citation-trigger"
+                type="button"
+                data-citation-target="dataset-citation-<?= esc((string) $datasetId) ?>"
+                aria-controls="dataset-citation-<?= esc((string) $datasetId) ?>"
+                aria-expanded="false"
+            >
+                Cite
+            </button>
             <?php if (! empty($canEdit)): ?>
                 <a class="button secondary" href="<?= site_url('datasets/' . $datasetId . '/edit') ?>">Edit</a>
             <?php endif; ?>
@@ -79,24 +97,6 @@
 
 <section class="shell content-section">
     <div class="grid">
-        <div class="panel">
-            <p class="tag">Citation</p>
-            <h2>Plain text</h2>
-            <pre><?= esc(dataset_citation([
-                'title' => $dataset['title'],
-                'author' => $dataset['author_name'] ?? '',
-                'year' => ! empty($dataset['created_at']) ? date('Y', strtotime($dataset['created_at'])) : date('Y'),
-            ])) ?></pre>
-        </div>
-        <div class="panel">
-            <p class="tag">Citation</p>
-            <h2>BibTeX</h2>
-            <pre><?= esc(dataset_bibtex([
-                'title' => $dataset['title'],
-                'author' => $dataset['author_name'] ?? '',
-                'year' => ! empty($dataset['created_at']) ? date('Y', strtotime($dataset['created_at'])) : date('Y'),
-            ])) ?></pre>
-        </div>
         <div class="panel">
             <p class="tag">Recommendations</p>
             <h2>Similar datasets</h2>
@@ -115,4 +115,81 @@
         </div>
     </div>
 </section>
+
+<div class="preview-modal citation-modal" id="dataset-citation-<?= esc((string) $datasetId) ?>" role="dialog" aria-modal="true" aria-labelledby="citation-modal-title-<?= esc((string) $datasetId) ?>" hidden>
+    <div class="preview-backdrop" data-citation-close></div>
+    <article class="preview-card citation-card" tabindex="-1">
+        <button class="preview-close" type="button" data-citation-close aria-label="Close citations">&times;</button>
+        <p class="tag">Citation</p>
+        <h2 id="citation-modal-title-<?= esc((string) $datasetId) ?>">Cite this dataset</h2>
+
+        <section class="citation-format" aria-labelledby="plain-text-citation-title">
+            <div class="citation-format-head">
+                <h3 id="plain-text-citation-title">Plain text</h3>
+                <button class="button copy-citation" type="button" data-copy-citation="plain-text-citation-<?= esc((string) $datasetId) ?>">Copy Citation</button>
+            </div>
+            <pre id="plain-text-citation-<?= esc((string) $datasetId) ?>" class="citation-output"><?= esc($plainTextCitation) ?></pre>
+        </section>
+
+        <section class="citation-format" aria-labelledby="bibtex-citation-title">
+            <div class="citation-format-head">
+                <h3 id="bibtex-citation-title">BibTeX</h3>
+                <button class="button copy-citation" type="button" data-copy-citation="bibtex-citation-<?= esc((string) $datasetId) ?>">Copy BibTeX</button>
+            </div>
+            <pre id="bibtex-citation-<?= esc((string) $datasetId) ?>" class="citation-output citation-output--bibtex"><?= esc($bibtexCitation) ?></pre>
+        </section>
+    </article>
+</div>
+
+<script>
+    document.querySelectorAll('.citation-trigger').forEach((trigger) => {
+        trigger.addEventListener('click', () => {
+            const modal = document.getElementById(trigger.dataset.citationTarget);
+            if (!modal) return;
+
+            modal.hidden = false;
+            document.body.classList.add('preview-open');
+            trigger.setAttribute('aria-expanded', 'true');
+            modal.querySelector('.citation-card')?.focus();
+        });
+    });
+
+    const closeCitation = (modal) => {
+        if (!modal) return;
+
+        const trigger = document.querySelector(`[data-citation-target="${modal.id}"]`);
+        modal.hidden = true;
+        document.body.classList.remove('preview-open');
+        trigger?.setAttribute('aria-expanded', 'false');
+        trigger?.focus();
+    };
+
+    document.querySelectorAll('[data-citation-close]').forEach((control) => {
+        control.addEventListener('click', () => closeCitation(control.closest('.citation-modal')));
+    });
+
+    document.querySelectorAll('[data-copy-citation]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            const citation = document.getElementById(button.dataset.copyCitation)?.textContent;
+            if (!citation) return;
+
+            const originalLabel = button.textContent;
+            try {
+                await navigator.clipboard.writeText(citation.trim());
+                button.textContent = 'Copied';
+            } catch (error) {
+                button.textContent = 'Copy failed';
+            }
+
+            window.setTimeout(() => { button.textContent = originalLabel; }, 1600);
+        });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') return;
+
+        const openModal = document.querySelector('.citation-modal:not([hidden])');
+        if (openModal) closeCitation(openModal);
+    });
+</script>
 <?= $this->endSection() ?>
