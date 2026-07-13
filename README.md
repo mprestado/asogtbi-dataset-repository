@@ -1,58 +1,34 @@
 # ASOG TBI Dataset Repository
 
-This repository is the `rapid-mvp` branch of the ASOG TBI Dataset Repository: a public and user-facing CodeIgniter 4 + MySQL website for browsing, citing, downloading, and contributing institutional datasets.
+The `rapid-mvp` branch is a unified CodeIgniter 4 and MySQL repository for public dataset discovery, contributor submissions, two-stage institutional verification, and administrator-controlled publication.
 
-The goal of this branch is a working rapid MVP that teammates can audit and build on. Keep the implementation pragmatic, runnable, and clear. Avoid speculative architecture and do not add Admin Portal screens here.
+## Included Workspaces
 
-## Branch Scope
+- Public catalog, search, filters, dataset details, citation, recommendations, and protected downloads
+- Contributor registration, upload, version updates, revision responses, status notifications, and self-archive
+- Research Ethics review with administrator assignment and a required compliance checklist
+- Technical review with protected ZIP access and a required manual verification checklist
+- Repository administration for reviewer assignment, final publication, access classification, users, roles, archive/restore, review history, and audit logs
 
-Build and maintain only these public/user-facing flows:
+Only non-archived `published` datasets appear publicly. New and updated submissions move through:
 
-- Home
-- Login, registration, logout, and password reset
-- Browse/search/filter Published datasets
-- Dataset preview modal from browse results
-- Dataset detail pages with citation and BibTeX
-- Detail-page download flow with download logging
-- Upload Dataset
-- My Datasets
-- Update own datasets
-- Self-archive own datasets
-- Metadata-based similar dataset recommendations
+```text
+Pending Ethics -> Pending Technical -> Awaiting Publication -> Published
+       |                  |
+       +-> Revision       +-> Revision
+       +-> Rejected       +-> Rejected
+```
 
-Do not build these in this repository:
+Revision resubmissions return to the same stage. Updates to published datasets restart ethics review.
 
-- Admin dashboard
-- Reviewer dashboard
-- Approval or rejection controls
-- User management
-- Audit-log viewer
-- Backup controls
-- Reports
-- Restricted access request approval workflow
+## Documentation
 
-Those belong to a separate Admin Portal application that shares the database. This website may read shared fields such as `status`, `approved_by`, and `approved_at`, but it should not provide admin/reviewer controls.
-
-## Documentation For Humans And Agents
-
-Read these first:
-
-- [SETUP.md](SETUP.md) - local setup, database charset/collation, migrations, seed data, and run commands.
-- [docs/CONTEXT.md](docs/CONTEXT.md) - product scope and Admin Portal boundary.
-- [docs/DESIGN.md](docs/DESIGN.md) - ASOG TBI visual system.
-- [docs/SKILL.md](docs/SKILL.md) - concise agent instructions for applying the scope and design.
-
-Task assignment and progress tracking live in the team's Google Sheets task tracker, not in this repository.
-
-The older planning documents were removed from this branch because they conflicted with the Admin Portal split.
-
-## Tech Stack
-
-- CodeIgniter 4
-- PHP 8.2 or newer
-- MySQL or MariaDB
-- Composer
-- XAMPP, Laragon, WAMP, or another local PHP/MySQL stack
+- [SETUP.md](SETUP.md) contains installation, migrations, demo accounts, and the review walkthrough.
+- [docs/CONTEXT.md](docs/CONTEXT.md) defines roles, workflow rules, and deferred scope.
+- [docs/DESIGN.md](docs/DESIGN.md) defines the shared public and governance visual language.
+- [docs/SKILL.md](docs/SKILL.md) gives agents implementation guardrails.
+- [docs/progress.md](docs/progress.md) is the append-only implementation and verification ledger.
+- [Database-Repo-SRS.md](Database-Repo-SRS.md) remains the full requirements source.
 
 ## Quick Start
 
@@ -60,81 +36,13 @@ The older planning documents were removed from this branch because they conflict
 composer install
 Copy-Item .env.example .env
 php spark key:generate
-```
-
-Create the database with the expected character set and collation:
-
-```sql
-CREATE DATABASE asog_dataset_repo
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-```
-
-Set the local database values in `.env`:
-
-```ini
-CI_ENVIRONMENT = development
-app.baseURL = 'http://localhost:8080/'
-
-database.default.hostname = localhost
-database.default.database = asog_dataset_repo
-database.default.username = root
-database.default.password =
-database.default.DBDriver = MySQLi
-database.default.DBPrefix =
-database.default.charset = utf8mb4
-database.default.DBCollat = utf8mb4_unicode_ci
-database.default.port = 3306
-```
-
-Then run:
-
-```powershell
 php spark migrate
 php spark db:seed MvpSeeder
 php spark serve
 ```
 
-Open:
+The application requires PHP 8.2 or newer. Uploaded ZIP files stay under `writable/uploads/` and must never be served directly from `public/`.
 
-```text
-http://localhost:8080
-```
+## Deferred
 
-Demo account after seeding:
-
-```text
-Email: user@example.test
-Password: change-me
-```
-
-## Rapid MVP Notes
-
-- Uploaded dataset ZIP files are stored under `writable/uploads/`, not `public/`.
-- Browse results use a Preview modal. Downloads are intentionally available from the dataset detail page so citation and metadata are seen first.
-- Password reset stores a hashed, expiring token. Email delivery is not configured in this branch; in `development`, the reset link is shown after a valid reset request.
-- CSRF protection is enabled globally, and forms should include `csrf_field()`.
-- Tests are still light. Treat manual smoke testing as required until feature tests are added.
-
-## Useful Commands
-
-```powershell
-php -v
-composer install
-php spark routes
-php spark migrate:status
-composer test
-```
-
-Run syntax checks on touched PHP files:
-
-```powershell
-php -l app/Controllers/Auth.php
-php -l app/Controllers/Datasets.php
-```
-
-## MVP Rule
-
-Every change should answer one question: does this help the team demo and audit the working public/user-facing MVP?
-
-If the answer is no, record it in the team's Google Sheets task tracker as a later follow-up instead of adding it now.
+Automated ZIP diagnostics, malware scanning, email delivery, browser-driven backup/restore, advanced reports, restricted-access request approval, and generalized notifications remain outside this release.

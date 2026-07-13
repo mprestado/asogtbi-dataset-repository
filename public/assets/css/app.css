@@ -1269,3 +1269,63 @@ pre {
         width: 100%;
     }
 }
+
+/* Integrated governance portal */
+.portal-body { margin: 0; background: #f3efe6; color: var(--navy, #0b1f33); font-family: "DM Sans", sans-serif; }
+.portal-frame { min-height: 100vh; display: grid; grid-template-columns: 270px minmax(0, 1fr); }
+.portal-sidebar { position: sticky; top: 0; height: 100vh; padding: 28px 22px; display: flex; flex-direction: column; background: #071a2d; color: #fff; box-sizing: border-box; }
+.portal-brand { color: #fff; text-decoration: none; display: grid; gap: 12px; font-family: "DM Serif Display", serif; font-size: 1.15rem; }
+.portal-brand img { width: 112px; max-height: 72px; object-fit: contain; object-position: left center; }
+.portal-nav { display: grid; gap: 6px; margin: 38px 0; }
+.portal-nav a { color: #d9e3ea; text-decoration: none; padding: 11px 13px; border-radius: 9px; font-size: .92rem; }
+.portal-nav a:hover, .portal-nav a:focus-visible { color: #fff; background: rgba(255,255,255,.09); }
+.portal-account { margin-top: auto; display: grid; gap: 8px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.14); }
+.portal-account small { color: #aebdca; overflow-wrap: anywhere; }
+.portal-account .button { width: 100%; margin-top: 6px; }
+.portal-main { min-width: 0; padding: clamp(24px, 4vw, 58px); }
+.portal-heading { max-width: 800px; margin-bottom: 30px; }
+.portal-heading h1 { margin: 5px 0 8px; font-family: "DM Serif Display", serif; font-size: clamp(2.15rem, 5vw, 4rem); line-height: 1; }
+.portal-heading p:last-child { color: #546474; max-width: 680px; }
+.portal-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 14px; margin-bottom: 24px; }
+.portal-callout, .panel-head, .review-queue-row { display: flex; justify-content: space-between; align-items: center; gap: 22px; }
+.portal-stack { display: grid; gap: 16px; }
+.moderation-card h2, .review-queue-row h2, .user-access-row h2 { margin: 8px 0 4px; }
+.inline-admin-form { display: flex; align-items: end; gap: 14px; margin-top: 20px; padding: 16px; border-radius: 10px; background: #f7f3e9; }
+.inline-admin-form label { flex: 1; }
+.inline-admin-form select, .user-access-row select, .portal-search input { width: 100%; }
+.review-history { margin-top: 18px; padding-top: 14px; border-top: 1px solid #ddd4c3; }
+.review-history summary { cursor: pointer; font-weight: 700; }
+.archive-form { margin-top: 12px; }
+.text-button { border: 0; padding: 0; background: transparent; color: #6b5312; text-decoration: underline; cursor: pointer; }
+.user-access-row { display: grid; grid-template-columns: minmax(180px, 1.4fr) minmax(120px, .5fr) minmax(260px, 1.3fr) auto; align-items: center; gap: 22px; }
+.user-access-row fieldset { border: 0; padding: 0; margin: 0; }
+.compact-check { display: inline-flex; align-items: center; gap: 5px; margin: 4px 12px 4px 0; text-transform: capitalize; }
+.portal-search { display: flex; gap: 10px; margin-bottom: 18px; }
+.portal-search input { border: 1px solid #cfc5b3; border-radius: 9px; padding: 12px 14px; background: #fff; }
+.table-wrap { overflow-x: auto; border-radius: 12px; background: #fff; box-shadow: 0 12px 30px rgba(7,26,45,.08); }
+.portal-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.portal-table th, .portal-table td { padding: 13px 14px; text-align: left; border-bottom: 1px solid #eee8dc; vertical-align: top; }
+.portal-table th { background: #0b253d; color: #fff; }
+.review-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, .85fr); gap: 20px; margin-bottom: 20px; }
+.detail-list { display: grid; gap: 14px; }
+.detail-list div { padding-bottom: 11px; border-bottom: 1px solid #e6dfd1; }
+.detail-list dt { color: #687786; font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+.detail-list dd { margin: 5px 0 0; }
+.checklist-stack { display: grid; gap: 8px; margin: 14px 0 20px; }
+.portal-main textarea, .portal-main select { width: 100%; box-sizing: border-box; margin: 6px 0 14px; border: 1px solid #cfc5b3; border-radius: 9px; padding: 11px; background: #fff; }
+.status-pending_ethics_review, .status-pending_technical_review { color: #694f00; background: #fff5ce; }
+.status-ethics_revision_requested, .status-technical_revision_requested { color: #7a4200; background: #f9e1c1; }
+.status-awaiting_publication { color: #075c57; background: #d9f4ed; }
+.notification-unread { border-left: 4px solid #d7a72e; }
+@media (max-width: 900px) {
+    .portal-frame { grid-template-columns: 1fr; }
+    .portal-sidebar { position: static; height: auto; }
+    .portal-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 22px 0; }
+    .portal-account { margin-top: 0; }
+    .review-layout, .user-access-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+    .portal-main { padding: 24px 16px; }
+    .portal-nav { grid-template-columns: 1fr; }
+    .portal-callout, .panel-head, .review-queue-row, .inline-admin-form, .portal-search { align-items: stretch; flex-direction: column; }
+}

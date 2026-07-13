@@ -149,7 +149,7 @@ class Datasets extends BaseController
         }
 
         $canDownload = (($dataset['status'] ?? '') === DatasetModel::STATUS_PUBLISHED && ($dataset['archived_at'] ?? null) === null && $this->canAccessPublishedDataset($dataset))
-            || ($this->isAuthenticated() && $this->canManageDataset($dataset));
+            || ($this->isAuthenticated() && ($this->canManageDataset($dataset) || $this->hasRole('repository_administrator')));
 
         if (! $canDownload) {
             if (! $this->isAuthenticated() && ($dataset['access_type'] ?? DatasetModel::ACCESS_PUBLIC) !== DatasetModel::ACCESS_PUBLIC) {
@@ -207,6 +207,10 @@ class Datasets extends BaseController
                 ->with('error', 'You are not allowed to edit this dataset.');
         }
 
+        if (! DatasetModel::isRevisionStatus((string) ($dataset['status'] ?? '')) && ($dataset['status'] ?? '') !== DatasetModel::STATUS_PUBLISHED) {
+            return redirect()->to('/dashboard')->with('error', 'This dataset is locked while moderation is active.');
+        }
+
         return view('datasets/edit', [
             'title' => 'Edit Dataset',
             'datasetId' => $id,
@@ -231,6 +235,10 @@ class Datasets extends BaseController
             return redirect()
                 ->to('/datasets/' . $id)
                 ->with('error', 'You are not allowed to update this dataset.');
+        }
+
+        if (! DatasetModel::isRevisionStatus((string) ($dataset['status'] ?? '')) && ($dataset['status'] ?? '') !== DatasetModel::STATUS_PUBLISHED) {
+            return redirect()->to('/dashboard')->with('error', 'This dataset is locked while moderation is active.');
         }
 
         $rules = [
@@ -269,9 +277,11 @@ class Datasets extends BaseController
         }
 
         $newVersion = $this->incrementVersion((string) ($dataset['version'] ?? '1.0'));
-        $newStatus = (($dataset['status'] ?? '') === DatasetModel::STATUS_REVISION_REQUESTED)
-            ? DatasetModel::STATUS_PENDING
-            : (string) $dataset['status'];
+        $newStatus = match ((string) ($dataset['status'] ?? '')) {
+            DatasetModel::STATUS_TECHNICAL_REVISION => DatasetModel::STATUS_PENDING_TECHNICAL,
+            DatasetModel::STATUS_ETHICS_REVISION, DatasetModel::STATUS_PUBLISHED => DatasetModel::STATUS_PENDING_ETHICS,
+            default => (string) $dataset['status'],
+        };
 
         $datasetModel->update($id, [
             'title' => trim((string) $this->request->getPost('title')),
@@ -288,8 +298,8 @@ class Datasets extends BaseController
             'source_link' => trim((string) $this->request->getPost('source_link')),
             'version' => $newVersion,
             'status' => $newStatus,
-            'approved_at' => $newStatus === DatasetModel::STATUS_PENDING ? null : ($dataset['approved_at'] ?? null),
-            'approved_by' => $newStatus === DatasetModel::STATUS_PENDING ? null : ($dataset['approved_by'] ?? null),
+            'approved_at' => null,
+            'approved_by' => null,
         ]);
 
         model(DatasetVersionModel::class)->insert([
@@ -319,7 +329,12 @@ class Datasets extends BaseController
                 ->with('error', 'You are not allowed to archive this dataset.');
         }
 
+        if (DatasetModel::isUnderReview((string) ($dataset['status'] ?? ''))) {
+            return redirect()->to('/dashboard')->with('error', 'A dataset cannot be archived while moderation is active.');
+        }
+
         model(DatasetModel::class)->update($id, [
+            'archived_from_status' => (string) ($dataset['status'] ?? DatasetModel::STATUS_PENDING_ETHICS),
             'status' => DatasetModel::STATUS_ARCHIVED,
             'archived_at' => date('Y-m-d H:i:s'),
         ]);
@@ -401,6 +416,9 @@ class Datasets extends BaseController
      */
     private function canViewDataset(array $dataset): bool
     {
+        if ($this->hasRole('repository_administrator')) {
+            return true;
+        }
         if ($this->isAuthenticated() && $this->canManageDataset($dataset)) {
             return true;
         }

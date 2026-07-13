@@ -1,6 +1,6 @@
 ---
 name: asog-navy-gold
-description: Apply the ASOG TBI Navy & Gold design language — a dark-navy institutional aesthetic with a warm off-white body, gold as the sole decorative accent, a sky-blue call-to-action, DM Serif Display headings over DM Sans everything-else, a navbar that's transparent at the top and glassmorphic on scroll, and a signature graph-paper grid texture on light sections. Use this whenever building or restyling any screen of the ASOG TBI Dataset Repository's public/user-facing website (CodeIgniter 4 / MySQL) — home, login, browse & search, dataset detail, or upload/update — or whenever the user mentions "ASOG design", "navy and gold", "asog-navy-gold", or "my design system" for this project. Do NOT use this for Admin Portal screens — that's a separate application, out of scope for this skill.
+description: Apply the ASOG TBI Navy & Gold design language across the integrated public, contributor, reviewer, and administrator repository workspaces. Public pages use the expressive navbar and grid texture; governance pages use the focused navy portal shell with the same typography and tokens.
 ---
 
 # asog-navy-gold design language
@@ -16,7 +16,7 @@ This spec is technology-agnostic in principle but the project itself is a CodeIg
 3. **The navbar reads scroll position, not the page.** Transparent, no fill, white text at `scrollY ≈ 0`. Past that, it's a glass panel — blurred, translucent off-white, navy text. Same threshold, same transition, on every page — this is what makes the whole site feel like one system.
 4. **One accent action per screen.** `sky-blue` is reserved for the single most important thing the user can do (log in, upload, download). Everything else is navy, white, or ghost/outline.
 5. **Serif is for moments, sans is for work.** DM Serif Display only touches headings and the occasional emphasized word. Every functional element — nav, labels, forms, buttons, tables — is DM Sans.
-6. **This skill is for the public/user website only.** Admin approval, user management, audit logs, and backups live in a separate Admin Portal application. If a request describes any of those, that's a signal to stop and check `CONTEXT.md`, not to build it here.
+6. **Match the workspace.** Public and contributor screens use the public shell; review and administration use the role-gated portal shell. Check `CONTEXT.md` before expanding governance scope.
 
 ## Color
 
@@ -100,7 +100,7 @@ Every surface component follows the same recipe: solid fill (navy or white), one
 - **Cards (dataset cards, panels):** white fill, `warm-border` hairline, `lg` radius, flat at rest, `card-lift` on hover only. The "recommended datasets" row reuses this same card, never a bespoke shape. Clicking a card opens the Dataset Detail Page.
 - **Marketing badges/chips:** gold-outline pill for category tags; solid gold-ringed white circles for the Home "Domains" iconography — this is a marketing-page pattern, separate from the app's data-type chips below.
 - **Data-type chip:** gold-outline pill on dataset cards for one of the five canonical types — **Text, Image, Audio, Video, Tabular**. Don't invent a sixth type.
-- **Status chip:** a closed five-state system tied to `datasets.status` — Pending Review (gold outline), Revision Requested (gold-dark outline), Published (sky-blue fill), Archived (warm-border outline, muted), Rejected (deep-dark outline/text, no red). This is display-only in this app — never render controls to change it (that's the Admin Portal).
+- **Status chip:** map every state from `DatasetModel::statusLabels()` consistently. Contributors receive read-only chips; workflow actions appear only in the appropriate reviewer or administrator portal.
 - **Access-type badge:** quiet chip for Public / Institutional / Restricted / Private — lock glyph on Restricted and Private.
 - **Search & filter:** the Page Header Band search bar is `pill`-radius white; below it, a sticky white `lg`-radius filter sidebar (desktop) or bottom sheet (mobile), with collapsible `small-label` accordion groups, toggle chips for Data Type/Category, a checkbox list with counts for File Format, preset pills for Date Uploaded, and a removable-chip row of active filters above the results grid. See `DESIGN.md` for the full spec — this is the most detailed component in the system, treat it accordingly.
 - **Pagination:** centered number row, current page solid navy, others ghost — no page-jump input for MVP.
@@ -129,7 +129,7 @@ Institutional, not playful — motion should feel confirming, not decorative:
 
 Work in this order for any new or restyled screen:
 
-1. **Check scope first.** Is this a Guest/User screen (home, login, browse, detail, upload, my datasets)? Good — proceed. Is it an Admin/reviewer/user-management/audit-log/backup screen? Stop — that's the separate Admin Portal, not this repo. Check `CONTEXT.md` if unsure.
+1. **Check scope and role first.** Confirm the screen is public, contributor, ethics, technical, or administrator functionality listed in `CONTEXT.md`; deferred backup, reporting, antivirus, and access-request flows still require a scope decision.
 2. **Give it a Hero (Home) or Page Header Band (everywhere else).** No page opens directly on off-white — the navbar's transparent-at-top state needs a navy backdrop to sit on.
 3. **Wire up the navbar's scroll behavior** using the shared partial/script — never reimplement it per page, and never skip it "just for this screen."
 4. **Pull tokens from `DESIGN.md`** — colors, type roles, spacing, radius — before styling anything by eye.

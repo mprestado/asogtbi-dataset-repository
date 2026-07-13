@@ -15,6 +15,9 @@ class Auth extends BaseController
             'title' => 'Login',
             'demoAccounts' => [
                 ['role' => 'User', 'email' => 'user@example.test', 'password' => 'change-me'],
+                ['role' => 'Repository Administrator', 'email' => 'admin@example.test', 'password' => 'change-me'],
+                ['role' => 'Research Ethics Reviewer', 'email' => 'ethics@example.test', 'password' => 'change-me'],
+                ['role' => 'Technical Reviewer', 'email' => 'technical@example.test', 'password' => 'change-me'],
             ],
             'loginChecks' => [
                 'Email and password authentication for MVP-FR-01 and MVP-FR-02.',
@@ -55,13 +58,14 @@ class Auth extends BaseController
                 ->with('error', 'This account is inactive and cannot log in yet.');
         }
 
-        $role = $this->findUserRoleName((int) $user['id']);
+        $roles = $this->findUserRoleNames((int) $user['id']);
 
         $this->session->set([
             'user_id' => (int) $user['id'],
             'user_name' => $user['name'],
             'user_email' => $user['email'],
-            'role' => $role,
+            'role' => $roles[0] ?? 'user',
+            'roles' => $roles,
         ]);
 
         $userModel->update((int) $user['id'], ['last_login_at' => date('Y-m-d H:i:s')]);
@@ -259,15 +263,18 @@ class Auth extends BaseController
         return redirect()->to('/login');
     }
 
-    private function findUserRoleName(int $userId): string
+    private function findUserRoleNames(int $userId): array
     {
-        $roleRow = model(UserRoleModel::class)
+        $roleRows = model(UserRoleModel::class)
             ->select('roles.name')
             ->join('roles', 'roles.id = user_roles.role_id')
             ->where('user_roles.user_id', $userId)
-            ->first();
+            ->orderBy('roles.name', 'ASC')
+            ->findAll();
 
-        return is_array($roleRow) ? (string) ($roleRow['name'] ?? 'user') : 'user';
+        $roles = array_values(array_filter(array_map(static fn (array $row): string => (string) ($row['name'] ?? ''), $roleRows)));
+
+        return $roles !== [] ? $roles : ['user'];
     }
 
     private function isValidPasswordResetToken(string $email, string $token): bool

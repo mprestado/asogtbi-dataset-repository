@@ -17,11 +17,36 @@ $routes->post('logout', 'Auth::logout', ['filter' => 'auth']);
 
 $routes->group('', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('dashboard', 'Dashboard::index');
+    $routes->post('dashboard/notifications/read', 'Dashboard::readNotifications');
     $routes->get('upload', 'DatasetUpload::create');
     $routes->post('upload', 'DatasetUpload::store');
     $routes->get('datasets/(:num)/edit', 'Datasets::edit/$1');
     $routes->post('datasets/(:num)/update', 'Datasets::update/$1');
     $routes->post('datasets/(:num)/archive', 'Datasets::archive/$1');
+});
+
+$routes->group('review/ethics', ['filter' => 'role:ethics_reviewer'], static function (RouteCollection $routes): void {
+    $routes->get('/', 'Reviews::index/ethics');
+    $routes->get('(:num)', 'Reviews::show/ethics/$1');
+    $routes->post('(:num)/decision', 'Reviews::decide/ethics/$1');
+    $routes->get('(:num)/download', 'Reviews::download/ethics/$1');
+});
+$routes->group('review/technical', ['filter' => 'role:technical_reviewer'], static function (RouteCollection $routes): void {
+    $routes->get('/', 'Reviews::index/technical');
+    $routes->get('(:num)', 'Reviews::show/technical/$1');
+    $routes->post('(:num)/decision', 'Reviews::decide/technical/$1');
+    $routes->get('(:num)/download', 'Reviews::download/technical/$1');
+});
+$routes->group('admin', ['filter' => 'role:repository_administrator'], static function (RouteCollection $routes): void {
+    $routes->get('/', 'Admin::index');
+    $routes->get('datasets', 'Admin::datasets');
+    $routes->post('datasets/(:num)/assign', 'Admin::assign/$1');
+    $routes->post('datasets/(:num)/publish', 'Admin::publish/$1');
+    $routes->post('datasets/(:num)/archive', 'Admin::archive/$1');
+    $routes->post('datasets/(:num)/restore', 'Admin::restore/$1');
+    $routes->get('users', 'Admin::users');
+    $routes->post('users/(:num)', 'Admin::updateUser/$1');
+    $routes->get('audit-logs', 'Admin::auditLogs');
 });
 
 $routes->get('datasets', 'Datasets::index');

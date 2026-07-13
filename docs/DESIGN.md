@@ -86,7 +86,7 @@ spacing:
 
 This is the visual design system for the **ASOG TBI Dataset Repository public + user-facing website** — a CodeIgniter 4 + MySQL app that lets students, faculty, and incubatees at CSPC browse, cite, download, and contribute datasets. The full functional scope lives in `Database-Repo-SRS.md`; the condensed, build-ready version — MVP scope, roles, and **what is explicitly not part of this repo** — lives in `CONTEXT.md`. **This document governs the UI layer only** and should be read alongside `CONTEXT.md`, not instead of it.
 
-> **Scope note:** dataset moderation/approval, user management, audit logs, and backups belong to a **separate Admin Portal**, not this website. Nothing in this document should be used to design admin/reviewer screens — see `CONTEXT.md` for the exact boundary.
+> **Scope note:** the integrated application includes public, contributor, reviewer, and administrator workspaces. Governance screens use the same tokens with a dedicated portal shell; backup and reporting screens remain deferred.
 
 **Signature traits:**
 - **Dual typeface system** — DM Serif Display for editorial/heading moments, DM Sans for everything functional (nav, labels, body, forms).
@@ -257,7 +257,7 @@ Solid `navy`/`deep-dark` fill, 4-column layout: brand block (logo, `body-light` 
 
 **Dataset card** (browse/search results grid, and the "recommended datasets" row on a detail page) — white fill, `lg` radius, `warm-border` hairline, `card-lift` shadow on hover only (flat at rest). Contents: a `category-label` data-type chip (gold outline, off-white fill — Text/Image/Audio/Video/Tabular) top-left, `subheading-serif` dataset title, `body-light` two-line description, and a `small-label` meta row (file format, size, date uploaded). Clicking anywhere on the card opens the **Dataset Detail Page**. The recommended-datasets row reuses this exact card at a smaller fixed width, in a horizontal scroll or 5-up grid — never a different card shape.
 
-**Status chip** — a small `category-label`-styled pill mapped 1:1 to the `datasets.status` field. This website only ever *displays* status — it never provides controls to change it (that happens in the separate Admin Portal). Keep it a closed, five-value system so a glance tells you the state:
+**Status chip** — a small `category-label`-styled pill mapped 1:1 to the `datasets.status` field. Contributors see status read-only; authorized reviewer and administrator actions change it through the moderated workflow. Keep labels mapped to the state machine in `CONTEXT.md`.
 
 | Status | Style |
 |---|---|
@@ -293,7 +293,7 @@ Status chips only ever appear where a user is looking at *their own* datasets (d
 
 **Upload / Update Dataset form** — same card language as Login but wider, and multi-section: dataset info (title, description, tags, category, data type, file format), research info (research title, project head, members), source info (source type, link), then the file zone. Group fields under `small-label` section headers; a drag-and-drop file zone accepts ZIP only, uses a dashed `warm-border` at `lg` radius that solidifies to `sky-blue` on drag-over. On submit the dataset is created with a **Pending Review** status chip — make that state visible immediately so contributors know it isn't published yet. The Update form is identical but pre-filled from the existing record.
 
-**My Datasets (user dashboard)** — Page Header Band with an inline "Upload Dataset" button, body is a grid of the user's own **dataset cards**, each showing its status chip. No admin content of any kind renders here or anywhere else in this app — see `CONTEXT.md` for the Admin Portal boundary.
+**My Datasets (user dashboard)** — Page Header Band with an inline "Upload Dataset" button, body is a grid of the user's own **dataset cards**, each showing its status chip and review notifications. Governance actions do not render here; they remain in the dedicated portal shell.
 
 ## Motion
 
@@ -318,7 +318,7 @@ Keep it minimal and functional — this is an institutional tool, not a marketin
 | Keep status to the five defined chip states | Don't add a red/error hue for "Rejected" — use outline + `deep-dark` text instead |
 | Give every non-Home page a Page Header Band | Don't let a page open directly on off-white — the navbar needs a navy backdrop at scroll-zero |
 | Switch the navbar to glass only once `scrollY > 8px` | Don't apply the glass treatment at the very top of the page, and don't leave the top navbar with any background fill |
-| Build only Guest/User screens in this repo | Don't build Admin, reviewer, user-management, audit-log, or backup UI here — that's the separate Admin Portal (see `CONTEXT.md`) |
+| Reuse the same institutional tokens across every workspace | Don't expose governance actions outside the dedicated role-gated portal shell |
 
 ## Implementation Notes (CodeIgniter 4)
 
@@ -331,7 +331,7 @@ Keep it minimal and functional — this is an institutional tool, not a marketin
 ## Agent / Build Guide
 
 1. Start every new screen from the token tables above — colors, type, spacing, radius — before adding anything bespoke.
-2. Confirm the screen is in this app's scope per `CONTEXT.md` — if it's an Admin/reviewer/user-management screen, stop; it belongs to the separate Admin Portal.
+2. Confirm the screen and role are in scope per `CONTEXT.md`; keep reviewer and administrator controls inside the role-gated portal shell.
 3. Give the screen a Page Header Band (or the full Hero, Home only) before anything else — this is what makes the navbar's transparent-then-glass behavior work.
 4. Block out layout with the container/breakpoint rules first, content second.
 5. Apply the grid texture to at most one light section per screen; skip it entirely on dense data screens (search results with an open filter sidebar) where it would compete with content.

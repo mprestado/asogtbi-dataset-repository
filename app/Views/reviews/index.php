@@ -1,0 +1,5 @@
+<?= $this->extend('layouts/portal') ?>
+<?= $this->section('content') ?>
+<header class="portal-heading"><p class="eyebrow"><?= esc(ucfirst($stage)) ?> Verification</p><h1>Your assigned reviews</h1><p>Only assignments made by a repository administrator appear here.</p></header>
+<div class="portal-stack"><?php if ($reviews === []): ?><article class="panel"><h2>No assignments</h2><p class="muted">Your queue is clear.</p></article><?php endif; ?><?php foreach ($reviews as $review): ?><article class="panel review-queue-row"><div><span class="status-pill status-<?= esc($review['dataset_status']) ?>"><?= esc(str_replace('_', ' ', $review['status'])) ?></span><h2><?= esc($review['title']) ?></h2><p class="muted">Contributor: <?= esc($review['contributor_name'] ?? 'Unknown') ?> · Round <?= esc($review['review_round']) ?></p></div><a class="button <?= $review['status'] === 'assigned' ? '' : 'secondary' ?>" href="<?= site_url('review/' . $stage . '/' . $review['id']) ?>"><?= $review['status'] === 'assigned' ? 'Open review' : 'View record' ?></a></article><?php endforeach; ?></div>
+<?= $this->endSection() ?>

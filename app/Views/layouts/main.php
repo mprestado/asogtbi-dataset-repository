@@ -11,6 +11,7 @@
 </head>
 <body>
 <?php $isAuthenticated = (bool) session()->get('user_id'); ?>
+<?php $roles = (array) session()->get('roles'); ?>
 <header class="site-header" id="site-header">
     <div class="wide-shell header-inner">
         <a class="brand" href="<?= site_url('/') ?>" aria-label="ASOG TBI Dataset Repository home">
@@ -27,6 +28,9 @@
             <?php if ($isAuthenticated): ?>
                 <a href="<?= site_url('dashboard') ?>">My Datasets</a>
                 <a href="<?= site_url('upload') ?>">Upload</a>
+                <?php if (in_array('ethics_reviewer', $roles, true)): ?><a href="<?= site_url('review/ethics') ?>">Ethics Portal</a><?php endif; ?>
+                <?php if (in_array('technical_reviewer', $roles, true)): ?><a href="<?= site_url('review/technical') ?>">Technical Portal</a><?php endif; ?>
+                <?php if (in_array('repository_administrator', $roles, true)): ?><a href="<?= site_url('admin') ?>">Admin Portal</a><?php endif; ?>
             <?php endif; ?>
         </nav>
 
@@ -55,6 +59,9 @@
         <?php if ($isAuthenticated): ?>
             <a href="<?= site_url('dashboard') ?>">My Datasets</a>
             <a href="<?= site_url('upload') ?>">Upload</a>
+            <?php if (in_array('ethics_reviewer', $roles, true)): ?><a href="<?= site_url('review/ethics') ?>">Ethics Portal</a><?php endif; ?>
+            <?php if (in_array('technical_reviewer', $roles, true)): ?><a href="<?= site_url('review/technical') ?>">Technical Portal</a><?php endif; ?>
+            <?php if (in_array('repository_administrator', $roles, true)): ?><a href="<?= site_url('admin') ?>">Admin Portal</a><?php endif; ?>
             <form class="nav-form" method="post" action="<?= site_url('logout') ?>">
                 <?= csrf_field() ?>
                 <button class="nav-cta" type="submit">Logout</button>

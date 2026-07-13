@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\DatasetModel;
+use App\Models\NotificationModel;
 
 class Dashboard extends BaseController
 {
@@ -19,6 +20,8 @@ class Dashboard extends BaseController
             'title' => 'My Datasets',
             'myDatasets' => $myDatasets,
             'statusLabels' => DatasetModel::statusLabels(),
+            'notifications' => model(NotificationModel::class)->where('user_id', $userId)->orderBy('created_at', 'DESC')->findAll(8),
+            'roles' => $this->currentRoles(),
             'statusCounts' => [
                 'published' => model(DatasetModel::class)
                     ->where('contributor_id', $userId)
@@ -27,13 +30,20 @@ class Dashboard extends BaseController
                     ->countAllResults(),
                 'pending' => model(DatasetModel::class)
                     ->where('contributor_id', $userId)
-                    ->where('status', DatasetModel::STATUS_PENDING)
+                    ->whereIn('status', [DatasetModel::STATUS_PENDING_ETHICS, DatasetModel::STATUS_PENDING_TECHNICAL, DatasetModel::STATUS_AWAITING_PUBLICATION])
                     ->countAllResults(),
                 'needsRevision' => model(DatasetModel::class)
                     ->where('contributor_id', $userId)
-                    ->where('status', DatasetModel::STATUS_REVISION_REQUESTED)
+                    ->whereIn('status', [DatasetModel::STATUS_ETHICS_REVISION, DatasetModel::STATUS_TECHNICAL_REVISION])
                     ->countAllResults(),
             ],
         ]);
+    }
+
+    public function readNotifications()
+    {
+        model(NotificationModel::class)->where('user_id', (int) $this->currentUserId())->where('read_at', null)->set(['read_at' => date('Y-m-d H:i:s')])->update();
+
+        return redirect()->to('/dashboard')->with('info', 'Notifications marked as read.');
     }
 }

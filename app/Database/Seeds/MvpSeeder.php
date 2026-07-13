@@ -12,6 +12,7 @@ class MvpSeeder extends Seeder
         $now = date('Y-m-d H:i:s');
         $roleId = $this->ensureRole($now);
         $userId = $this->ensureDemoUser($roleId, $now);
+        $this->ensurePortalAccounts($now);
 
         $datasets = [
             [
@@ -46,7 +47,7 @@ class MvpSeeder extends Seeder
             ],
             [
                 'title' => 'Pending Prototype Dataset',
-                'description' => 'Sample pending dataset visible only to its contributor while the separate Admin Portal handles review.',
+                'description' => 'Sample pending dataset ready for assignment in the integrated ethics review workflow.',
                 'category' => 'Prototype',
                 'tags' => 'prototype,pending',
                 'data_type' => 'Tabular',
@@ -127,6 +128,35 @@ class MvpSeeder extends Seeder
         }
 
         return $userId;
+    }
+
+    private function ensurePortalAccounts(string $now): void
+    {
+        $accounts = [
+            ['name' => 'Repository Administrator', 'email' => 'admin@example.test', 'role' => 'repository_administrator', 'description' => 'Repository governance and publication'],
+            ['name' => 'Research Ethics Reviewer', 'email' => 'ethics@example.test', 'role' => 'ethics_reviewer', 'description' => 'Ethics and privacy verification'],
+            ['name' => 'Technical Reviewer', 'email' => 'technical@example.test', 'role' => 'technical_reviewer', 'description' => 'Technical dataset verification'],
+        ];
+        foreach ($accounts as $account) {
+            $role = $this->db->table('roles')->where('name', $account['role'])->get()->getRowArray();
+            if (! is_array($role)) {
+                $this->db->table('roles')->insert(['name' => $account['role'], 'description' => $account['description'], 'created_at' => $now, 'updated_at' => $now]);
+                $roleId = (int) $this->db->insertID();
+            } else {
+                $roleId = (int) $role['id'];
+            }
+            $user = $this->db->table('users')->where('email', $account['email'])->get()->getRowArray();
+            if (! is_array($user)) {
+                $this->db->table('users')->insert(['name' => $account['name'], 'email' => $account['email'], 'password_hash' => password_hash('change-me', PASSWORD_DEFAULT), 'status' => 'active', 'created_at' => $now, 'updated_at' => $now]);
+                $userId = (int) $this->db->insertID();
+            } else {
+                $userId = (int) $user['id'];
+            }
+            $exists = $this->db->table('user_roles')->where(['user_id' => $userId, 'role_id' => $roleId])->get()->getRowArray();
+            if (! is_array($exists)) {
+                $this->db->table('user_roles')->insert(['user_id' => $userId, 'role_id' => $roleId]);
+            }
+        }
     }
 
     /**

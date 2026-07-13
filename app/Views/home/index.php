@@ -112,7 +112,7 @@
         <article class="panel">
             <p class="tag">Lifecycle Boundary</p>
             <h2>Public site, not Admin Portal</h2>
-            <p class="muted">This website creates submissions as Pending Review and displays status changes made elsewhere. Approval, rejection, reviewer queues, user management, audit-log viewers, backups, and reports are handled by the separate Admin Portal.</p>
+            <p class="muted">Submissions move through assigned Research Ethics and Technical verification before a repository administrator can publish them. Every moderation decision is retained in the audit trail.</p>
         </article>
     </div>
 </section>

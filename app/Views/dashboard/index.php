@@ -23,7 +23,7 @@
         <article class="panel stat-card">
             <p class="tag">Pending Review</p>
             <h2 class="stat-value"><?= esc((string) (($statusCounts['pending'] ?? 0))) ?></h2>
-            <p class="muted">Submissions waiting on review in the separate Admin Portal.</p>
+            <p class="muted">Submissions moving through ethics, technical, or publication review.</p>
         </article>
         <article class="panel stat-card">
             <p class="tag">Revision Requested</p>
@@ -32,6 +32,15 @@
         </article>
     </div>
 </section>
+
+<?php if (! empty($notifications)): ?>
+<section class="shell content-section">
+    <div class="panel-head"><div><p class="tag">Repository updates</p><h2>Notifications</h2></div><form method="post" action="<?= site_url('dashboard/notifications/read') ?>"><?= csrf_field() ?><button class="button secondary" type="submit">Mark all read</button></form></div>
+    <div class="portal-stack">
+        <?php foreach ($notifications as $notification): ?><article class="panel <?= empty($notification['read_at']) ? 'notification-unread' : '' ?>"><h3><?= esc($notification['title']) ?></h3><p><?= esc($notification['message']) ?></p><?php if ($notification['link']): ?><a href="<?= site_url(ltrim($notification['link'], '/')) ?>">Open related record</a><?php endif; ?></article><?php endforeach; ?>
+    </div>
+</section>
+<?php endif; ?>
 
 <section class="shell content-section">
     <div class="panel-head">
@@ -73,7 +82,7 @@
                     </dl>
                     <div class="actions">
                         <a class="button secondary" href="<?= site_url('datasets/' . $dataset['id']) ?>">View</a>
-                        <a class="button" href="<?= site_url('datasets/' . $dataset['id'] . '/edit') ?>">Edit</a>
+                        <?php if (\App\Models\DatasetModel::isRevisionStatus($dataset['status'] ?? '') || ($dataset['status'] ?? '') === \App\Models\DatasetModel::STATUS_PUBLISHED): ?><a class="button" href="<?= site_url('datasets/' . $dataset['id'] . '/edit') ?>"><?= ($dataset['status'] ?? '') === \App\Models\DatasetModel::STATUS_PUBLISHED ? 'Submit update' : 'Revise' ?></a><?php endif; ?>
                     </div>
                 </article>
             <?php endforeach; ?>

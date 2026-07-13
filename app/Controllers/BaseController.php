@@ -55,6 +55,18 @@ abstract class BaseController extends Controller
         return is_string($role) && $role !== '' ? $role : null;
     }
 
+    protected function currentRoles(): array
+    {
+        $roles = $this->session->get('roles');
+
+        return is_array($roles) ? array_values($roles) : array_filter([$this->currentRole()]);
+    }
+
+    protected function hasRole(string $role): bool
+    {
+        return in_array($role, $this->currentRoles(), true);
+    }
+
     protected function isAuthenticated(): bool
     {
         return $this->currentUserId() !== null;

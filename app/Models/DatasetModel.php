@@ -6,9 +6,14 @@ use CodeIgniter\Model;
 
 class DatasetModel extends Model
 {
-    public const STATUS_PENDING = 'pending_review';
+    public const STATUS_PENDING = 'pending_ethics_review';
+    public const STATUS_PENDING_ETHICS = 'pending_ethics_review';
+    public const STATUS_ETHICS_REVISION = 'ethics_revision_requested';
+    public const STATUS_PENDING_TECHNICAL = 'pending_technical_review';
+    public const STATUS_TECHNICAL_REVISION = 'technical_revision_requested';
+    public const STATUS_AWAITING_PUBLICATION = 'awaiting_publication';
     public const STATUS_PUBLISHED = 'published';
-    public const STATUS_REVISION_REQUESTED = 'revision_requested';
+    public const STATUS_REVISION_REQUESTED = 'ethics_revision_requested';
     public const STATUS_REJECTED = 'rejected';
     public const STATUS_ARCHIVED = 'archived';
 
@@ -41,6 +46,7 @@ class DatasetModel extends Model
         'approved_by',
         'approved_at',
         'archived_at',
+        'archived_from_status',
     ];
 
     /**
@@ -49,12 +55,25 @@ class DatasetModel extends Model
     public static function statusLabels(): array
     {
         return [
-            self::STATUS_PENDING => 'Pending Review',
-            self::STATUS_REVISION_REQUESTED => 'Revision Requested',
+            self::STATUS_PENDING_ETHICS => 'Pending Ethics Review',
+            self::STATUS_ETHICS_REVISION => 'Ethics Revision Requested',
+            self::STATUS_PENDING_TECHNICAL => 'Pending Technical Review',
+            self::STATUS_TECHNICAL_REVISION => 'Technical Revision Requested',
+            self::STATUS_AWAITING_PUBLICATION => 'Awaiting Publication',
             self::STATUS_PUBLISHED => 'Published',
             self::STATUS_ARCHIVED => 'Archived',
             self::STATUS_REJECTED => 'Rejected',
         ];
+    }
+
+    public static function isRevisionStatus(?string $status): bool
+    {
+        return in_array($status, [self::STATUS_ETHICS_REVISION, self::STATUS_TECHNICAL_REVISION], true);
+    }
+
+    public static function isUnderReview(?string $status): bool
+    {
+        return in_array($status, [self::STATUS_PENDING_ETHICS, self::STATUS_PENDING_TECHNICAL, self::STATUS_AWAITING_PUBLICATION], true);
     }
 
     public static function statusLabel(?string $status): string

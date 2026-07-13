@@ -5,7 +5,7 @@
     <div class="shell">
         <p class="eyebrow">Dataset Lifecycle</p>
         <h1>Upload a Dataset</h1>
-        <p class="lead">Submit metadata and a protected ZIP package. New submissions start as Pending Review until the separate Admin Portal completes review.</p>
+        <p class="lead">Submit metadata and a protected ZIP package. New submissions begin with Research Ethics verification.</p>
     </div>
 </section>
 
@@ -16,7 +16,7 @@
                 <p class="tag">Submission Form</p>
                 <h2>Dataset metadata</h2>
             </div>
-            <span class="status-pill status-pending_review">Pending Review</span>
+            <span class="status-pill status-pending_ethics_review">Pending Ethics Review</span>
         </div>
 
         <form method="post" action="<?= site_url('upload') ?>" enctype="multipart/form-data">
