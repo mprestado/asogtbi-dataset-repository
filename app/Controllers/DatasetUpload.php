@@ -32,6 +32,37 @@ class DatasetUpload extends BaseController
 
     public function store()
     {
+        $messages = [
+            'title' => [
+                'required' => 'Please enter a dataset title.',
+                'max_length' => 'Title cannot exceed 255 characters.',
+            ],
+            'description' => ['required' => 'Please describe what the dataset contains.'],
+            'category' => [
+                'required' => 'Please enter a category.',
+                'max_length' => 'Category cannot exceed 120 characters.',
+            ],
+            'tags' => [
+                'required' => 'Please enter at least one tag.',
+                'max_length' => 'Tags cannot exceed 255 characters.',
+            ],
+            'data_type' => ['required' => 'Please select a data type.'],
+            'file_format' => ['required' => 'Please enter the file format.'],
+            'source_type' => ['required' => 'Please select a source type.'],
+            'research_title' => ['required' => 'Please enter the research title.'],
+            'project_head' => [
+                'required' => 'Please enter the project head or adviser.',
+                'max_length' => 'Project head cannot exceed 150 characters.',
+            ],
+            'access_type' => ['required' => 'Please select an access type.'],
+            'anonymized' => ['required' => 'You must confirm anonymization before submitting.'],
+            'dataset_file' => [
+                'uploaded' => 'Please select a ZIP file to upload.',
+                'ext_in' => 'Only ZIP files are accepted.',
+                'max_size' => 'The ZIP file must be under 10 MB.',
+            ],
+        ];
+
         $rules = [
             'title' => 'required|max_length[255]',
             'description' => 'required',
@@ -47,11 +78,13 @@ class DatasetUpload extends BaseController
             'dataset_file' => 'uploaded[dataset_file]|ext_in[dataset_file,zip]|max_size[dataset_file,10240]',
         ];
 
-        if (! $this->validate($rules)) {
+        if (! $this->validate($rules, $messages)) {
+            $errorMessages = $this->validator->getErrors();
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', implode(' ', $this->validator->getErrors()));
+                ->with('errors', $errorMessages)
+                ->with('error', 'Please fix the highlighted fields below.');
         }
 
         $datasetModel = new DatasetModel();
