@@ -56,7 +56,9 @@ class Datasets extends BaseController
         $datasets = $query
             ->orderBy('datasets.approved_at', 'DESC')
             ->orderBy('datasets.created_at', 'DESC')
-            ->paginate(9);
+            ->paginate(10);
+
+        $totalDatasets = $datasetModel->pager->getTotal();
 
         $categoryQuery = model(DatasetModel::class)
             ->select('category')
@@ -83,6 +85,7 @@ class Datasets extends BaseController
         return view('datasets/index', [
             'title' => 'Dataset Catalog',
             'datasets' => $datasets,
+            'totalDatasets' => $totalDatasets,
             'search' => $search,
             'selectedDataType' => $dataType,
             'selectedCategory' => $category,
