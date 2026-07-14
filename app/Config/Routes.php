@@ -18,6 +18,9 @@ $routes->post('logout', 'Auth::logout', ['filter' => 'auth']);
 $routes->group('', ['filter' => 'auth'], static function (RouteCollection $routes): void {
     $routes->get('dashboard', 'Dashboard::index');
     $routes->post('dashboard/notifications/read', 'Dashboard::readNotifications');
+    $routes->get('portal/dashboard', 'Dashboard::portal');
+    $routes->get('portal/datasets/(:num)', 'Dashboard::portalDataset/$1');
+    $routes->post('portal/notifications/read', 'Dashboard::readPortalNotifications');
     $routes->get('upload', 'DatasetUpload::create');
     $routes->post('upload', 'DatasetUpload::store');
     $routes->get('datasets/(:num)/edit', 'Datasets::edit/$1');
@@ -40,6 +43,7 @@ $routes->group('review/technical', ['filter' => 'role:technical_reviewer'], stat
 $routes->group('admin', ['filter' => 'role:repository_administrator'], static function (RouteCollection $routes): void {
     $routes->get('/', 'Admin::index');
     $routes->get('datasets', 'Admin::datasets');
+    $routes->get('datasets/(:num)', 'Admin::dataset/$1');
     $routes->post('datasets/(:num)/assign', 'Admin::assign/$1');
     $routes->post('datasets/(:num)/publish', 'Admin::publish/$1');
     $routes->post('datasets/(:num)/archive', 'Admin::archive/$1');

@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Models\DatasetModel;
+use App\Models\DatasetFileModel;
+use App\Models\DatasetVersionModel;
 use App\Models\ReviewModel;
 use App\Models\UserModel;
 use App\Services\ModerationWorkflow;
@@ -35,6 +37,29 @@ class Admin extends BaseController
             'statusLabels' => DatasetModel::statusLabels(), 'accessOptions' => DatasetModel::accessOptions(),
             'ethicsReviewers' => $this->usersWithRole(ModerationWorkflow::ROLE_ETHICS),
             'technicalReviewers' => $this->usersWithRole(ModerationWorkflow::ROLE_TECHNICAL),
+        ]);
+    }
+
+    public function dataset(int $datasetId): string
+    {
+        $dataset = model(DatasetModel::class)
+            ->select('datasets.*, users.name AS contributor_name, users.email AS contributor_email')
+            ->join('users', 'users.id = datasets.contributor_id', 'left')
+            ->where('datasets.id', $datasetId)
+            ->first();
+
+        if (! is_array($dataset)) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        return view('admin/dataset', [
+            'title' => $dataset['title'],
+            'dataset' => $dataset,
+            'statusLabel' => DatasetModel::statusLabel((string) ($dataset['status'] ?? '')),
+            'accessLabel' => DatasetModel::accessLabel((string) ($dataset['access_type'] ?? '')),
+            'latestFile' => model(DatasetFileModel::class)->where('dataset_id', $datasetId)->orderBy('created_at', 'DESC')->first(),
+            'versions' => model(DatasetVersionModel::class)->where('dataset_id', $datasetId)->orderBy('id', 'DESC')->findAll(),
+            'reviews' => model(ReviewModel::class)->select('reviews.*, users.name AS reviewer_name')->join('users', 'users.id = reviews.reviewer_id', 'left')->where('reviews.dataset_id', $datasetId)->orderBy('reviews.id', 'DESC')->findAll(),
         ]);
     }
 

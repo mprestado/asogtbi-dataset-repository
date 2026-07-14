@@ -4,7 +4,7 @@
 <div class="portal-stack">
 <?php foreach ($datasets as $dataset): ?>
     <article class="panel moderation-card">
-        <div class="panel-head"><div><span class="status-pill status-<?= esc($dataset['status']) ?>"><?= esc($statusLabels[$dataset['status']] ?? $dataset['status']) ?></span><h2><?= esc($dataset['title']) ?></h2><p class="muted">Contributor: <?= esc($dataset['contributor_name'] ?? 'Unknown') ?> · Version <?= esc($dataset['version']) ?></p></div><a class="button secondary" href="<?= site_url('datasets/' . $dataset['id']) ?>">Inspect metadata</a></div>
+        <div class="panel-head"><div><span class="status-pill status-<?= esc($dataset['status']) ?>"><?= esc($statusLabels[$dataset['status']] ?? $dataset['status']) ?></span><h2><?= esc($dataset['title']) ?></h2><p class="muted">Contributor: <?= esc($dataset['contributor_name'] ?? 'Unknown') ?> &middot; Version <?= esc($dataset['version']) ?></p></div><a class="button secondary" href="<?= site_url('admin/datasets/' . $dataset['id']) ?>">Inspect in portal</a></div>
         <?php if ($dataset['status'] === 'pending_ethics_review'): ?>
             <form class="inline-admin-form" method="post" action="<?= site_url('admin/datasets/' . $dataset['id'] . '/assign') ?>"><?= csrf_field() ?><input type="hidden" name="stage" value="ethics"><label>Ethics reviewer<select name="reviewer_id" required><option value="">Select reviewer</option><?php foreach ($ethicsReviewers as $reviewer): ?><option value="<?= esc($reviewer['id']) ?>"><?= esc($reviewer['name']) ?></option><?php endforeach; ?></select></label><button class="button" type="submit">Assign ethics review</button></form>
         <?php elseif ($dataset['status'] === 'pending_technical_review'): ?>
