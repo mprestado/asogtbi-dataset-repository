@@ -10,7 +10,7 @@
         <form class="hero-search" method="get" action="<?= site_url('datasets') ?>">
             <label class="sr-only" for="home-search">Search datasets</label>
             <input id="home-search" name="q" placeholder="Search datasets, tags, categories, file formats">
-            <button type="submit">Search</button>
+            <button type="submit"><span class="material-symbols-rounded" aria-hidden="true">search</span> Search</button>
         </form>
 
         <div class="hero-actions">

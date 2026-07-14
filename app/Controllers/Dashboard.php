@@ -2,23 +2,73 @@
 
 namespace App\Controllers;
 
+use App\Models\DatasetFileModel;
 use App\Models\DatasetModel;
+use App\Models\DatasetVersionModel;
 use App\Models\NotificationModel;
+use CodeIgniter\Exceptions\PageNotFoundException;
 
 class Dashboard extends BaseController
 {
     public function index(): string
     {
+        return view('dashboard/index', $this->dashboardData('My Datasets'));
+    }
+
+    public function portal(): string
+    {
+        return view('dashboard/portal', $this->dashboardData('Portal Contributor Records'));
+    }
+
+    public function portalDataset(int $datasetId): string
+    {
+        $dataset = model(DatasetModel::class)
+            ->where('id', $datasetId)
+            ->where('contributor_id', (int) $this->currentUserId())
+            ->first();
+
+        if (! is_array($dataset)) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        return view('dashboard/portal_dataset', [
+            'title' => $dataset['title'],
+            'dataset' => $dataset,
+            'statusLabel' => DatasetModel::statusLabel((string) ($dataset['status'] ?? '')),
+            'accessLabel' => DatasetModel::accessLabel((string) ($dataset['access_type'] ?? '')),
+            'latestFile' => model(DatasetFileModel::class)->where('dataset_id', $datasetId)->orderBy('created_at', 'DESC')->first(),
+            'versions' => model(DatasetVersionModel::class)->where('dataset_id', $datasetId)->orderBy('id', 'DESC')->findAll(),
+        ]);
+    }
+
+    public function readNotifications()
+    {
+        model(NotificationModel::class)->where('user_id', (int) $this->currentUserId())->where('read_at', null)->set(['read_at' => date('Y-m-d H:i:s')])->update();
+
+        return redirect()->to('/dashboard')->with('info', 'Notifications marked as read.');
+    }
+
+    public function readPortalNotifications()
+    {
+        model(NotificationModel::class)->where('user_id', (int) $this->currentUserId())->where('read_at', null)->set(['read_at' => date('Y-m-d H:i:s')])->update();
+
+        return redirect()->to('/portal/dashboard')->with('info', 'Notifications marked as read.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function dashboardData(string $title): array
+    {
         $datasetModel = new DatasetModel();
         $userId = (int) $this->currentUserId();
-        $myDatasets = $datasetModel
-            ->where('contributor_id', $userId)
-            ->orderBy('created_at', 'DESC')
-            ->findAll();
 
-        return view('dashboard/index', [
-            'title' => 'My Datasets',
-            'myDatasets' => $myDatasets,
+        return [
+            'title' => $title,
+            'myDatasets' => $datasetModel
+                ->where('contributor_id', $userId)
+                ->orderBy('created_at', 'DESC')
+                ->findAll(),
             'statusLabels' => DatasetModel::statusLabels(),
             'notifications' => model(NotificationModel::class)->where('user_id', $userId)->orderBy('created_at', 'DESC')->findAll(8),
             'roles' => $this->currentRoles(),
@@ -37,13 +87,6 @@ class Dashboard extends BaseController
                     ->whereIn('status', [DatasetModel::STATUS_ETHICS_REVISION, DatasetModel::STATUS_TECHNICAL_REVISION])
                     ->countAllResults(),
             ],
-        ]);
-    }
-
-    public function readNotifications()
-    {
-        model(NotificationModel::class)->where('user_id', (int) $this->currentUserId())->where('read_at', null)->set(['read_at' => date('Y-m-d H:i:s')])->update();
-
-        return redirect()->to('/dashboard')->with('info', 'Notifications marked as read.');
+        ];
     }
 }

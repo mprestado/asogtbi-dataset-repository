@@ -54,3 +54,33 @@ This file is append-only. Every material implementation milestone must add a dat
 - Verification: `C:\xampp\php\php.exe -l` passes for touched PHP files; `git diff --check` passes with only Windows line-ending warnings; local WinGet PHP 8.5.7 runs `php spark routes`; PHPUnit passes with 10 tests and 22 assertions.
 - Blockers: Database write verification for `php spark db:seed MvpSeeder` was not run in this pass to avoid mutating the local database without a dedicated seed check.
 - Next step: Run `php spark migrate:status` and `php spark db:seed MvpSeeder` against the intended local/staging database, then browser-check the dataset preview modal on desktop and mobile.
+
+## 2026-07-14 - Portal flow separation
+
+- Branch/commit: `rapid-mvp`, local work after `71c04e3`.
+- Completed behavior: Separated the governance portal from the public website by replacing ambiguous contributor/public catalog links with portal-native contributor records, portal dataset inspection, administrator metadata inspection, and explicit `Return to website` exits.
+- Schema changes: None.
+- Important files: `app/Config/Routes.php`, `app/Controllers/Dashboard.php`, `app/Controllers/Admin.php`, `app/Views/layouts/portal.php`, `app/Views/dashboard/portal.php`, `app/Views/dashboard/portal_dataset.php`, `app/Views/admin/dataset.php`, `app/Views/admin/datasets.php`, and `public/assets/css/app.css`.
+- Verification: PHP 8.5 syntax checks passed for updated routes, controllers, portal layout, and new portal/admin views; `php spark routes` shows the new portal/dashboard, portal/datasets, portal notifications, and admin dataset inspection routes; PHPUnit passes with 10 tests and 22 assertions.
+- Blockers: Browser-level confirmation of the portal navigation distinction is still needed.
+- Next step: Start the app under PHP 8.5+ and click through admin, ethics, technical, and portal contributor records to confirm only explicit website-exit actions leave the portal shell.
+
+## 2026-07-14 - Sleeker shared UI scale
+
+- Branch/commit: `rapid-mvp`, local work after `71c04e3`.
+- Completed behavior: Tightened the shared visual scale across public and portal shells: smaller base type, slimmer buttons, reduced hero/card/form/modal spacing, denser portal sidebar/table layouts, Material Symbols icon font loading, icon-led public account menu, portal account tab, and clearer icon treatment for review/admin navigation and website exits.
+- Schema changes: None.
+- Important files: `app/Views/layouts/main.php`, `app/Views/layouts/portal.php`, and `public/assets/css/app.css`.
+- Verification: PHP 8.5 syntax checks passed for updated public and portal layouts; `php spark routes` passes; PHPUnit passes with 10 tests and 22 assertions; `git diff --check` passes with only Windows line-ending warnings; local PHP server returns `200` at `http://127.0.0.1:8082/`.
+- Blockers: Manual visual QA is still needed across public home/catalog and portal/admin screens to approve the final density.
+- Next step: Inspect `http://127.0.0.1:8082/`, login with seeded accounts, and confirm the account icon menu, portal account tab, and smaller shared scale feel right before staging.
+
+## 2026-07-14 - Dashboard links under profile
+
+- Branch/commit: `rapid-mvp`, local work after `71c04e3`.
+- Completed behavior: Moved contributor, reviewer, and administrator dashboard entry points out of the public main navigation and into the profile/account tab so normal users and reviewers share the same general website header. Added matching role shortcuts to the portal account tab and compact mobile account panel.
+- Schema changes: None.
+- Important files: `app/Views/layouts/main.php`, `app/Views/layouts/portal.php`, and `public/assets/css/app.css`.
+- Verification: PHP 8.5 syntax checks passed for updated public and portal layouts; `php spark routes` passes; PHPUnit passes with 10 tests and 22 assertions; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: Manual visual QA should confirm the account dropdown remains readable for multi-role users.
+- Next step: Login as contributor, reviewer, and administrator, then confirm all dashboard/workspace links are reachable from the profile tab without cluttering the main nav.
