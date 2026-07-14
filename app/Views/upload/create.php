@@ -15,26 +15,28 @@
         <div class="panel-head">
             <div>
                 <p class="tag">Submission Form</p>
-                <h2>Dataset metadata</h2>
+                <h2>Dataset Metadata</h2>
             </div>
-            <span class="status-pill status-pending_ethics_review">Pending Ethics Review</span>
         </div>
 
         <form method="post" action="<?= site_url('upload') ?>" enctype="multipart/form-data">
             <?= csrf_field() ?>
+            <input type="hidden" name="form" value="upload">
+
+            <hr class="section-divider">
 
             <p class="tag">Dataset Info</p>
+            <div>
+                <label for="title">Dataset Title</label>
+                <span class="help-text">A concise, descriptive name for your dataset (max 255 characters)</span>
+                <input id="title" name="title" value="<?= old('title') ?>" placeholder="e.g., Startup Survey Responses" class="<?= !empty($errors['title']) ? 'field-error__input' : '' ?>">
+                <?php if (!empty($errors['title'])): ?><span class="field-error"><?= esc($errors['title']) ?></span><?php endif; ?>
+            </div>
             <div class="grid">
-                <div>
-                    <label for="title">Dataset Title</label>
-                    <span class="help-text">A concise, descriptive name for your dataset (max 255 characters)</span>
-                    <input id="title" name="title" value="<?= old('title') ?>" placeholder="e.g., Startup Survey Responses" class="<?= !empty($errors['title']) ? 'field-error__input' : '' ?>">
-                    <?php if (!empty($errors['title'])): ?><span class="field-error"><?= esc($errors['title']) ?></span><?php endif; ?>
-                </div>
                 <div>
                     <label for="category">Category</label>
                     <span class="help-text">e.g., Startup Research, Climate Data, Health Informatics</span>
-                    <input id="category" name="category" value="<?= old('category') ?>" placeholder="Startup Research" class="<?= !empty($errors['category']) ? 'field-error__input' : '' ?>">
+                    <input id="category" name="category" value="<?= old('category') ?>" placeholder="e.g., Startup Research" class="<?= !empty($errors['category']) ? 'field-error__input' : '' ?>">
                     <?php if (!empty($errors['category'])): ?><span class="field-error"><?= esc($errors['category']) ?></span><?php endif; ?>
                 </div>
                 <div>
@@ -51,13 +53,14 @@
                 <div>
                     <label for="file_format">File Format</label>
                     <span class="help-text">The format of the files inside your ZIP package</span>
-                    <input id="file_format" name="file_format" value="<?= old('file_format', 'ZIP') ?>" placeholder="CSV, PDF, JSON" class="<?= !empty($errors['file_format']) ? 'field-error__input' : '' ?>">
+                    <input id="file_format" name="file_format" value="<?= old('file_format') ?>" placeholder="e.g., CSV, PDF, or JSON" class="<?= !empty($errors['file_format']) ? 'field-error__input' : '' ?>">
                     <?php if (!empty($errors['file_format'])): ?><span class="field-error"><?= esc($errors['file_format']) ?></span><?php endif; ?>
                 </div>
                 <div>
                     <label for="access_type">Access Type</label>
                     <span class="help-text">Who should be able to access this dataset once published</span>
                     <select id="access_type" name="access_type">
+                        <option value="" disabled <?= old('access_type') === '' || old('access_type') === null ? 'selected' : '' ?>>Select access type</option>
                         <?php foreach (($accessTypes ?? []) as $value => $label): ?>
                             <option value="<?= esc($value) ?>" <?= old('access_type', 'public') === $value ? 'selected' : '' ?>><?= esc($label) ?></option>
                         <?php endforeach; ?>
@@ -73,25 +76,23 @@
 
             <label for="tags">Tags</label>
             <span class="help-text">Comma-separated keywords for discoverability — e.g., startup, survey, tabular</span>
-            <input id="tags" name="tags" value="<?= old('tags') ?>" placeholder="startup, survey, tabular" class="<?= !empty($errors['tags']) ? 'field-error__input' : '' ?>">
+            <input id="tags" name="tags" value="<?= old('tags') ?>" placeholder="e.g., startup, survey, tabular" class="<?= !empty($errors['tags']) ? 'field-error__input' : '' ?>">
             <?php if (!empty($errors['tags'])): ?><span class="field-error"><?= esc($errors['tags']) ?></span><?php endif; ?>
 
             <hr class="section-divider">
 
             <p class="tag form-section-label">Research Info</p>
-            <div class="grid">
-                <div>
-                    <label for="research_title">Research Title</label>
-                    <span class="help-text">The official title of the research, thesis, or capstone project</span>
-                    <input id="research_title" name="research_title" value="<?= old('research_title') ?>" class="<?= !empty($errors['research_title']) ? 'field-error__input' : '' ?>">
-                    <?php if (!empty($errors['research_title'])): ?><span class="field-error"><?= esc($errors['research_title']) ?></span><?php endif; ?>
-                </div>
-                <div>
-                    <label for="project_head">Project Head or Adviser</label>
-                    <span class="help-text">Name of the faculty adviser, project lead, or supervising researcher</span>
-                    <input id="project_head" name="project_head" value="<?= old('project_head') ?>" class="<?= !empty($errors['project_head']) ? 'field-error__input' : '' ?>">
-                    <?php if (!empty($errors['project_head'])): ?><span class="field-error"><?= esc($errors['project_head']) ?></span><?php endif; ?>
-                </div>
+            <div>
+                <label for="research_title">Research Title</label>
+                <span class="help-text">The official title of the research, thesis, or capstone project</span>
+                <input id="research_title" name="research_title" value="<?= old('research_title') ?>" placeholder="e.g., Startup Ecosystem Analysis in Metro Manila" class="<?= !empty($errors['research_title']) ? 'field-error__input' : '' ?>">
+                <?php if (!empty($errors['research_title'])): ?><span class="field-error"><?= esc($errors['research_title']) ?></span><?php endif; ?>
+            </div>
+            <div>
+                <label for="project_head">Project Head or Adviser</label>
+                <span class="help-text">Name of the faculty adviser, project lead, or supervising researcher</span>
+                <input id="project_head" name="project_head" value="<?= old('project_head') ?>" placeholder="e.g., Dr. Maria Santos" class="<?= !empty($errors['project_head']) ? 'field-error__input' : '' ?>">
+                <?php if (!empty($errors['project_head'])): ?><span class="field-error"><?= esc($errors['project_head']) ?></span><?php endif; ?>
             </div>
 
             <label for="members">Research Members or Contributors</label>
@@ -106,6 +107,7 @@
                     <label for="source_type">Source Type</label>
                     <span class="help-text">Primary = original data collected by your team. Secondary = data from existing sources.</span>
                     <select id="source_type" name="source_type">
+                        <option value="" disabled <?= old('source_type') === '' || old('source_type') === null ? 'selected' : '' ?>>Select source type</option>
                         <?php foreach (($sourceTypes ?? []) as $sourceType): ?>
                             <option value="<?= esc($sourceType) ?>" <?= old('source_type') === $sourceType ? 'selected' : '' ?>><?= esc($sourceType) ?></option>
                         <?php endforeach; ?>

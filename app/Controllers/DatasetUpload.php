@@ -54,6 +54,8 @@ class DatasetUpload extends BaseController
                 'required' => 'Please enter the project head or adviser.',
                 'max_length' => 'Project head cannot exceed 150 characters.',
             ],
+            'members' => ['max_length' => 'Members list cannot exceed 5000 characters.'],
+            'source_link' => ['valid_url_strict' => 'Please enter a valid URL (e.g., https://doi.org/...).'],
             'access_type' => ['required' => 'Please select an access type.'],
             'anonymized' => ['required' => 'You must confirm anonymization before submitting.'],
             'dataset_file' => [
@@ -75,6 +77,8 @@ class DatasetUpload extends BaseController
             'project_head' => 'required|max_length[150]',
             'access_type' => 'required|in_list[public,institutional,restricted,private]',
             'anonymized' => 'required',
+            'members' => 'permit_empty|max_length[5000]',
+            'source_link' => 'permit_empty|valid_url_strict|max_length[255]',
             'dataset_file' => 'uploaded[dataset_file]|ext_in[dataset_file,zip]|max_size[dataset_file,10240]',
         ];
 
@@ -98,6 +102,8 @@ class DatasetUpload extends BaseController
             'tags' => trim((string) $this->request->getPost('tags')),
             'data_type' => trim((string) $this->request->getPost('data_type')),
             'file_format' => trim((string) $this->request->getPost('file_format')),
+            'anonymized' => (int) ($this->request->getPost('anonymized') === '1'),
+            'form' => trim((string) $this->request->getPost('form')),
             'source_type' => trim((string) $this->request->getPost('source_type')),
             'source_link' => trim((string) $this->request->getPost('source_link')),
             'research_title' => trim((string) $this->request->getPost('research_title')),
