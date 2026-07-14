@@ -1,84 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title><?= lang('Errors.pageNotFound') ?></title>
+<?php
 
-    <style>
-        div.logo {
-            height: 200px;
-            width: 155px;
-            display: inline-block;
-            opacity: 0.08;
-            position: absolute;
-            top: 2rem;
-            left: 50%;
-            margin-left: -73px;
-        }
-        body {
-            height: 100%;
-            background: #fafafa;
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-            color: #777;
-            font-weight: 300;
-        }
-        h1 {
-            font-weight: lighter;
-            letter-spacing: normal;
-            font-size: 3rem;
-            margin-top: 0;
-            margin-bottom: 0;
-            color: #222;
-        }
-        .wrap {
-            max-width: 1024px;
-            margin: 5rem auto;
-            padding: 2rem;
-            background: #fff;
-            text-align: center;
-            border: 1px solid #efefef;
-            border-radius: 0.5rem;
-            position: relative;
-        }
-        pre {
-            white-space: normal;
-            margin-top: 1.5rem;
-        }
-        code {
-            background: #fafafa;
-            border: 1px solid #efefef;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            display: block;
-        }
-        p {
-            margin-top: 1.5rem;
-        }
-        .footer {
-            margin-top: 2rem;
-            border-top: 1px solid #efefef;
-            padding: 1em 2em 0 2em;
-            font-size: 85%;
-            color: #999;
-        }
-        a:active,
-        a:link,
-        a:visited {
-            color: #dd4814;
-        }
-    </style>
-</head>
-<body>
-    <div class="wrap">
-        <h1>404</h1>
+helper('url');
 
-        <p>
-            <?php if (ENVIRONMENT !== 'production') : ?>
-                <?= nl2br(esc($message)) ?>
-            <?php else : ?>
-                <?= lang('Errors.sorryCannotFind') ?>
-            <?php endif; ?>
-        </p>
-    </div>
-</body>
-</html>
+$backUrl = previous_url();
+
+if (! $backUrl || $backUrl === current_url()) {
+    $backUrl = site_url('/');
+}
+
+$error = [
+    'code' => '404',
+    'title' => 'Page Not Found',
+    'message' => "The page you're looking for may have been moved, deleted, or the URL is incorrect.",
+    'illustration' => <<<'SVG'
+<svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+    <path d="M34 24h34l18 18v54a4 4 0 0 1-4 4H34a4 4 0 0 1-4-4V28a4 4 0 0 1 4-4Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M68 24v18h18" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M48 58h24" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+    <path d="M48 72h32" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".6"/>
+    <circle cx="83" cy="80" r="14" stroke="currentColor" stroke-width="4"/>
+    <path d="m92 90 10 10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+</svg>
+SVG,
+    'actions' => [
+        [
+            'label' => 'Go to Home',
+            'href' => site_url('/'),
+            'variant' => 'primary',
+        ],
+        [
+            'label' => 'Go Back',
+            'href' => $backUrl,
+            'variant' => 'secondary',
+        ],
+    ],
+];
+
+include __DIR__ . DIRECTORY_SEPARATOR . '_error_layout.php';
