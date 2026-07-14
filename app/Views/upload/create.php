@@ -16,10 +16,11 @@
             <div>
                 <p class="tag">Submission Form</p>
                 <h2>Dataset Metadata</h2>
+                </div>
+                <?php if (!empty($errors['anonymized'])): ?><span class="field-error" style="margin-top:8px;display:block"><?= esc($errors['anonymized']) ?></span><?php endif; ?>
             </div>
-        </div>
 
-        <form method="post" action="<?= site_url('upload') ?>" enctype="multipart/form-data">
+        <form method="post" action="<?= site_url('upload') ?>" enctype="multipart/form-data" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="form" value="upload">
 
@@ -27,20 +28,20 @@
 
             <p class="tag">Dataset Info</p>
             <div>
-                <label for="title">Dataset Title</label>
+                <label for="title">Dataset Title<span class="required-asterisk">*</span></label>
                 <span class="help-text">A concise, descriptive name for your dataset (max 255 characters)</span>
                 <input id="title" name="title" value="<?= old('title') ?>" placeholder="e.g., Startup Survey Responses" class="<?= !empty($errors['title']) ? 'field-error__input' : '' ?>">
                 <?php if (!empty($errors['title'])): ?><span class="field-error"><?= esc($errors['title']) ?></span><?php endif; ?>
             </div>
             <div class="grid">
                 <div>
-                    <label for="category">Category</label>
+                    <label for="category">Category<span class="required-asterisk">*</span></label>
                     <span class="help-text">The category or subject area of your dataset</span>
                     <input id="category" name="category" value="<?= old('category') ?>" placeholder="e.g., Startup Research" class="<?= !empty($errors['category']) ? 'field-error__input' : '' ?>">
                     <?php if (!empty($errors['category'])): ?><span class="field-error"><?= esc($errors['category']) ?></span><?php endif; ?>
                 </div>
                 <div>
-                    <label for="data_type">Data Type</label>
+                    <label for="data_type">Data Type<span class="required-asterisk">*</span></label>
                     <span class="help-text">The structural type that best describes your data</span>
                     <div class="dropdown-wrap<?= !empty($errors['data_type']) ? ' has-error' : '' ?>" data-field="data_type">
                         <button type="button" id="data_type" class="dropdown-trigger<?= !empty($errors['data_type']) ? ' field-error__input' : '' ?>" aria-haspopup="listbox">
@@ -58,13 +59,13 @@
                     <?php if (!empty($errors['data_type'])): ?><span class="field-error"><?= esc($errors['data_type']) ?></span><?php endif; ?>
                 </div>
                 <div>
-                    <label for="file_format">File Format</label>
+                    <label for="file_format">File Format<span class="required-asterisk">*</span></label>
                     <span class="help-text">The format of the files inside your ZIP package</span>
                     <input id="file_format" name="file_format" value="<?= old('file_format') ?>" placeholder="e.g., CSV, PDF, or JSON" class="<?= !empty($errors['file_format']) ? 'field-error__input' : '' ?>">
                     <?php if (!empty($errors['file_format'])): ?><span class="field-error"><?= esc($errors['file_format']) ?></span><?php endif; ?>
                 </div>
                 <div>
-                    <label for="access_type">Access Type</label>
+                    <label for="access_type">Access Type<span class="required-asterisk">*</span></label>
                     <span class="help-text">The access level for this dataset once published</span>
                     <div class="dropdown-wrap<?= !empty($errors['access_type']) ? ' has-error' : '' ?>" data-field="access_type">
                         <button type="button" id="access_type" class="dropdown-trigger<?= !empty($errors['access_type']) ? ' field-error__input' : '' ?>" aria-haspopup="listbox">
@@ -83,12 +84,12 @@
                 </div>
             </div>
 
-            <label for="description">Description</label>
+            <label for="description">Description<span class="required-asterisk">*</span></label>
             <span class="help-text">Describe what the dataset contains, how it was collected, and how it may be used</span>
             <textarea id="description" name="description" rows="4" placeholder="e.g., Survey responses from incubatees covering startup needs, challenges, and resource gaps." class="<?= !empty($errors['description']) ? 'field-error__input' : '' ?>"><?= old('description') ?></textarea>
             <?php if (!empty($errors['description'])): ?><span class="field-error"><?= esc($errors['description']) ?></span><?php endif; ?>
 
-            <label for="tags">Tags</label>
+            <label for="tags">Tags<span class="required-asterisk">*</span></label>
             <span class="help-text">Comma-separated keywords for discoverability</span>
             <input id="tags" name="tags" value="<?= old('tags') ?>" placeholder="e.g., startup, survey, tabular" class="<?= !empty($errors['tags']) ? 'field-error__input' : '' ?>">
             <?php if (!empty($errors['tags'])): ?><span class="field-error"><?= esc($errors['tags']) ?></span><?php endif; ?>
@@ -97,13 +98,13 @@
 
             <p class="tag form-section-label">Research Info</p>
             <div>
-                <label for="research_title">Research Title</label>
+                <label for="research_title">Research Title<span class="required-asterisk">*</span></label>
                 <span class="help-text">The official title of the research, thesis, or capstone project</span>
                 <input id="research_title" name="research_title" value="<?= old('research_title') ?>" placeholder="e.g., Startup Ecosystem Analysis in Metro Manila" class="<?= !empty($errors['research_title']) ? 'field-error__input' : '' ?>">
                 <?php if (!empty($errors['research_title'])): ?><span class="field-error"><?= esc($errors['research_title']) ?></span><?php endif; ?>
             </div>
             <div>
-                <label for="project_head">Project Head or Adviser</label>
+                <label for="project_head">Project Head or Adviser<span class="required-asterisk">*</span></label>
                 <span class="help-text">Name of the project lead, supervising researcher, or faculty adviser</span>
                 <input id="project_head" name="project_head" value="<?= old('project_head') ?>" placeholder="e.g., Dr. Maria Santos" class="<?= !empty($errors['project_head']) ? 'field-error__input' : '' ?>">
                 <?php if (!empty($errors['project_head'])): ?><span class="field-error"><?= esc($errors['project_head']) ?></span><?php endif; ?>
@@ -119,7 +120,7 @@
             <div class="grid">
                 <div style="position:relative">
                     <div class="label-row">
-                        <label for="source_type">Source Type</label>
+                        <label for="source_type">Source Type<span class="required-asterisk">*</span></label>
                         <div class="info-wrap">
                             <span class="info-trigger" id="source-type-info" tabindex="0" role="button" aria-label="Learn more about source types"><span class="info-icon">i</span></span>
                             <div class="info-popup" id="source-type-popup" hidden>
@@ -155,14 +156,11 @@
                 </div>
             </div>
 
-            <label for="dataset_file">Dataset ZIP File</label>
+            <label for="dataset_file">Dataset ZIP File<span class="required-asterisk">*</span></label>
             <span class="help-text">Upload a single ZIP file containing your dataset and any supporting documentation</span>
 
-            <div class="file-zone" id="file-zone">
+            <div class="file-zone<?= !empty($errors['dataset_file']) ? ' file-zone--error' : '' ?>" id="file-zone">
                 <input type="file" id="dataset_file" name="dataset_file" accept=".zip" hidden>
-                <?php if (!empty($errors['dataset_file'])): ?>
-                    <span class="field-error" style="margin-bottom:8px;display:block"><?= esc($errors['dataset_file']) ?></span>
-                <?php endif; ?>
                 <div class="file-zone__placeholder" id="file-placeholder">
                     <strong>Upload protected ZIP package</strong>
                     <p class="muted">ZIP only, maximum 10 MB</p>
@@ -177,16 +175,19 @@
                     <button type="button" class="button secondary" id="file-clear" title="Remove selected file">Remove</button>
                 </div>
             </div>
+            <?php if (!empty($errors['dataset_file'])): ?>
+                <span class="field-error"><?= esc($errors['dataset_file']) ?></span>
+            <?php endif; ?>
 
-            <div class="anonymization-card">
-                <p class="tag">Ethics Requirement</p>
+            <div class="anonymization-card<?= !empty($errors['anonymized']) ? ' has-error' : '' ?>">
+                <p class="tag">Ethics Requirement<span class="required-asterisk">*</span></p>
                 <div class="checkbox-row">
                     <input type="checkbox" id="anonymized" name="anonymized" value="1" <?= old('anonymized') ? 'checked' : '' ?>>
                     <span class="check-box" id="check-visual"></span>
                     <label for="anonymized" class="check-label">I confirm that all sensitive or personal data has been anonymized before submission.</label>
                 </div>
-                <?php if (!empty($errors['anonymized'])): ?><span class="field-error" style="margin-top:8px;display:block"><?= esc($errors['anonymized']) ?></span><?php endif; ?>
             </div>
+            <?php if (!empty($errors['anonymized'])): ?><span class="field-error"><?= esc($errors['anonymized']) ?></span><?php endif; ?>
 
             <div class="actions" style="margin-top:28px">
                 <button class="button" type="submit">Submit for Review</button>
@@ -271,7 +272,7 @@
     fileZone.addEventListener('drop', function(e) {
         e.preventDefault();
         fileZone.classList.remove('file-zone--dragover');
-        if (e.dataTransfer.files.length > 0) {
+        if (e.dataTransfer.files.length> 0) {
             fileInput.files = e.dataTransfer.files;
             if (fileInput.files[0]) {
                 var event = new Event('change', { bubbles: true });
@@ -289,6 +290,178 @@
         wrap.addEventListener('mouseenter', function() { this.classList.add('input-hovered'); });
         wrap.addEventListener('mouseleave', function() { this.classList.remove('input-hovered'); });
     });
+
+    function ensureErrorSpan(el) {
+        var sib = el.nextElementSibling;
+        while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
+        if (sib) return sib;
+        sib = document.createElement('span');
+        sib.className = 'field-error';
+        sib.textContent = 'This field is required.';
+        el.parentNode.insertBefore(sib, el.nextSibling);
+        return sib;
+    }
+
+    function markInvalid(el) {
+        el.classList.add('field-error__input');
+        ensureErrorSpan(el).hidden = false;
+    }
+
+    function clearInvalid(el) {
+        el.classList.remove('field-error__input');
+        var sib = el.nextElementSibling;
+        while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
+        if (sib) sib.hidden = true;
+    }
+
+    function markDropdownInvalid(wrap) {
+        wrap.classList.add('has-error');
+        var t = wrap.querySelector('.dropdown-trigger');
+        if (t) t.classList.add('field-error__input');
+        var sib = wrap.nextElementSibling;
+        while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
+        if (!sib) {
+            sib = document.createElement('span');
+            sib.className = 'field-error';
+            sib.textContent = 'This field is required.';
+            wrap.parentNode.insertBefore(sib, wrap.nextSibling);
+        }
+        sib.hidden = false;
+    }
+
+    function clearDropdownInvalid(wrap) {
+        wrap.classList.remove('has-error');
+        var t = wrap.querySelector('.dropdown-trigger');
+        if (t) t.classList.remove('field-error__input');
+        var sib = wrap.nextElementSibling;
+        while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
+        if (sib) sib.hidden = true;
+    }
+
+    var anonymizedInput = document.getElementById('anonymized');
+    var ethicsCard = document.querySelector('.anonymization-card');
+
+    function markEthicsInvalid() {
+        if (!ethicsCard) return;
+        ethicsCard.classList.add('has-error');
+        var sib = ethicsCard.nextElementSibling;
+        while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
+        if (!sib) {
+            sib = document.createElement('span');
+            sib.className = 'field-error';
+            sib.textContent = 'You must confirm anonymization before submitting.';
+            ethicsCard.parentNode.insertBefore(sib, ethicsCard.nextSibling);
+        }
+        sib.hidden = false;
+    }
+
+    function clearEthicsInvalid() {
+        if (!ethicsCard) return;
+        ethicsCard.classList.remove('has-error');
+        var sib = ethicsCard.nextElementSibling;
+        while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
+        if (sib) sib.hidden = true;
+    }
+
+    function markFileInvalid() {
+        fileZone.classList.add('file-zone--error');
+        var sib = fileZone.nextElementSibling;
+        while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
+        if (!sib) {
+            sib = document.createElement('span');
+            sib.className = 'field-error';
+            sib.textContent = 'Please select a ZIP file to upload.';
+            fileZone.parentNode.insertBefore(sib, fileZone.nextSibling);
+        }
+        sib.hidden = false;
+    }
+
+    function clearFileInvalid() {
+        fileZone.classList.remove('file-zone--error');
+        var sib = fileZone.nextElementSibling;
+        while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
+        if (sib) sib.hidden = true;
+    }
+
+    var formEl = document.querySelector('form');
+    if (formEl) {
+        var requiredFields = ['title','category','file_format','description','tags','research_title','project_head'];
+
+        formEl.addEventListener('submit', function(e) {
+            var firstInvalid = null;
+            var ok = true;
+
+            requiredFields.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el && !el.value.trim()) {
+                    markInvalid(el);
+                    if (!firstInvalid) firstInvalid = el;
+                    ok = false;
+                } else if (el) {
+                    clearInvalid(el);
+                }
+            });
+
+            if (anonymizedInput && !anonymizedInput.checked) {
+                markEthicsInvalid();
+                if (!firstInvalid) firstInvalid = checkVisual;
+                ok = false;
+            } else {
+                clearEthicsInvalid();
+            }
+
+            document.querySelectorAll('.dropdown-wrap[data-field]').forEach(function(wrap) {
+                var h = wrap.querySelector('input[type="hidden"]');
+                if (h && !h.value) {
+                    markDropdownInvalid(wrap);
+                    if (!firstInvalid) firstInvalid = wrap;
+                    ok = false;
+                } else {
+                    clearDropdownInvalid(wrap);
+                }
+            });
+
+            if (fileInput && fileInput.files.length === 0) {
+                markFileInvalid();
+                if (!firstInvalid) firstInvalid = fileInput;
+                ok = false;
+            } else {
+                clearFileInvalid();
+            }
+
+            if (!ok) {
+                e.preventDefault();
+                if (firstInvalid) {
+                    if (typeof firstInvalid.focus === 'function') setTimeout(function() { firstInvalid.focus(); }, 50);
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+
+        requiredFields.forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', function() { clearInvalid(el); });
+                el.addEventListener('change', function() { clearInvalid(el); });
+            }
+        });
+
+        document.querySelectorAll('.dropdown-wrap[data-field] .dropdown-option').forEach(function(opt) {
+            opt.addEventListener('click', function() { clearDropdownInvalid(opt.closest('.dropdown-wrap')); });
+        });
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length > 0) clearFileInvalid();
+            });
+        }
+
+        if (anonymizedInput) {
+            document.getElementById('check-visual').addEventListener('click', function() {
+                if (anonymizedInput.checked) clearEthicsInvalid();
+            });
+        }
+    }
 
     function closeAllDropdowns(except) {
         document.querySelectorAll('.dropdown-wrap.is-open').forEach(function(w) {
