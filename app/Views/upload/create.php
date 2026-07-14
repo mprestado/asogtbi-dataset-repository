@@ -35,13 +35,13 @@
             <div class="grid">
                 <div>
                     <label for="category">Category</label>
-                    <span class="help-text">e.g., Startup Research, Climate Data, Health Informatics</span>
+                    <span class="help-text">The category or subject area of your dataset</span>
                     <input id="category" name="category" value="<?= old('category') ?>" placeholder="e.g., Startup Research" class="<?= !empty($errors['category']) ? 'field-error__input' : '' ?>">
                     <?php if (!empty($errors['category'])): ?><span class="field-error"><?= esc($errors['category']) ?></span><?php endif; ?>
                 </div>
                 <div>
                     <label for="data_type">Data Type</label>
-                    <span class="help-text">Select the canonical type that best describes your data</span>
+                    <span class="help-text">The structural type that best describes your data</span>
                     <div class="dropdown-wrap<?= !empty($errors['data_type']) ? ' has-error' : '' ?>" data-field="data_type">
                         <button type="button" id="data_type" class="dropdown-trigger<?= !empty($errors['data_type']) ? ' field-error__input' : '' ?>" aria-haspopup="listbox">
                             <span class="dropdown-display">Select a data type</span>
@@ -65,7 +65,7 @@
                 </div>
                 <div>
                     <label for="access_type">Access Type</label>
-                    <span class="help-text">Who should be able to access this dataset once published</span>
+                    <span class="help-text">The access level for this dataset once published</span>
                     <div class="dropdown-wrap<?= !empty($errors['access_type']) ? ' has-error' : '' ?>" data-field="access_type">
                         <button type="button" id="access_type" class="dropdown-trigger<?= !empty($errors['access_type']) ? ' field-error__input' : '' ?>" aria-haspopup="listbox">
                             <span class="dropdown-display">Select access type</span>
@@ -85,11 +85,11 @@
 
             <label for="description">Description</label>
             <span class="help-text">Describe what the dataset contains, how it was collected, and how it may be used</span>
-            <textarea id="description" name="description" rows="4" placeholder="e.g., Survey responses from 120 incubatees covering startup needs, challenges, and resource gaps." class="<?= !empty($errors['description']) ? 'field-error__input' : '' ?>"><?= old('description') ?></textarea>
+            <textarea id="description" name="description" rows="4" placeholder="e.g., Survey responses from incubatees covering startup needs, challenges, and resource gaps." class="<?= !empty($errors['description']) ? 'field-error__input' : '' ?>"><?= old('description') ?></textarea>
             <?php if (!empty($errors['description'])): ?><span class="field-error"><?= esc($errors['description']) ?></span><?php endif; ?>
 
             <label for="tags">Tags</label>
-            <span class="help-text">Comma-separated keywords for discoverability — e.g., startup, survey, tabular</span>
+            <span class="help-text">Comma-separated keywords for discoverability</span>
             <input id="tags" name="tags" value="<?= old('tags') ?>" placeholder="e.g., startup, survey, tabular" class="<?= !empty($errors['tags']) ? 'field-error__input' : '' ?>">
             <?php if (!empty($errors['tags'])): ?><span class="field-error"><?= esc($errors['tags']) ?></span><?php endif; ?>
 
@@ -104,7 +104,7 @@
             </div>
             <div>
                 <label for="project_head">Project Head or Adviser</label>
-                <span class="help-text">Name of the faculty adviser, project lead, or supervising researcher</span>
+                <span class="help-text">Name of the project lead, supervising researcher, or faculty adviser</span>
                 <input id="project_head" name="project_head" value="<?= old('project_head') ?>" placeholder="e.g., Dr. Maria Santos" class="<?= !empty($errors['project_head']) ? 'field-error__input' : '' ?>">
                 <?php if (!empty($errors['project_head'])): ?><span class="field-error"><?= esc($errors['project_head']) ?></span><?php endif; ?>
             </div>
@@ -117,9 +117,22 @@
 
             <p class="tag form-section-label">Source and File</p>
             <div class="grid">
-                <div>
-                    <label for="source_type">Source Type</label>
-                    <span class="help-text">Primary = original data collected by your team. Secondary = data from existing sources.</span>
+                <div style="position:relative">
+                    <div class="label-row">
+                        <label for="source_type">Source Type</label>
+                        <div class="info-wrap">
+                            <span class="info-trigger" id="source-type-info" tabindex="0" role="button" aria-label="Learn more about source types"><span class="info-icon">i</span></span>
+                            <div class="info-popup" id="source-type-popup" hidden>
+                                <div class="info-popup__header">
+                                    <h4 class="info-popup__title">SOURCE TYPE CLASSIFICATION</h4>
+                                    <button type="button" class="info-popup__close" aria-label="Close">✕</button>
+                                </div>
+                                <p><strong>Primary</strong> — Original data collected by your team. Choose this if you conducted surveys, interviews, experiments, or gathered data firsthand.</p>
+                                <p><strong>Secondary</strong> — Data obtained from existing sources. Choose this if the data comes from published studies, government databases, or third-party repositories.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="help-text">Select the source type for your data</span>
                     <div class="dropdown-wrap<?= !empty($errors['source_type']) ? ' has-error' : '' ?>" data-field="source_type">
                         <button type="button" id="source_type" class="dropdown-trigger<?= !empty($errors['source_type']) ? ' field-error__input' : '' ?>" aria-haspopup="listbox">
                             <span class="dropdown-display">Select source type</span>
@@ -136,8 +149,8 @@
                     <?php if (!empty($errors['source_type'])): ?><span class="field-error"><?= esc($errors['source_type']) ?></span><?php endif; ?>
                 </div>
                 <div>
-                    <label for="source_link">Source Link</label>
-                    <span class="help-text">Optional — provide a URL to the original data source or related publication</span>
+                    <label for="source_link">Source Link <span class="label-optional">(OPTIONAL)</span></label>
+                    <span class="help-text">A URL to the original data source or related publication</span>
                     <input id="source_link" name="source_link" value="<?= old('source_link') ?>" placeholder="https://doi.org/...">
                 </div>
             </div>
@@ -156,7 +169,9 @@
                     <button type="button" class="button" id="file-trigger">Select ZIP File</button>
                 </div>
                 <div class="file-zone__preview" id="file-preview" hidden>
-                    <span class="file-zone__icon">ZIP</span>
+                    <span class="file-zone__icon">
+                        <i class="fa-solid fa-file-zipper" style="font-size: 24px; color: var(--navy);"></i>
+                    </span>
                     <span class="file-zone__name" id="file-name"></span>
                     <span class="file-zone__size muted" id="file-size"></span>
                     <button type="button" class="button secondary" id="file-clear" title="Remove selected file">Remove</button>
@@ -165,10 +180,11 @@
 
             <div class="anonymization-card">
                 <p class="tag">Ethics Requirement</p>
-                <label class="checkbox-row" for="anonymized">
-                    <input id="anonymized" type="checkbox" name="anonymized" value="1" <?= old('anonymized') ? 'checked' : '' ?>>
-                    <span>I confirm that all sensitive or personal data has been anonymized before submission.</span>
-                </label>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="anonymized" name="anonymized" value="1" <?= old('anonymized') ? 'checked' : '' ?>>
+                    <span class="check-box" id="check-visual"></span>
+                    <label for="anonymized" class="check-label">I confirm that all sensitive or personal data has been anonymized before submission.</label>
+                </div>
                 <?php if (!empty($errors['anonymized'])): ?><span class="field-error" style="margin-top:8px;display:block"><?= esc($errors['anonymized']) ?></span><?php endif; ?>
             </div>
 
@@ -195,6 +211,18 @@
 
 <script>
 (function() {
+    document.querySelectorAll('label[for]').forEach(function(lbl) {
+        lbl.addEventListener('click', function(e) { e.preventDefault(); });
+    });
+
+    var checkVisual = document.getElementById('check-visual');
+    var anonymized = document.getElementById('anonymized');
+    if (checkVisual && anonymized) {
+        checkVisual.addEventListener('click', function() {
+            anonymized.checked = !anonymized.checked;
+        });
+    }
+
     var fileInput = document.getElementById('dataset_file');
     var fileTrigger = document.getElementById('file-trigger');
     var fileZone = document.getElementById('file-zone');
@@ -323,6 +351,33 @@
             });
         }
     });
+
+    var infoTrigger = document.getElementById('source-type-info');
+    var infoPopup = document.getElementById('source-type-popup');
+    if (infoTrigger && infoPopup) {
+        infoTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var hidden = infoPopup.hasAttribute('hidden');
+            document.querySelectorAll('.info-popup').forEach(function(p) { p.hidden = true; });
+            document.querySelectorAll('.info-trigger--active').forEach(function(t) { t.classList.remove('info-trigger--active'); });
+            infoPopup.hidden = !hidden;
+            if (!hidden) {
+                infoTrigger.classList.remove('info-trigger--active');
+            } else {
+                infoTrigger.classList.add('info-trigger--active');
+            }
+        });
+        infoPopup.querySelector('.info-popup__close').addEventListener('click', function() {
+            infoPopup.hidden = true;
+            infoTrigger.classList.remove('info-trigger--active');
+        });
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.info-trigger') && !e.target.closest('.info-popup')) {
+                infoPopup.hidden = true;
+                infoTrigger.classList.remove('info-trigger--active');
+            }
+        });
+    }
 })();
 </script>
 <?= $this->endSection() ?>
