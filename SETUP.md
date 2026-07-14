@@ -86,6 +86,10 @@ php spark migrate:status
 composer test
 ```
 
+## Deployment Readiness
+
+Deployment remains conditional on server availability and successful PHP 8.2+ verification. Use [docs/DEPLOYMENT_READINESS.md](docs/DEPLOYMENT_READINESS.md) for the go/no-go checklist, production setup steps, and evidence to record after deployment.
+
 Uploaded files belong under `writable/uploads/datasets/`. Do not commit `.env`, credentials, database dumps, `vendor/`, writable runtime data, or uploaded ZIP files.
 
 Automated ZIP inspection, antivirus, backup/restore, reports, restricted-access requests, and email notifications are deferred.

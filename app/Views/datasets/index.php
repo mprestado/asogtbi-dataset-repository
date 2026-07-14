@@ -128,6 +128,7 @@
                                     type="button"
                                     data-preview-target="dataset-preview-<?= esc((string) $dataset['id']) ?>"
                                     aria-controls="dataset-preview-<?= esc((string) $dataset['id']) ?>"
+                                    aria-expanded="false"
                                 >
                                     Preview
                                 </button>
@@ -136,9 +137,9 @@
                         </div>
                     </article>
 
-                    <div class="preview-modal" id="dataset-preview-<?= esc((string) $dataset['id']) ?>" role="dialog" aria-modal="true" aria-labelledby="dataset-preview-title-<?= esc((string) $dataset['id']) ?>" hidden>
+                    <div class="preview-modal" id="dataset-preview-<?= esc((string) $dataset['id']) ?>" role="dialog" aria-modal="true" aria-labelledby="dataset-preview-title-<?= esc((string) $dataset['id']) ?>" aria-describedby="dataset-preview-summary-<?= esc((string) $dataset['id']) ?>" hidden>
                         <div class="preview-backdrop" data-preview-close></div>
-                        <article class="preview-card" tabindex="-1">
+                        <article class="preview-card dataset-preview-card" tabindex="-1">
                             <button class="preview-close" type="button" data-preview-close aria-label="Close preview">&times;</button>
                             <div class="badge-row">
                                 <span class="badge"><?= esc($dataset['data_type'] ?: 'Dataset') ?></span>
@@ -146,7 +147,26 @@
                                 <span class="badge outline"><?= esc(($accessOptions[$dataset['access_type'] ?? ''] ?? 'Public')) ?></span>
                             </div>
                             <h2 id="dataset-preview-title-<?= esc((string) $dataset['id']) ?>"><?= esc($dataset['title']) ?></h2>
-                            <p class="preview-description"><?= esc($dataset['description']) ?></p>
+                            <p class="preview-description" id="dataset-preview-summary-<?= esc((string) $dataset['id']) ?>"><?= esc($dataset['description']) ?></p>
+
+                            <div class="preview-status-strip">
+                                <div>
+                                    <span class="preview-kicker">Access</span>
+                                    <strong><?= esc(($accessOptions[$dataset['access_type'] ?? ''] ?? 'Public')) ?></strong>
+                                    <?php if (($dataset['access_type'] ?? '') === 'public'): ?>
+                                        <small>Visible in the public catalog.</small>
+                                    <?php elseif (($dataset['access_type'] ?? '') === 'private'): ?>
+                                        <small>Only the owner and repository administrators can inspect it.</small>
+                                    <?php else: ?>
+                                        <small>Login is required before download access is evaluated.</small>
+                                    <?php endif; ?>
+                                </div>
+                                <div>
+                                    <span class="preview-kicker">Version</span>
+                                    <strong><?= esc($dataset['version'] ?? '1.0') ?></strong>
+                                    <small><?= ! empty($dataset['created_at']) ? esc(date('M d, Y', strtotime($dataset['created_at']))) : 'Date not recorded' ?></small>
+                                </div>
+                            </div>
 
                             <dl class="preview-meta">
                                 <div>
@@ -162,10 +182,6 @@
                                     <dd><?= esc($dataset['file_format'] ?: 'ZIP') ?></dd>
                                 </div>
                                 <div>
-                                    <dt>Version</dt>
-                                    <dd><?= esc($dataset['version'] ?? '1.0') ?></dd>
-                                </div>
-                                <div>
                                     <dt>Research Title</dt>
                                     <dd><?= esc($dataset['research_title'] ?: 'Not set') ?></dd>
                                 </div>
@@ -174,7 +190,7 @@
                                     <dd><?= esc($dataset['project_head'] ?: 'Not set') ?></dd>
                                 </div>
                                 <div>
-                                    <dt>Members</dt>
+                                    <dt>Authors</dt>
                                     <dd><?= esc($dataset['members'] ?: 'Not listed') ?></dd>
                                 </div>
                                 <div>
@@ -194,7 +210,7 @@
                             </dl>
 
                             <div class="preview-actions">
-                                <a class="button" href="<?= site_url('datasets/' . $dataset['id']) ?>">Open Dataset Page</a>
+                                <a class="button" href="<?= site_url('datasets/' . $dataset['id']) ?>" data-preview-primary>Open Dataset Page</a>
                                 <button class="button secondary" type="button" data-preview-close>Close Preview</button>
                             </div>
                         </article>
@@ -212,6 +228,8 @@
 </section>
 
 <script>
+    const focusablePreviewSelector = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
     document.querySelectorAll('.preview-trigger').forEach((trigger) => {
         trigger.addEventListener('click', () => {
             const modal = document.getElementById(trigger.dataset.previewTarget);
@@ -220,7 +238,7 @@
             modal.hidden = false;
             document.body.classList.add('preview-open');
             trigger.setAttribute('aria-expanded', 'true');
-            modal.querySelector('.preview-card')?.focus();
+            (modal.querySelector('[data-preview-primary]') || modal.querySelector('.preview-card'))?.focus();
         });
     });
 
@@ -239,10 +257,30 @@
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key !== 'Escape') return;
-
         const openModal = document.querySelector('.preview-modal:not([hidden])');
-        if (openModal) closePreview(openModal);
+        if (!openModal) return;
+
+        if (event.key === 'Escape') {
+            closePreview(openModal);
+            return;
+        }
+
+        if (event.key !== 'Tab') return;
+
+        const focusable = Array.from(openModal.querySelectorAll(focusablePreviewSelector))
+            .filter((element) => element.offsetParent !== null || element === document.activeElement);
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
     });
 </script>
 <?= $this->endSection() ?>

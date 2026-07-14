@@ -44,3 +44,13 @@ This file is append-only. Every material implementation milestone must add a dat
 - Verification: All 31 changed or new PHP files pass `php -l`; `git diff --check` passes; active docs and views contain no separate-Admin-Portal prohibition. Spark routes and PHPUnit were attempted but cannot run under PHP 8.0.30.
 - Blockers: A PHP 8.2+ runtime and migrated MySQL test database are required for route, migration, feature, and browser walkthrough verification.
 - Next step: Run `php spark migrate`, `php spark db:seed MvpSeeder`, `php spark routes`, and `composer test` under PHP 8.2+, then execute the role-by-role walkthrough in `SETUP.md`.
+
+## 2026-07-14 - Marc task pass
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation.
+- Completed behavior: Implemented Marc's refactored tracker items by polishing dataset preview metadata, access context, focus return, keyboard trapping, and mobile-safe preview layout; expanded demo seed data across published access labels and moderation lifecycle states; added a conditional deployment readiness checklist.
+- Schema changes: None.
+- Important files: `app/Views/datasets/index.php`, `public/assets/css/app.css`, `app/Database/Seeds/MvpSeeder.php`, `SETUP.md`, `docs/DEPLOYMENT_READINESS.md`, and `docs/refactored-audit-task-tracker.csv`.
+- Verification: `C:\xampp\php\php.exe -l` passes for touched PHP files; `git diff --check` passes with only Windows line-ending warnings; local WinGet PHP 8.5.7 runs `php spark routes`; PHPUnit passes with 10 tests and 22 assertions.
+- Blockers: Database write verification for `php spark db:seed MvpSeeder` was not run in this pass to avoid mutating the local database without a dedicated seed check.
+- Next step: Run `php spark migrate:status` and `php spark db:seed MvpSeeder` against the intended local/staging database, then browser-check the dataset preview modal on desktop and mobile.
