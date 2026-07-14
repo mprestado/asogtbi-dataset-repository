@@ -42,12 +42,19 @@
                 <div>
                     <label for="data_type">Data Type</label>
                     <span class="help-text">Select the canonical type that best describes your data</span>
-                    <select id="data_type" name="data_type" class="<?= !empty($errors['data_type']) ? 'field-error__input' : '' ?>">
-                        <option value="" disabled <?= old('data_type') === '' || old('data_type') === null ? 'selected' : '' ?>>Select a data type</option>
-                        <?php foreach (($dataTypes ?? []) as $dataType): ?>
-                            <option value="<?= esc($dataType) ?>" <?= old('data_type') === $dataType ? 'selected' : '' ?>><?= esc($dataType) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div class="dropdown-wrap<?= !empty($errors['data_type']) ? ' has-error' : '' ?>" data-field="data_type">
+                        <button type="button" id="data_type" class="dropdown-trigger<?= !empty($errors['data_type']) ? ' field-error__input' : '' ?>" aria-haspopup="listbox">
+                            <span class="dropdown-display">Select a data type</span>
+                            <span class="dropdown-chevron"></span>
+                        </button>
+                        <div class="dropdown-menu" role="listbox">
+                            <button type="button" class="dropdown-option dropdown-placeholder" role="option" disabled>Select a data type</button>
+                            <?php foreach (($dataTypes ?? []) as $dataType): ?>
+                                <button type="button" class="dropdown-option<?= old('data_type') === $dataType ? ' selected' : '' ?>" role="option" data-value="<?= esc($dataType) ?>"><?= esc($dataType) ?></button>
+                            <?php endforeach; ?>
+                        </div>
+                        <input type="hidden" name="data_type" value="<?= old('data_type') ?>">
+                    </div>
                     <?php if (!empty($errors['data_type'])): ?><span class="field-error"><?= esc($errors['data_type']) ?></span><?php endif; ?>
                 </div>
                 <div>
@@ -59,12 +66,19 @@
                 <div>
                     <label for="access_type">Access Type</label>
                     <span class="help-text">Who should be able to access this dataset once published</span>
-                    <select id="access_type" name="access_type">
-                        <option value="" disabled <?= old('access_type') === '' || old('access_type') === null ? 'selected' : '' ?>>Select access type</option>
-                        <?php foreach (($accessTypes ?? []) as $value => $label): ?>
-                            <option value="<?= esc($value) ?>" <?= old('access_type', 'public') === $value ? 'selected' : '' ?>><?= esc($label) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div class="dropdown-wrap<?= !empty($errors['access_type']) ? ' has-error' : '' ?>" data-field="access_type">
+                        <button type="button" id="access_type" class="dropdown-trigger<?= !empty($errors['access_type']) ? ' field-error__input' : '' ?>" aria-haspopup="listbox">
+                            <span class="dropdown-display">Select access type</span>
+                            <span class="dropdown-chevron"></span>
+                        </button>
+                        <div class="dropdown-menu" role="listbox">
+                            <button type="button" class="dropdown-option dropdown-placeholder" role="option" disabled>Select access type</button>
+                            <?php foreach (($accessTypes ?? []) as $value => $label): ?>
+                                <button type="button" class="dropdown-option<?= old('access_type') === $value ? ' selected' : '' ?>" role="option" data-value="<?= esc($value) ?>"><?= esc($label) ?></button>
+                            <?php endforeach; ?>
+                        </div>
+                        <input type="hidden" name="access_type" value="<?= old('access_type') ?>">
+                    </div>
                     <?php if (!empty($errors['access_type'])): ?><span class="field-error"><?= esc($errors['access_type']) ?></span><?php endif; ?>
                 </div>
             </div>
@@ -106,12 +120,19 @@
                 <div>
                     <label for="source_type">Source Type</label>
                     <span class="help-text">Primary = original data collected by your team. Secondary = data from existing sources.</span>
-                    <select id="source_type" name="source_type">
-                        <option value="" disabled <?= old('source_type') === '' || old('source_type') === null ? 'selected' : '' ?>>Select source type</option>
-                        <?php foreach (($sourceTypes ?? []) as $sourceType): ?>
-                            <option value="<?= esc($sourceType) ?>" <?= old('source_type') === $sourceType ? 'selected' : '' ?>><?= esc($sourceType) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <div class="dropdown-wrap<?= !empty($errors['source_type']) ? ' has-error' : '' ?>" data-field="source_type">
+                        <button type="button" id="source_type" class="dropdown-trigger<?= !empty($errors['source_type']) ? ' field-error__input' : '' ?>" aria-haspopup="listbox">
+                            <span class="dropdown-display">Select source type</span>
+                            <span class="dropdown-chevron"></span>
+                        </button>
+                        <div class="dropdown-menu" role="listbox">
+                            <button type="button" class="dropdown-option dropdown-placeholder" role="option" disabled>Select source type</button>
+                            <?php foreach (($sourceTypes ?? []) as $sourceType): ?>
+                                <button type="button" class="dropdown-option<?= old('source_type') === $sourceType ? ' selected' : '' ?>" role="option" data-value="<?= esc($sourceType) ?>"><?= esc($sourceType) ?></button>
+                            <?php endforeach; ?>
+                        </div>
+                        <input type="hidden" name="source_type" value="<?= old('source_type') ?>">
+                    </div>
                     <?php if (!empty($errors['source_type'])): ?><span class="field-error"><?= esc($errors['source_type']) ?></span><?php endif; ?>
                 </div>
                 <div>
@@ -228,6 +249,78 @@
                 var event = new Event('change', { bubbles: true });
                 fileInput.dispatchEvent(event);
             }
+        }
+    });
+
+    document.querySelectorAll('input, textarea, select').forEach(function(el) {
+        el.addEventListener('mouseenter', function() { this.classList.add('input-hovered'); });
+        el.addEventListener('mouseleave', function() { this.classList.remove('input-hovered'); });
+    });
+
+    document.querySelectorAll('.dropdown-wrap').forEach(function(wrap) {
+        wrap.addEventListener('mouseenter', function() { this.classList.add('input-hovered'); });
+        wrap.addEventListener('mouseleave', function() { this.classList.remove('input-hovered'); });
+    });
+
+    function closeAllDropdowns(except) {
+        document.querySelectorAll('.dropdown-wrap.is-open').forEach(function(w) {
+            if (w !== except) closeDropdown(w);
+        });
+    }
+
+    function openDropdown(wrap) {
+        wrap.classList.add('is-open');
+        wrap.querySelector('.dropdown-menu').classList.add('is-open');
+    }
+
+    function closeDropdown(wrap) {
+        wrap.querySelector('.dropdown-menu').classList.remove('is-open');
+        wrap.classList.remove('is-open');
+    }
+
+    document.addEventListener('click', function(e) {
+        var trigger = e.target.closest('.dropdown-trigger');
+        if (trigger) {
+            var wrap = trigger.closest('.dropdown-wrap');
+            if (wrap.classList.contains('is-open')) {
+                closeDropdown(wrap);
+            } else {
+                closeAllDropdowns(wrap);
+                openDropdown(wrap);
+            }
+            return;
+        }
+
+        var option = e.target.closest('.dropdown-option:not([disabled])');
+        if (option) {
+            var wrap = option.closest('.dropdown-wrap');
+            var input = wrap.querySelector('input[type="hidden"]');
+            var display = wrap.querySelector('.dropdown-display');
+            input.value = option.getAttribute('data-value');
+            display.textContent = option.textContent;
+            wrap.querySelectorAll('.dropdown-option').forEach(function(o) {
+                o.classList.remove('selected');
+            });
+            option.classList.add('selected');
+            closeDropdown(wrap);
+            return;
+        }
+
+        if (!e.target.closest('.dropdown-wrap')) {
+            closeAllDropdowns();
+        }
+    });
+
+    document.querySelectorAll('.dropdown-wrap').forEach(function(wrap) {
+        var input = wrap.querySelector('input[type="hidden"]');
+        var display = wrap.querySelector('.dropdown-display');
+        if (input.value) {
+            wrap.querySelectorAll('.dropdown-option').forEach(function(opt) {
+                if (opt.getAttribute('data-value') === input.value) {
+                    opt.classList.add('selected');
+                    display.textContent = opt.textContent;
+                }
+            });
         }
     });
 })();
