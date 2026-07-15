@@ -145,6 +145,16 @@ This file is append-only. Every material implementation milestone must add a dat
 - Blockers: Teammates must still run `php spark migrate` before either seeder on a fresh database.
 - Next step: Run `php spark db:seed DemoAccountsSeeder`, then sign in as `admin@example.test`, `ethics@example.test`, and `technical@example.test` with `change-me`.
 
+## 2026-07-15 - Clean public URLs
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `0aa31a6`.
+- Completed behavior: Removed `index.php` from CodeIgniter-generated links by setting `app.indexPage` to an empty string and documenting the Apache/XAMPP rewrite requirement.
+- Schema changes: None.
+- Important files: `app/Config/App.php`, `.env.example`, `SETUP.md`, and `docs/progress.md`.
+- Verification: PHP 8.5 syntax check passed for `App.php`; local `/login` HTML contains no `index.php` links; admin login redirects to `/admin` instead of `/index.php/admin`; `/datasets` returns 200 and protected `/admin` redirects cleanly.
+- Blockers: Clean URLs require the server to route requests through `public/index.php`; Apache deployments must keep `mod_rewrite` and `public/.htaccess` active.
+- Next step: Open `/login`, `/datasets`, and a protected dashboard redirect and confirm generated links and redirects no longer include `/index.php`.
+
 ## 2026-07-14 - Contributor dashboard submission cards
 
 - Branch/commit: `rapid-mvp`, local work after `71c04e3`.

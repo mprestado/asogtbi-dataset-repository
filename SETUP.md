@@ -45,6 +45,8 @@ database.default.DBCollat = utf8mb4_unicode_ci
 database.default.port = 3306
 ```
 
+Clean URLs are enabled by default through `app.indexPage = ''`. On Apache/XAMPP, keep `mod_rewrite` enabled and serve the `public/` directory so `public/.htaccess` can route paths like `/datasets` and `/admin` without `/index.php`.
+
 Run the schema and demo data:
 
 ```powershell
