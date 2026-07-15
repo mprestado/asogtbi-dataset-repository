@@ -21,7 +21,7 @@ class Datasets extends BaseController
         $dateUploaded = trim((string) ($this->request->getGet('date_uploaded') ?? ''));
 
         $query = $datasetModel
-            ->select('datasets.*, users.name AS author_name')
+            ->select('datasets.*, users.name AS author_name, users.email AS author_email')
             ->join('users', 'users.id = datasets.contributor_id', 'left')
             ->where('datasets.status', DatasetModel::STATUS_PUBLISHED)
             ->where('datasets.archived_at', null);

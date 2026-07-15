@@ -166,6 +166,17 @@
         <?php else: ?>
             <div class="catalog-dense-stack">
                 <?php foreach ($datasets as $dataset): ?>
+                    <?php
+                        $previewTags = array_values(array_filter(array_map('trim', explode(',', (string) ($dataset['tags'] ?? '')))));
+                        $previewTagText = $previewTags === [] ? 'No tags' : implode(', ', array_slice($previewTags, 0, 8));
+                        if (count($previewTags) > 8) {
+                            $previewTagText .= ', etc.';
+                        }
+                        $previewContributor = trim((string) ($dataset['author_name'] ?? 'Unknown contributor'));
+                        if (! empty($dataset['author_email'])) {
+                            $previewContributor .= ' - ' . (string) $dataset['author_email'];
+                        }
+                    ?>
                     <article class="compact-result-row">
                         <div class="row-main-details">
                             <div class="row-badge-line">
@@ -185,7 +196,7 @@
                             </div>
                         </div>
                         <div class="row-action-block">
-                            <button class="button preview-trigger secondary compact-btn" type="button" data-preview-target="dataset-preview-<?= esc((string) $dataset['id']) ?>">
+                            <button class="button preview-trigger secondary compact-btn" type="button" data-preview-target="dataset-preview-<?= esc((string) $dataset['id']) ?>" aria-controls="dataset-preview-<?= esc((string) $dataset['id']) ?>" aria-expanded="false">
                                 Preview
                             </button>
                             <a class="button gold compact-btn" href="<?= site_url('datasets/' . $dataset['id']) ?>">Explore</a>
@@ -196,79 +207,43 @@
                         <div class="preview-backdrop" data-preview-close></div>
                         <article class="preview-card dataset-preview-card" tabindex="-1">
                             <button class="preview-close" type="button" data-preview-close aria-label="Close preview">&times;</button>
-                            
-                            <div class="badge-row">
-                                <span class="badge"><?= esc($dataset['data_type'] ?: 'Dataset') ?></span>
-                                <span class="badge outline"><?= esc($dataset['category'] ?: 'Uncategorized') ?></span>
-                                <span class="badge outline"><?= esc(($accessOptions[$dataset['access_type'] ?? ''] ?? 'Public')) ?></span>
+
+                            <div class="preview-title-row">
+                                <h2 id="dataset-preview-title-<?= esc((string) $dataset['id']) ?>" tabindex="-1" data-preview-initial><?= esc($dataset['title']) ?></h2>
+                                <div class="row-badge-line preview-pill-line" aria-label="Dataset labels">
+                                    <span class="row-pill tech-type"><?= esc($dataset['data_type'] ?: 'Dataset') ?></span>
+                                    <span class="row-pill tech-outline"><?= esc($dataset['category'] ?: 'Uncategorized') ?></span>
+                                    <span class="row-pill tech-format"><?= esc($dataset['file_format'] ?: 'ZIP') ?></span>
+                                </div>
                             </div>
-                            
-                            <h2 id="dataset-preview-title-<?= esc((string) $dataset['id']) ?>"><?= esc($dataset['title']) ?></h2>
+
                             <p class="preview-description" id="dataset-preview-summary-<?= esc((string) $dataset['id']) ?>"><?= esc($dataset['description']) ?></p>
 
-                            <div class="preview-status-strip">
+                            <dl class="preview-fact-sheet">
                                 <div>
-                                    <span class="preview-kicker">Access</span>
-                                    <strong><?= esc(($accessOptions[$dataset['access_type'] ?? ''] ?? 'Public')) ?></strong>
-                                    <?php if (($dataset['access_type'] ?? '') === 'public'): ?>
-                                        <small>Visible in the public catalog.</small>
-                                    <?php elseif (($dataset['access_type'] ?? '') === 'private'): ?>
-                                        <small>Only the owner and repository administrators can inspect it.</small>
-                                    <?php else: ?>
-                                        <small>Login is required before download access is evaluated.</small>
-                                    <?php endif; ?>
+                                    <dt>Contributor:</dt>
+                                    <dd><?= esc($previewContributor) ?></dd>
                                 </div>
                                 <div>
-                                    <span class="preview-kicker">Version</span>
-                                    <strong><?= esc($dataset['version'] ?? '1.0') ?></strong>
-                                    <small><?= ! empty($dataset['created_at']) ? esc(date('M d, Y', strtotime($dataset['created_at']))) : 'Date not recorded' ?></small>
-                                </div>
-                            </div>
-
-                            <dl class="preview-meta">
-                                <div>
-                                    <dt>Contributor</dt>
-                                    <dd><?= esc($dataset['author_name'] ?? 'Unknown contributor') ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Data Type</dt>
-                                    <dd><?= esc($dataset['data_type'] ?: 'Not set') ?></dd>
-                                </div>
-                                <div>
-                                    <dt>File Format</dt>
-                                    <dd><?= esc($dataset['file_format'] ?: 'ZIP') ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Research Title</dt>
+                                    <dt>Research Title:</dt>
                                     <dd><?= esc($dataset['research_title'] ?: 'Not set') ?></dd>
                                 </div>
                                 <div>
-                                    <dt>Project Head</dt>
-                                    <dd><?= esc($dataset['project_head'] ?: 'Not set') ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Authors</dt>
+                                    <dt>Authors:</dt>
                                     <dd><?= esc($dataset['members'] ?: 'Not listed') ?></dd>
                                 </div>
                                 <div>
-                                    <dt>Source</dt>
-                                    <dd><?= esc($dataset['source_type'] ?: 'Not set') ?><?= ! empty($dataset['source_link']) ? ' - ' . esc($dataset['source_link']) : '' ?></dd>
+                                    <dt>Date Uploaded:</dt>
+                                    <dd><?= ! empty($dataset['created_at']) ? esc(date('F d, Y', strtotime($dataset['created_at']))) : 'Not recorded' ?></dd>
                                 </div>
                                 <div>
-                                    <dt>Tags</dt>
-                                    <dd><?= esc($dataset['tags'] ?: 'No tags') ?></dd>
+                                    <dt>Tags:</dt>
+                                    <dd><?= esc($previewTagText) ?></dd>
                                 </div>
-                                <?php if (! empty($dataset['created_at'])): ?>
-                                    <div>
-                                        <dt>Date Uploaded</dt>
-                                        <dd><?= esc(date('M d, Y', strtotime($dataset['created_at']))) ?></dd>
-                                    </div>
-                                <?php endif; ?>
                             </dl>
 
                             <div class="preview-actions">
-                                <a class="button" href="<?= site_url('datasets/' . $dataset['id']) ?>" data-preview-primary>Open Dataset Page</a>
-                                <button class="button secondary" type="button" data-preview-close>Close Preview</button>
+                                <a class="button gold preview-explore-btn" href="<?= site_url('datasets/' . $dataset['id']) ?>" data-preview-primary>Explore</a>
                             </div>
                         </article>
                     </div>
@@ -306,13 +281,16 @@
 
 <script>
     // Modal Interaction Core Scripts
+    const focusablePreviewSelector = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
     document.querySelectorAll('.preview-trigger').forEach((trigger) => {
         trigger.addEventListener('click', () => {
             const modal = document.getElementById(trigger.dataset.previewTarget);
             if (modal) {
                 modal.hidden = false;
                 document.body.classList.add('preview-open');
-                modal.querySelector('.preview-card')?.focus();
+                trigger.setAttribute('aria-expanded', 'true');
+                (modal.querySelector('[data-preview-initial]') || modal.querySelector('[data-preview-primary]') || modal.querySelector('.preview-card'))?.focus();
             }
         });
     });
@@ -322,6 +300,7 @@
         const trigger = document.querySelector(`[data-preview-target="${modal.id}"]`);
         modal.hidden = true;
         document.body.classList.remove('preview-open');
+        trigger?.setAttribute('aria-expanded', 'false');
         trigger?.focus();
     };
 
@@ -330,7 +309,6 @@
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key !== 'Escape') return;
         const openModal = document.querySelector('.preview-modal:not([hidden])');
         if (!openModal) return;
 

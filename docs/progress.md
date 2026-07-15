@@ -84,3 +84,13 @@ This file is append-only. Every material implementation milestone must add a dat
 - Verification: PHP 8.5 syntax checks passed for updated public and portal layouts; `php spark routes` passes; PHPUnit passes with 10 tests and 22 assertions; `git diff --check` passes with only Windows line-ending warnings.
 - Blockers: Manual visual QA should confirm the account dropdown remains readable for multi-role users.
 - Next step: Login as contributor, reviewer, and administrator, then confirm all dashboard/workspace links are reachable from the profile tab without cluttering the main nav.
+
+## 2026-07-15 - Browse preview mockup alignment
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `86f6b08`.
+- Completed behavior: Reworked the browse dataset preview modal to match the provided mockup: updated compact row pills inside the preview header, italic dataset title, gold divider, larger short description, bordered metadata fact sheet, contributor email display when available, compact tag text, single gold Explore action, restored `aria-expanded`, heading-first focus, Escape close, backdrop close, and Tab focus trapping.
+- Schema changes: None.
+- Important files: `app/Controllers/Datasets.php`, `app/Views/datasets/index.php`, and `public/assets/css/app.css`.
+- Verification: PHP 8.5 syntax checks passed for `app/Controllers/Datasets.php` and `app/Views/datasets/index.php`; `php spark routes` passes; PHPUnit passes with 10 tests and 22 assertions; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: Browser-level visual QA is still needed to confirm the modal matches the attached composition across desktop and mobile.
+- Next step: Run PHP 8.5 verification, then open the browse page and compare the preview modal against the mockup.
