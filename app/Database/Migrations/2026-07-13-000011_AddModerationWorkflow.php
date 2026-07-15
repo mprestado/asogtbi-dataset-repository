@@ -30,7 +30,11 @@ class AddModerationWorkflow extends Migration
 
     public function down(): void
     {
-        $this->forge->dropKey('user_roles', 'user_roles_user_role_unique');
+        try {
+            $this->forge->dropKey('user_roles', 'user_roles_user_role_unique');
+        } catch (\Throwable $e) {
+        }
+
         $this->db->table('datasets')
             ->where('status', 'pending_ethics_review')
             ->update(['status' => 'pending_review']);

@@ -43,6 +43,16 @@ php spark serve
 
 The application requires PHP 8.2 or newer. Uploaded ZIP files stay under `writable/uploads/` and must never be served directly from `public/`.
 
+## Testing
+
+This repository uses PHPUnit for feature and unit testing.
+
+### Running Tests
+To run the full suite:
+```bash
+./vendor/bin/phpunit
+```
+
 ## Deferred
 
 Automated ZIP diagnostics, malware scanning, email delivery, browser-driven backup/restore, advanced reports, restricted-access request approval, and generalized notifications remain outside this release.

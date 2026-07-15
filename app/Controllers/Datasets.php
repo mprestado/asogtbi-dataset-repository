@@ -155,6 +155,11 @@ class Datasets extends BaseController
             || ($this->isAuthenticated() && ($this->canManageDataset($dataset) || $this->hasRole('repository_administrator')));
 
         if (! $canDownload) {
+            // User failed access check. If private dataset, throw a 404 to prevent ID enumeration
+            if (($dataset['access_type'] ?? '') === 'private') {
+                throw PageNotFoundException::forPageNotFound();
+            }
+
             if (! $this->isAuthenticated() && ($dataset['access_type'] ?? DatasetModel::ACCESS_PUBLIC) !== DatasetModel::ACCESS_PUBLIC) {
                 return redirect()
                     ->to('/login')
