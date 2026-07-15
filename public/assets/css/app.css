@@ -717,6 +717,10 @@ img {
     align-content: flex-start;
 }
 
+.detail-sidebar .tag {
+    margin-bottom: 10px;
+}
+
 .detail-sidebar .stack-list {
     gap: 2px;
     padding-left: 0;
@@ -801,7 +805,7 @@ img {
 @media (min-width: 641px) {
     .detail-sidebar {
         position: sticky;
-        top: calc(var(--header-h) + 28px);
+        top: 35vh;
         grid-column: 2;
         grid-row: 1;
     }
@@ -1738,6 +1742,10 @@ select.input-hovered:not(:focus) {
     background: rgba(248, 175, 33, .04);
 }
 
+.anonymization-card .tag {
+    margin-bottom: 16px;
+}
+
 .checkbox-row {
     display: flex;
     align-items: flex-start;
@@ -2129,7 +2137,6 @@ pre {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .split-grid,
     .auth-shell {
         grid-template-columns: 1fr;
     }
@@ -2310,7 +2317,10 @@ pre {
     }
 
     .check-label {
-        font-size: 13px;
+        font-size: 11.5px;
+        text-align: justify;
+    }
+
     .error-shell {
         padding: 18px 0;
     }
