@@ -112,7 +112,13 @@
         <div class="panel-head catalog-results-header">
             <div>
                 <p class="tag">Repository Index</p>
-                <h2><?= esc((string) count($datasets ?? [])) ?> of <?= esc((string) ($totalDatasets ?? 0)) ?> Datasets</h2>
+                <?php
+                    $summary = $paginationSummary ?? ['start' => 0, 'end' => 0, 'total' => $totalDatasets ?? 0];
+                    $summaryText = (int) $summary['total'] > 0
+                        ? 'Showing ' . (int) $summary['start'] . '-' . (int) $summary['end'] . ' of ' . (int) $summary['total'] . ' Datasets'
+                        : '0 Datasets';
+                ?>
+                <h2><?= esc($summaryText) ?></h2>
             </div>
         </div>
 

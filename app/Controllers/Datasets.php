@@ -59,6 +59,11 @@ class Datasets extends BaseController
             ->paginate(10);
 
         $totalDatasets = $datasetModel->pager->getTotal();
+        $currentPage = $datasetModel->pager->getCurrentPage();
+        $perPage = $datasetModel->pager->getPerPage();
+        $visibleCount = count($datasets);
+        $rangeStart = $totalDatasets > 0 ? (($currentPage - 1) * $perPage) + 1 : 0;
+        $rangeEnd = $totalDatasets > 0 ? min($rangeStart + $visibleCount - 1, $totalDatasets) : 0;
 
         $categoryQuery = model(DatasetModel::class)
             ->select('category')
@@ -86,6 +91,11 @@ class Datasets extends BaseController
             'title' => 'Dataset Catalog',
             'datasets' => $datasets,
             'totalDatasets' => $totalDatasets,
+            'paginationSummary' => [
+                'start' => $rangeStart,
+                'end' => $rangeEnd,
+                'total' => $totalDatasets,
+            ],
             'search' => $search,
             'selectedDataType' => $dataType,
             'selectedCategory' => $category,

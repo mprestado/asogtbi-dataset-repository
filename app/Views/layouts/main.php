@@ -53,7 +53,7 @@
                     </div>
                 </details>
             <?php else: ?>
-                <a class="nav-cta" href="<?= site_url('login') ?>"><span class="material-symbols-rounded" aria-hidden="true">login</span> Login</a>
+                <a class="nav-cta" href="<?= site_url('login') ?>"><span class="material-symbols-rounded" aria-hidden="true">login</span> Sign in</a>
             <?php endif; ?>
         </div>
 
@@ -84,8 +84,8 @@
                 <button class="nav-cta" type="submit"><span class="material-symbols-rounded" aria-hidden="true">logout</span> Logout</button>
             </form>
         <?php else: ?>
-            <a href="<?= site_url('login') ?>"><span class="material-symbols-rounded" aria-hidden="true">login</span> Login</a>
-            <a href="<?= site_url('register') ?>">Register</a>
+            <a href="<?= site_url('login') ?>"><span class="material-symbols-rounded" aria-hidden="true">login</span> Sign in</a>
+            <a href="<?= site_url('register') ?>">Sign up</a>
         <?php endif; ?>
     </nav>
 </header>
@@ -124,8 +124,8 @@
                 <h3 class="ft-heading">Repository</h3>
                 <ul class="ft-links">
                     <li><a href="<?= site_url('datasets') ?>">Search Catalog</a></li>
-                    <li><a href="<?= site_url('register') ?>">Create Account</a></li>
-                    <li><a href="<?= site_url('login') ?>">Contributor Login</a></li>
+                    <li><a href="<?= site_url('register') ?>">Sign up</a></li>
+                    <li><a href="<?= site_url('login') ?>">Contributor sign in</a></li>
                     <li><a href="<?= site_url('upload') ?>">Submit Dataset</a></li>
                 </ul>
             </section>

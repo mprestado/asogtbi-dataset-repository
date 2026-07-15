@@ -124,3 +124,13 @@ This file is append-only. Every material implementation milestone must add a dat
 - Verification: PHP 8.5 syntax check passed for `DummyPublishedUploadsSeeder`; `php spark db:seed DummyPublishedUploadsSeeder` runs successfully; local MySQL count remains idempotent at 120 published dummy datasets and 120 matching CSV file records; `git diff --check` passes with only Windows line-ending warnings.
 - Blockers: The source CSV must be present at `dummydata/dataset1.csv`; run `MvpSeeder` first if user `1` does not exist.
 - Next step: Run `php spark db:seed DummyPublishedUploadsSeeder` after migrations and `MvpSeeder` when a large published dummy catalog is needed.
+
+## 2026-07-15 - Polished auth entry flow
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `474055d`.
+- Completed behavior: Reworked sign-in and sign-up pages into a centered auth island with clear background, disabled "Continue with Google" placeholder, policy/help copy, autocomplete attributes, inline field errors, mobile stacking, consistent Sign in/Sign up wording, and server-side `@cspc.edu.ph` validation for self-registration. Demoted local demo credentials into a collapsible development note on login so they do not read like a product feature.
+- Schema changes: None.
+- Important files: `app/Controllers/Auth.php`, `app/Views/auth/login.php`, `app/Views/auth/register.php`, `app/Views/auth/forgot_password.php`, `app/Views/layouts/main.php`, `public/assets/css/app.css`, and `docs/progress.md`.
+- Verification: PHP 8.5 syntax checks passed for `Auth.php`, login/register views, forgot-password view, and main layout; local `/login` and `/register` return 200; invalid non-CSPC registration is blocked and renders the inline `@cspc.edu.ph` error when following the local session redirect; `php spark routes` passes; PHPUnit passes with 11 tests and 23 assertions; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: Google OAuth remains intentionally disabled and visual-only until a provider flow is implemented.
+- Next step: Browser-check login/register on desktop and mobile, then decide whether to extend the same auth island treatment to forgot/reset password screens.

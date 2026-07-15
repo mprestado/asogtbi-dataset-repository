@@ -12,7 +12,8 @@ class Auth extends BaseController
     public function login(): string
     {
         return view('auth/login', [
-            'title' => 'Login',
+            'title' => 'Sign in',
+            'validation' => session()->getFlashdata('validation'),
             'demoAccounts' => [
                 ['role' => 'User', 'email' => 'user@example.test', 'password' => 'change-me'],
                 ['role' => 'Repository Administrator', 'email' => 'admin@example.test', 'password' => 'change-me'],
@@ -38,6 +39,7 @@ class Auth extends BaseController
             return redirect()
                 ->back()
                 ->withInput()
+                ->with('validation', $this->validator->getErrors())
                 ->with('error', implode(' ', $this->validator->getErrors()));
         }
 
@@ -48,6 +50,7 @@ class Auth extends BaseController
             return redirect()
                 ->back()
                 ->withInput()
+                ->with('validation', ['email' => 'Check your email and password, then try again.'])
                 ->with('error', 'The provided credentials do not match our records.');
         }
 
@@ -55,6 +58,7 @@ class Auth extends BaseController
             return redirect()
                 ->back()
                 ->withInput()
+                ->with('validation', ['email' => 'This account is inactive. Contact a repository administrator for access.'])
                 ->with('error', 'This account is inactive and cannot log in yet.');
         }
 
@@ -79,7 +83,8 @@ class Auth extends BaseController
     public function register(): string
     {
         return view('auth/register', [
-            'title' => 'Register',
+            'title' => 'Sign up',
+            'validation' => session()->getFlashdata('validation'),
             'requiredFields' => ['Name', 'Email', 'Password'],
             'registerNotes' => [
                 'The user-facing MVP supports self-registration for contributors.',
@@ -206,15 +211,29 @@ class Auth extends BaseController
     public function attemptRegister()
     {
         $rules = [
-            'name' => 'required|min_length[3]|max_length[150]',
-            'email' => 'required|valid_email|is_unique[users.email]',
-            'password' => 'required|min_length[8]',
+            'name' => [
+                'label' => 'Full name',
+                'rules' => 'required|min_length[3]|max_length[150]',
+            ],
+            'email' => [
+                'label' => 'CSPC email',
+                'rules' => 'required|valid_email|regex_match[/^[^@\s]+@cspc\.edu\.ph$/i]|is_unique[users.email]',
+                'errors' => [
+                    'regex_match' => 'Use your official CSPC email address ending in @cspc.edu.ph.',
+                    'is_unique' => 'This email is already registered. Try logging in instead.',
+                ],
+            ],
+            'password' => [
+                'label' => 'Password',
+                'rules' => 'required|min_length[8]',
+            ],
         ];
 
         if (! $this->validate($rules)) {
             return redirect()
                 ->back()
                 ->withInput()
+                ->with('validation', $this->validator->getErrors())
                 ->with('error', implode(' ', $this->validator->getErrors()));
         }
 
