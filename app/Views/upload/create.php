@@ -20,7 +20,7 @@
                 <?php if (!empty($errors['anonymized'])): ?><span class="field-error" style="margin-top:8px;display:block"><?= esc($errors['anonymized']) ?></span><?php endif; ?>
             </div>
 
-        <form method="post" action="<?= site_url('upload') ?>" enctype="multipart/form-data" novalidate>
+        <form method="post" action="<?= site_url('upload') ?>" enctype="multipart/form-data" id="upload-form" novalidate>
             <?= csrf_field() ?>
             <input type="hidden" name="form" value="upload">
 
@@ -163,7 +163,7 @@
                 <input type="file" id="dataset_file" name="dataset_file" accept=".zip" hidden>
                 <div class="file-zone__placeholder" id="file-placeholder">
                     <strong>Upload protected ZIP package</strong>
-                    <p class="muted">ZIP only, maximum 10 MB</p>
+                    
                     <button type="button" class="button" id="file-trigger">Select ZIP File</button>
                 </div>
                 <div class="file-zone__preview" id="file-preview" hidden>
@@ -212,83 +212,23 @@
 
 <script>
 (function() {
+    var fieldMessages = {
+        'title':          'Please enter the dataset title.',
+        'category':       'Please enter a category.',
+        'file_format':    'Please enter the file format.',
+        'description':    'Please describe what the dataset contains.',
+        'tags':           'Please enter at least one tag.',
+        'research_title': 'Please enter the research title.',
+        'project_head':   'Please enter the project head or adviser.'
+    };
+    var dropdownMessages = {
+        'data_type':    'Please select a data type.',
+        'access_type':  'Please select an access type.',
+        'source_type':  'Please select a source type.'
+    };
+
     document.querySelectorAll('label[for]').forEach(function(lbl) {
         lbl.addEventListener('click', function(e) { e.preventDefault(); });
-    });
-
-    var checkVisual = document.getElementById('check-visual');
-    var anonymized = document.getElementById('anonymized');
-    if (checkVisual && anonymized) {
-        checkVisual.addEventListener('click', function() {
-            anonymized.checked = !anonymized.checked;
-        });
-    }
-
-    var fileInput = document.getElementById('dataset_file');
-    var fileTrigger = document.getElementById('file-trigger');
-    var fileZone = document.getElementById('file-zone');
-    var filePreview = document.getElementById('file-preview');
-    var filePlaceholder = document.getElementById('file-placeholder');
-    var fileName = document.getElementById('file-name');
-    var fileSize = document.getElementById('file-size');
-    var fileClear = document.getElementById('file-clear');
-
-    if (!fileInput || !fileTrigger) return;
-
-    fileTrigger.addEventListener('click', function(e) {
-        e.preventDefault();
-        fileInput.click();
-    });
-
-    fileInput.addEventListener('change', function() {
-        if (fileInput.files.length === 0) return;
-        var file = fileInput.files[0];
-        fileName.textContent = file.name;
-        fileSize.textContent = '(' + (file.size / 1024 / 1024).toFixed(1) + ' MB)';
-        filePlaceholder.hidden = true;
-        filePreview.hidden = false;
-        fileZone.classList.add('file-zone--has-file');
-    });
-
-    if (fileClear) {
-        fileClear.addEventListener('click', function(e) {
-            e.preventDefault();
-            fileInput.value = '';
-            filePlaceholder.hidden = false;
-            filePreview.hidden = true;
-            fileZone.classList.remove('file-zone--has-file');
-        });
-    }
-
-    fileZone.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        fileZone.classList.add('file-zone--dragover');
-    });
-
-    fileZone.addEventListener('dragleave', function() {
-        fileZone.classList.remove('file-zone--dragover');
-    });
-
-    fileZone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        fileZone.classList.remove('file-zone--dragover');
-        if (e.dataTransfer.files.length> 0) {
-            fileInput.files = e.dataTransfer.files;
-            if (fileInput.files[0]) {
-                var event = new Event('change', { bubbles: true });
-                fileInput.dispatchEvent(event);
-            }
-        }
-    });
-
-    document.querySelectorAll('input, textarea, select').forEach(function(el) {
-        el.addEventListener('mouseenter', function() { this.classList.add('input-hovered'); });
-        el.addEventListener('mouseleave', function() { this.classList.remove('input-hovered'); });
-    });
-
-    document.querySelectorAll('.dropdown-wrap').forEach(function(wrap) {
-        wrap.addEventListener('mouseenter', function() { this.classList.add('input-hovered'); });
-        wrap.addEventListener('mouseleave', function() { this.classList.remove('input-hovered'); });
     });
 
     function ensureErrorSpan(el) {
@@ -297,7 +237,7 @@
         if (sib) return sib;
         sib = document.createElement('span');
         sib.className = 'field-error';
-        sib.textContent = 'This field is required.';
+        sib.textContent = fieldMessages[el.id] || 'This field is required.';
         el.parentNode.insertBefore(sib, el.nextSibling);
         return sib;
     }
@@ -323,7 +263,7 @@
         if (!sib) {
             sib = document.createElement('span');
             sib.className = 'field-error';
-            sib.textContent = 'This field is required.';
+            sib.textContent = dropdownMessages[wrap.getAttribute('data-field')] || 'This field is required.';
             wrap.parentNode.insertBefore(sib, wrap.nextSibling);
         }
         sib.hidden = false;
@@ -338,52 +278,55 @@
         if (sib) sib.hidden = true;
     }
 
-    var anonymizedInput = document.getElementById('anonymized');
-    var ethicsCard = document.querySelector('.anonymization-card');
-
     function markEthicsInvalid() {
-        if (!ethicsCard) return;
-        ethicsCard.classList.add('has-error');
-        var sib = ethicsCard.nextElementSibling;
+        var card = document.querySelector('.anonymization-card');
+        if (!card) return;
+        card.classList.add('has-error');
+        var sib = card.nextElementSibling;
         while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
         if (!sib) {
             sib = document.createElement('span');
             sib.className = 'field-error';
             sib.textContent = 'You must confirm anonymization before submitting.';
-            ethicsCard.parentNode.insertBefore(sib, ethicsCard.nextSibling);
+            card.parentNode.insertBefore(sib, card.nextSibling);
         }
         sib.hidden = false;
     }
 
     function clearEthicsInvalid() {
-        if (!ethicsCard) return;
-        ethicsCard.classList.remove('has-error');
-        var sib = ethicsCard.nextElementSibling;
+        var card = document.querySelector('.anonymization-card');
+        if (!card) return;
+        card.classList.remove('has-error');
+        var sib = card.nextElementSibling;
         while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
         if (sib) sib.hidden = true;
     }
 
     function markFileInvalid() {
-        fileZone.classList.add('file-zone--error');
-        var sib = fileZone.nextElementSibling;
-        while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
-        if (!sib) {
-            sib = document.createElement('span');
-            sib.className = 'field-error';
-            sib.textContent = 'Please select a ZIP file to upload.';
-            fileZone.parentNode.insertBefore(sib, fileZone.nextSibling);
+        var fz = document.getElementById('file-zone');
+        if (!fz) return;
+        fz.classList.add('file-zone--error');
+        var sib = fz.nextElementSibling;
+        if (sib && sib.classList.contains('field-error')) {
+            sib.hidden = false;
+            return;
         }
+        sib = document.createElement('span');
+        sib.className = 'field-error';
+        sib.textContent = 'Please select a ZIP file to upload.';
+        fz.parentNode.insertBefore(sib, fz.nextSibling);
         sib.hidden = false;
     }
 
     function clearFileInvalid() {
-        fileZone.classList.remove('file-zone--error');
-        var sib = fileZone.nextElementSibling;
-        while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
-        if (sib) sib.hidden = true;
+        var fz = document.getElementById('file-zone');
+        if (!fz) return;
+        fz.classList.remove('file-zone--error');
+        var sib = fz.nextElementSibling;
+        if (sib && sib.classList.contains('field-error')) sib.hidden = true;
     }
 
-    var formEl = document.querySelector('form');
+    var formEl = document.getElementById('upload-form');
     if (formEl) {
         var requiredFields = ['title','category','file_format','description','tags','research_title','project_head'];
 
@@ -402,11 +345,12 @@
                 }
             });
 
-            if (anonymizedInput && !anonymizedInput.checked) {
+            var anonymized = document.getElementById('anonymized');
+            if (anonymized && !anonymized.checked) {
                 markEthicsInvalid();
-                if (!firstInvalid) firstInvalid = checkVisual;
+                if (!firstInvalid) firstInvalid = document.getElementById('check-visual');
                 ok = false;
-            } else {
+            } else if (anonymized) {
                 clearEthicsInvalid();
             }
 
@@ -421,11 +365,12 @@
                 }
             });
 
-            if (fileInput && fileInput.files.length === 0) {
+            var fInput = document.getElementById('dataset_file');
+            if (fInput && fInput.files.length === 0) {
                 markFileInvalid();
-                if (!firstInvalid) firstInvalid = fileInput;
+                if (!firstInvalid) firstInvalid = fInput;
                 ok = false;
-            } else {
+            } else if (fInput) {
                 clearFileInvalid();
             }
 
@@ -450,18 +395,92 @@
             opt.addEventListener('click', function() { clearDropdownInvalid(opt.closest('.dropdown-wrap')); });
         });
 
-        if (fileInput) {
-            fileInput.addEventListener('change', function() {
-                if (fileInput.files.length > 0) clearFileInvalid();
+        var fInput = document.getElementById('dataset_file');
+        if (fInput) {
+            fInput.addEventListener('change', function() {
+                if (fInput.files.length > 0) clearFileInvalid();
             });
         }
 
-        if (anonymizedInput) {
-            document.getElementById('check-visual').addEventListener('click', function() {
-                if (anonymizedInput.checked) clearEthicsInvalid();
-            });
-        }
     }
+
+    var checkVisual = document.getElementById('check-visual');
+    var anonymized = document.getElementById('anonymized');
+    if (checkVisual && anonymized) {
+        checkVisual.addEventListener('click', function() {
+            anonymized.checked = !anonymized.checked;
+            if (anonymized.checked) clearEthicsInvalid();
+        });
+    }
+
+    var fileInput = document.getElementById('dataset_file');
+    var fileTrigger = document.getElementById('file-trigger');
+    var fileZone = document.getElementById('file-zone');
+    var filePreview = document.getElementById('file-preview');
+    var filePlaceholder = document.getElementById('file-placeholder');
+    var fileName = document.getElementById('file-name');
+    var fileSize = document.getElementById('file-size');
+    var fileClear = document.getElementById('file-clear');
+
+    if (!fileInput || !fileTrigger) return;
+
+    fileTrigger.addEventListener('click', function(e) {
+        e.preventDefault();
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length === 0) return;
+        var file = fileInput.files[0];
+        clearFileInvalid();
+        fileName.textContent = file.name;
+        fileSize.textContent = '(' + (file.size / 1024 / 1024).toFixed(1) + ' MB)';
+        filePlaceholder.hidden = true;
+        filePreview.hidden = false;
+        fileZone.classList.add('file-zone--has-file');
+    });
+
+    if (fileClear) {
+        fileClear.addEventListener('click', function(e) {
+            e.preventDefault();
+            fileInput.value = '';
+            filePlaceholder.hidden = false;
+            filePreview.hidden = true;
+            fileZone.classList.remove('file-zone--has-file');
+            clearFileInvalid();
+        });
+    }
+
+    fileZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        fileZone.classList.add('file-zone--dragover');
+    });
+
+    fileZone.addEventListener('dragleave', function() {
+        fileZone.classList.remove('file-zone--dragover');
+    });
+
+    fileZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        fileZone.classList.remove('file-zone--dragover');
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            if (fileInput.files[0]) {
+                var event = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(event);
+            }
+        }
+    });
+
+    document.querySelectorAll('input, textarea, select').forEach(function(el) {
+        el.addEventListener('mouseenter', function() { this.classList.add('input-hovered'); });
+        el.addEventListener('mouseleave', function() { this.classList.remove('input-hovered'); });
+    });
+
+    document.querySelectorAll('.dropdown-wrap').forEach(function(wrap) {
+        wrap.addEventListener('mouseenter', function() { this.classList.add('input-hovered'); });
+        wrap.addEventListener('mouseleave', function() { this.classList.remove('input-hovered'); });
+    });
 
     function closeAllDropdowns(except) {
         document.querySelectorAll('.dropdown-wrap.is-open').forEach(function(w) {

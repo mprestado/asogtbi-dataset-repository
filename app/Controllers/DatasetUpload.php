@@ -61,7 +61,6 @@ class DatasetUpload extends BaseController
             'dataset_file' => [
                 'uploaded' => 'Please select a ZIP file to upload.',
                 'ext_in' => 'Only ZIP files are accepted.',
-                'max_size' => 'The ZIP file must be under 10 MB.',
             ],
         ];
 
@@ -79,7 +78,7 @@ class DatasetUpload extends BaseController
             'anonymized' => 'required',
             'members' => 'permit_empty|max_length[5000]',
             'source_link' => 'permit_empty|valid_url_strict|max_length[255]',
-            'dataset_file' => 'uploaded[dataset_file]|ext_in[dataset_file,zip]|max_size[dataset_file,10240]',
+            'dataset_file' => 'uploaded[dataset_file]|ext_in[dataset_file,zip]',
         ];
 
         if (! $this->validate($rules, $messages)) {
