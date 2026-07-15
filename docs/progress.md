@@ -94,3 +94,23 @@ This file is append-only. Every material implementation milestone must add a dat
 - Verification: PHP 8.5 syntax checks passed for `app/Controllers/Datasets.php` and `app/Views/datasets/index.php`; `php spark routes` passes; PHPUnit passes with 10 tests and 22 assertions; `git diff --check` passes with only Windows line-ending warnings.
 - Blockers: Browser-level visual QA is still needed to confirm the modal matches the attached composition across desktop and mobile.
 - Next step: Run PHP 8.5 verification, then open the browse page and compare the preview modal against the mockup.
+
+## 2026-07-15 - Technical-first maintainer workflow
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `925ddb8`.
+- Completed behavior: Reordered moderation so new and updated submissions enter technical verification before ethics review, moved maintainer login destinations into admin/technical/ethics work queues, demoted contributor records for maintainer portal navigation, and added live portal activities with unread yellow badge, toast, and browser-unlocked beep.
+- Schema changes: Added migration `2026-07-15-000014_TechnicalFirstReviewFlow` to change the dataset status default to `pending_technical_review` and move unassigned legacy pending ethics rows into the technical queue.
+- Important files: `app/Services/ModerationWorkflow.php`, `app/Models/DatasetModel.php`, `app/Controllers/Auth.php`, `app/Controllers/Dashboard.php`, `app/Views/layouts/portal.php`, admin/dashboard/upload views, routes, docs, tests, and the new migration.
+- Verification: PHP 8.5 syntax checks passed for changed controllers, model, service, portal layout, and new migration; `php spark routes` passes and shows `portal/notifications/poll`; `php spark migrate:status` recognizes `TechnicalFirstReviewFlow` as pending; PHPUnit passes with 11 tests and 23 assertions; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: Browser sound playback still depends on a user interaction because browsers block autoplay audio.
+- Next step: Run full PHP 8.5 verification, then manually walk through upload -> technical assignment -> technical approval -> ethics assignment -> ethics approval -> publication.
+
+## 2026-07-15 - Admin users and roles polish
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `925ddb8`.
+- Completed behavior: Reworked the administrator Users and Roles screen from dense inline rows into a scalable access directory with account metrics, client-side search/status/role filters, compact account rows, active/inactive pills, current-account marker, role preview chips, expandable role editors, and clearer save actions while preserving existing server-side role safeguards. Added slimmer search/filter controls, tighter chips, a cleaner edit popover for large account lists, fixed desktop portal scrolling so long edit panels scroll inside the content area without dragging the sidebar or exposing a bottom gap, and corrected filtered account rows so search/status/role filters visibly update the list.
+- Schema changes: None.
+- Important files: `app/Views/admin/users.php`, `public/assets/css/app.css`, and `docs/progress.md`.
+- Verification: PHP 8.5 syntax check passed for `app/Views/admin/users.php`; `git diff --check` passes with only Windows line-ending warnings; local `/admin/users` returns 200 after the compact UI, portal scroll, and filter visibility fixes.
+- Blockers: Manual browser QA should confirm filtering, expandable editors, and role saves with a larger seeded account list.
+- Next step: Login as administrator, open Users and Roles, filter by role/status/search, expand several rows, and verify active/inactive changes plus multi-role saves still feel clear and safe.

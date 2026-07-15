@@ -82,7 +82,7 @@ class MvpSeeder extends Seeder
             ],
             [
                 'title' => 'Pending Prototype Dataset',
-                'description' => 'Sample pending dataset ready for assignment in the integrated ethics review workflow.',
+                'description' => 'Sample pending dataset ready for technical reviewer assignment before ethics review.',
                 'category' => 'Prototype',
                 'tags' => 'prototype,pending',
                 'data_type' => 'Tabular',
@@ -114,7 +114,7 @@ class MvpSeeder extends Seeder
             ],
             [
                 'title' => 'Technical Queue Sample',
-                'description' => 'Sample ethics-approved submission waiting for technical reviewer assignment.',
+                'description' => 'Sample submission waiting for first-pass technical reviewer assignment.',
                 'category' => 'Data Engineering',
                 'tags' => 'technical,queue,metadata',
                 'data_type' => 'Tabular',
@@ -146,7 +146,7 @@ class MvpSeeder extends Seeder
             ],
             [
                 'title' => 'Publication Gate Sample',
-                'description' => 'Sample technically approved dataset waiting for repository administrator publication.',
+                'description' => 'Sample technically and ethically approved dataset waiting for repository administrator publication.',
                 'category' => 'Governance',
                 'tags' => 'publication,approval,governance',
                 'data_type' => 'Tabular',

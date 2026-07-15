@@ -72,7 +72,7 @@ class Auth extends BaseController
         $this->recordAudit('login', 'user', (int) $user['id'], 'User logged into the repository.');
 
         return redirect()
-            ->to('/dashboard')
+            ->to($this->postLoginDestination($roles))
             ->with('info', 'Welcome back, ' . $user['name'] . '.');
     }
 
@@ -275,6 +275,26 @@ class Auth extends BaseController
         $roles = array_values(array_filter(array_map(static fn (array $row): string => (string) ($row['name'] ?? ''), $roleRows)));
 
         return $roles !== [] ? $roles : ['user'];
+    }
+
+    /**
+     * Maintainer accounts should land in their work queue instead of the public contributor dashboard.
+     *
+     * @param array<int, string> $roles
+     */
+    private function postLoginDestination(array $roles): string
+    {
+        if (in_array('repository_administrator', $roles, true)) {
+            return '/admin';
+        }
+        if (in_array('technical_reviewer', $roles, true)) {
+            return '/review/technical';
+        }
+        if (in_array('ethics_reviewer', $roles, true)) {
+            return '/review/ethics';
+        }
+
+        return '/dashboard';
     }
 
     private function isValidPasswordResetToken(string $email, string $token): bool

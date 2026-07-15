@@ -16,7 +16,7 @@
     <article class="panel stat-card">
         <p class="tag">Queued</p>
         <h2 class="stat-value"><?= esc((string) (($statusCounts['pending'] ?? 0))) ?></h2>
-        <p class="muted">Records in ethics, technical, or publication review.</p>
+        <p class="muted">Records in technical verification, ethics review, or publication approval.</p>
     </article>
     <article class="panel stat-card">
         <p class="tag">Needs Revision</p>

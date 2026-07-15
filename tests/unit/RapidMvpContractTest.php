@@ -18,15 +18,20 @@ final class RapidMvpContractTest extends CIUnitTestCase
     public function testDatasetStatusLabelsMatchPublicSiteLifecycle(): void
     {
         $this->assertSame([
-            DatasetModel::STATUS_PENDING_ETHICS => 'Pending Ethics Review',
-            DatasetModel::STATUS_ETHICS_REVISION => 'Ethics Revision Requested',
             DatasetModel::STATUS_PENDING_TECHNICAL => 'Pending Technical Review',
             DatasetModel::STATUS_TECHNICAL_REVISION => 'Technical Revision Requested',
+            DatasetModel::STATUS_PENDING_ETHICS => 'Pending Ethics Review',
+            DatasetModel::STATUS_ETHICS_REVISION => 'Ethics Revision Requested',
             DatasetModel::STATUS_AWAITING_PUBLICATION => 'Awaiting Publication',
             DatasetModel::STATUS_PUBLISHED => 'Published',
             DatasetModel::STATUS_ARCHIVED => 'Archived',
             DatasetModel::STATUS_REJECTED => 'Rejected',
         ], DatasetModel::statusLabels());
+    }
+
+    public function testNewSubmissionsStartWithTechnicalVerification(): void
+    {
+        $this->assertSame(DatasetModel::STATUS_PENDING_TECHNICAL, DatasetModel::STATUS_PENDING);
     }
 
     public function testAccessOptionsRemainStableAcrossPublicationWorkflow(): void

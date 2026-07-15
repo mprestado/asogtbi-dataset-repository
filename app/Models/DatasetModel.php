@@ -6,7 +6,7 @@ use CodeIgniter\Model;
 
 class DatasetModel extends Model
 {
-    public const STATUS_PENDING = 'pending_ethics_review';
+    public const STATUS_PENDING = 'pending_technical_review';
     public const STATUS_PENDING_ETHICS = 'pending_ethics_review';
     public const STATUS_ETHICS_REVISION = 'ethics_revision_requested';
     public const STATUS_PENDING_TECHNICAL = 'pending_technical_review';
@@ -55,10 +55,10 @@ class DatasetModel extends Model
     public static function statusLabels(): array
     {
         return [
-            self::STATUS_PENDING_ETHICS => 'Pending Ethics Review',
-            self::STATUS_ETHICS_REVISION => 'Ethics Revision Requested',
             self::STATUS_PENDING_TECHNICAL => 'Pending Technical Review',
             self::STATUS_TECHNICAL_REVISION => 'Technical Revision Requested',
+            self::STATUS_PENDING_ETHICS => 'Pending Ethics Review',
+            self::STATUS_ETHICS_REVISION => 'Ethics Revision Requested',
             self::STATUS_AWAITING_PUBLICATION => 'Awaiting Publication',
             self::STATUS_PUBLISHED => 'Published',
             self::STATUS_ARCHIVED => 'Archived',

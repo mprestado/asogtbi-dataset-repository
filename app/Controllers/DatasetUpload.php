@@ -87,11 +87,11 @@ class DatasetUpload extends BaseController
             'created_by' => (int) $this->currentUserId(),
         ]);
 
-        $this->recordAudit('dataset_upload', 'dataset', $datasetId, 'Dataset submitted for approval.');
+        $this->recordAudit('dataset_upload', 'dataset', $datasetId, 'Dataset submitted for technical verification.');
 
         return redirect()
             ->to('/datasets/' . $datasetId . '/edit')
-            ->with('info', 'Dataset submitted successfully and is now pending review.');
+            ->with('info', 'Dataset submitted successfully and is now pending technical verification.');
     }
 
     private function storeDatasetFile(int $datasetId, object $uploadedFile, int $userId): int

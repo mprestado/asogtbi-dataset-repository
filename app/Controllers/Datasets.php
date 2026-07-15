@@ -282,7 +282,8 @@ class Datasets extends BaseController
         $newVersion = $this->incrementVersion((string) ($dataset['version'] ?? '1.0'));
         $newStatus = match ((string) ($dataset['status'] ?? '')) {
             DatasetModel::STATUS_TECHNICAL_REVISION => DatasetModel::STATUS_PENDING_TECHNICAL,
-            DatasetModel::STATUS_ETHICS_REVISION, DatasetModel::STATUS_PUBLISHED => DatasetModel::STATUS_PENDING_ETHICS,
+            DatasetModel::STATUS_ETHICS_REVISION => DatasetModel::STATUS_PENDING_ETHICS,
+            DatasetModel::STATUS_PUBLISHED => DatasetModel::STATUS_PENDING_TECHNICAL,
             default => (string) $dataset['status'],
         };
 
@@ -337,7 +338,7 @@ class Datasets extends BaseController
         }
 
         model(DatasetModel::class)->update($id, [
-            'archived_from_status' => (string) ($dataset['status'] ?? DatasetModel::STATUS_PENDING_ETHICS),
+            'archived_from_status' => (string) ($dataset['status'] ?? DatasetModel::STATUS_PENDING_TECHNICAL),
             'status' => DatasetModel::STATUS_ARCHIVED,
             'archived_at' => date('Y-m-d H:i:s'),
         ]);

@@ -7,7 +7,7 @@ description: Apply the ASOG TBI Navy & Gold design language across the integrate
 
 An institutional, research-grade aesthetic for the ASOG TBI Dataset Repository's public and user-facing website: deep navy bands up top on every page, a warm off-white working surface below, gold used only as a thin accent, and one signature texture — a faint graph-paper grid — that gives the app its "spec sheet" feel. It should read as credible and academic, not flashy.
 
-This spec is technology-agnostic in principle but the project itself is a CodeIgniter 4 + MySQL app — implement with plain CSS custom properties in a shared layout partial; don't introduce a CSS framework the project doesn't already use. Full token tables and app-specific component writeups live in `DESIGN.md` — treat that as the source of truth for exact values. Functional scope, roles, dataset lifecycle, and the **explicit Admin Portal boundary** live in `CONTEXT.md` — treat that as the source of truth for what a screen is allowed to do. This file is the "how to apply the visuals" companion to both.
+This spec is technology-agnostic in principle but the project itself is a CodeIgniter 4 + MySQL app — implement with plain CSS custom properties in a shared layout partial; don't introduce a CSS framework the project doesn't already use. Full token tables and app-specific component writeups live in `DESIGN.md` — treat that as the source of truth for exact values. Functional scope, roles, dataset lifecycle, and the integrated role-gated portal live in `CONTEXT.md` — treat that as the source of truth for what a screen is allowed to do. This file is the "how to apply the visuals" companion to both.
 
 ## Philosophy — read this first
 

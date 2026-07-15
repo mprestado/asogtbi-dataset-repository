@@ -5,7 +5,7 @@
     <div class="shell">
         <p class="eyebrow">Dataset Lifecycle</p>
         <h1>Upload a Dataset</h1>
-        <p class="lead">Submit metadata and a protected ZIP package. New submissions begin with Research Ethics verification.</p>
+        <p class="lead">Submit metadata and a protected ZIP package. New submissions begin with technical verification before ethics review.</p>
     </div>
 </section>
 
@@ -16,7 +16,7 @@
                 <p class="tag">Submission Form</p>
                 <h2>Dataset metadata</h2>
             </div>
-            <span class="status-pill status-pending_ethics_review">Pending Ethics Review</span>
+            <span class="status-pill status-pending_technical_review">Pending Technical Review</span>
         </div>
 
         <form method="post" action="<?= site_url('upload') ?>" enctype="multipart/form-data">
@@ -110,7 +110,7 @@
             <li>Anonymization confirmation</li>
         </ul>
         <h3>What happens next</h3>
-        <p class="muted">This website creates the dataset as Pending Review. Approval, rejection, and review notes are handled outside this codebase by the Admin Portal.</p>
+        <p class="muted">The repository creates the dataset as Pending Technical Review. After package checks pass, an ethics reviewer receives the protected metadata for ethics approval before administrator publication.</p>
     </aside>
 </section>
 <?= $this->endSection() ?>

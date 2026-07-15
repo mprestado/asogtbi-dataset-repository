@@ -21,6 +21,7 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
     $routes->get('portal/dashboard', 'Dashboard::portal');
     $routes->get('portal/datasets/(:num)', 'Dashboard::portalDataset/$1');
     $routes->post('portal/notifications/read', 'Dashboard::readPortalNotifications');
+    $routes->get('portal/notifications/poll', 'Dashboard::pollPortalNotifications');
     $routes->get('upload', 'DatasetUpload::create');
     $routes->post('upload', 'DatasetUpload::store');
     $routes->get('datasets/(:num)/edit', 'Datasets::edit/$1');
