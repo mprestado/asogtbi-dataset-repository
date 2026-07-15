@@ -668,6 +668,10 @@ img {
     .detail-sidebar {
         position: sticky;
         top: calc(var(--header-h) + 28px);
+        grid-column: 2;
+    }
+    .form-card {
+        grid-column: 1;
     }
 }
 
@@ -1572,6 +1576,8 @@ select.input-hovered:not(:focus) {
     margin-top: 0;
     line-height: 20px;
     cursor: default;
+    text-transform: none;
+    font-weight: 700;
 }
 
 input:checked + .check-box {
@@ -1848,6 +1854,90 @@ pre {
 
     .preview-actions .button {
         width: 100%;
+    }
+
+    .form-card {
+        padding: 16px;
+    }
+
+    .form-shell {
+        overflow-x: hidden;
+    }
+
+    input,
+    textarea,
+    select {
+        min-height: 40px;
+        padding: 9px 11px;
+    }
+
+    input {
+        text-overflow: ellipsis;
+    }
+
+    .grid {
+        column-gap: 14px;
+        row-gap: 0;
+    }
+
+    .info-popup {
+        left: 50%;
+        transform: translateX(-50%);
+        right: auto;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(280px, calc(100vw - 32px));
+    }
+
+    .label-row {
+        position: relative;
+    }
+
+    .info-wrap {
+        position: static;
+    }
+
+    .file-zone__preview {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 0 12px;
+        align-items: center;
+    }
+
+    .file-zone__preview .button {
+        grid-column: 3;
+        grid-row: 1 / 3;
+        align-self: center;
+    }
+
+    .file-zone__icon {
+        grid-column: 1;
+        grid-row: 1 / 3;
+    }
+
+    .file-zone__name {
+        grid-column: 2;
+        grid-row: 1;
+        max-width: 80%;
+        font-size: 14px;
+    }
+
+    .file-zone__size {
+        grid-column: 2;
+        grid-row: 2;
+        margin-left: 0;
+        margin-top: 2px;
+    }
+
+    .file-zone__placeholder strong {
+        font-size: 13px;
+    }
+
+    .check-label {
+        font-size: 13px;
     }
 }
 

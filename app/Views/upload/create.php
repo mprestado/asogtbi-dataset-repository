@@ -11,6 +11,19 @@
 </section>
 
 <section class="shell split-grid form-shell">
+    <aside class="panel detail-sidebar">
+        <p class="tag">Submission Checklist</p>
+        <h2>Before Uploading</h2>
+        <ul class="stack-list">
+            <?php foreach (($requiredMetadata ?? []) as $metadata): ?>
+                <li><?= esc($metadata) ?></li>
+            <?php endforeach; ?>
+            <li>Anonymization confirmation</li>
+        </ul>
+        <h3>What Happens Next?</h3>
+        <p class="muted">Your dataset is created as Pending Review. A repository administrator assigns an ethics reviewer, then a technical reviewer. You will be notified at each stage.</p>
+    </aside>
+
     <section class="form-card">
         <div class="panel-head">
             <div>
@@ -29,7 +42,7 @@
             <p class="tag">Dataset Info</p>
             <div>
                 <label for="title">Dataset Title<span class="required-asterisk">*</span></label>
-                <span class="help-text">A concise, descriptive name for your dataset (max 255 characters)</span>
+                <span class="help-text">A concise, descriptive name for your dataset</span>
                 <input id="title" name="title" value="<?= old('title') ?>" placeholder="e.g., Startup Survey Responses" class="<?= !empty($errors['title']) ? 'field-error__input' : '' ?>">
                 <?php if (!empty($errors['title'])): ?><span class="field-error"><?= esc($errors['title']) ?></span><?php endif; ?>
             </div>
@@ -100,7 +113,7 @@
             <div>
                 <label for="research_title">Research Title<span class="required-asterisk">*</span></label>
                 <span class="help-text">The official title of the research, thesis, or capstone project</span>
-                <input id="research_title" name="research_title" value="<?= old('research_title') ?>" placeholder="e.g., Startup Ecosystem Analysis in Metro Manila" class="<?= !empty($errors['research_title']) ? 'field-error__input' : '' ?>">
+                <input id="research_title" name="research_title" value="<?= old('research_title') ?>" placeholder="e.g., Startup Ecosystem Analysis" class="<?= !empty($errors['research_title']) ? 'field-error__input' : '' ?>">
                 <?php if (!empty($errors['research_title'])): ?><span class="field-error"><?= esc($errors['research_title']) ?></span><?php endif; ?>
             </div>
             <div>
@@ -112,7 +125,7 @@
 
             <label for="members">Research Members or Contributors</label>
             <span class="help-text">List all student researchers, faculty collaborators, incubatees, or project contributors</span>
-            <textarea id="members" name="members" rows="3" placeholder="e.g., Juan Dela Cruz, Maria Santos, Dr. Reyes"><?= old('members') ?></textarea>
+            <textarea id="members" name="members" rows="3" placeholder="e.g., Juan Dela Cruz, Dr. Maria Santos"><?= old('members') ?></textarea>
 
             <hr class="section-divider">
 
@@ -195,19 +208,6 @@
             </div>
         </form>
     </section>
-
-    <aside class="panel detail-sidebar">
-        <p class="tag">Submission Checklist</p>
-        <h2>Before Uploading</h2>
-        <ul class="stack-list">
-            <?php foreach (($requiredMetadata ?? []) as $metadata): ?>
-                <li><?= esc($metadata) ?></li>
-            <?php endforeach; ?>
-            <li>Anonymization confirmation</li>
-        </ul>
-        <h3>What Happens Next?</h3>
-        <p class="muted">Your dataset is created as Pending Review. A repository administrator assigns an ethics reviewer, then a technical reviewer. You will be notified at each stage.</p>
-    </aside>
 </section>
 
 <script>
