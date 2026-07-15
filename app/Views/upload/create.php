@@ -165,7 +165,7 @@
                 <div>
                     <label for="source_link">Source Link <span class="label-optional">(OPTIONAL)</span></label>
                     <span class="help-text">A URL to the original data source or related publication</span>
-                    <input id="source_link" name="source_link" value="<?= old('source_link') ?>" placeholder="https://doi.org/...">
+                    <input id="source_link" name="source_link" value="<?= old('source_link') ?>" placeholder="https://">
                 </div>
             </div>
 
@@ -399,6 +399,30 @@
         if (fInput) {
             fInput.addEventListener('change', function() {
                 if (fInput.files.length > 0) clearFileInvalid();
+            });
+        }
+
+        var sourceLink = document.getElementById('source_link');
+        if (sourceLink) {
+            sourceLink.addEventListener('blur', function() {
+                var val = this.value.trim();
+                if (val && !/^https:\/\/.+\..+/i.test(val)) {
+                    this.classList.add('field-error__input');
+                    var sib = this.nextElementSibling;
+                    while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
+                    if (!sib) {
+                        sib = document.createElement('span');
+                        sib.className = 'field-error';
+                        sib.textContent = 'Please enter a valid URL starting with https://';
+                        this.parentNode.insertBefore(sib, this.nextSibling);
+                    }
+                    sib.hidden = false;
+                } else {
+                    this.classList.remove('field-error__input');
+                    var sib = this.nextElementSibling;
+                    while (sib && !sib.classList.contains('field-error')) sib = sib.nextElementSibling;
+                    if (sib) sib.hidden = true;
+                }
             });
         }
 

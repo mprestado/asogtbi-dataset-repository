@@ -33,10 +33,7 @@ class DatasetUpload extends BaseController
     public function store()
     {
         $messages = [
-            'title' => [
-                'required' => 'Please enter a dataset title.',
-                'max_length' => 'Title cannot exceed 255 characters.',
-            ],
+            'title' => ['required' => 'Please enter a dataset title.'],
             'description' => ['required' => 'Please describe what the dataset contains.'],
             'category' => [
                 'required' => 'Please enter a category.',
@@ -55,7 +52,7 @@ class DatasetUpload extends BaseController
                 'max_length' => 'Project head cannot exceed 150 characters.',
             ],
             'members' => ['max_length' => 'Members list cannot exceed 5000 characters.'],
-            'source_link' => ['valid_url_strict' => 'Please enter a valid URL (e.g., https://doi.org/...).'],
+            'source_link' => ['valid_url_strict' => 'Please enter a valid URL starting with https://'],
             'access_type' => ['required' => 'Please select an access type.'],
             'anonymized' => ['required' => 'You must confirm anonymization before submitting.'],
             'dataset_file' => [
@@ -65,7 +62,7 @@ class DatasetUpload extends BaseController
         ];
 
         $rules = [
-            'title' => 'required|max_length[255]',
+            'title' => 'required',
             'description' => 'required',
             'category' => 'required|max_length[120]',
             'tags' => 'required|max_length[255]',

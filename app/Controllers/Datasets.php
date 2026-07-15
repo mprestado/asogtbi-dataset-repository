@@ -242,7 +242,7 @@ class Datasets extends BaseController
         }
 
         $rules = [
-            'title' => 'required|max_length[255]',
+            'title' => 'required',
             'description' => 'required',
             'category' => 'required|max_length[120]',
             'tags' => 'required|max_length[255]',
