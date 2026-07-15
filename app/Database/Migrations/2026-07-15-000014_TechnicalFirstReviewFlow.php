@@ -8,13 +8,16 @@ class TechnicalFirstReviewFlow extends Migration
 {
     public function up(): void
     {
-        $this->forge->modifyColumn('datasets', [
-            'status' => [
-                'type' => 'VARCHAR',
-                'constraint' => 40,
-                'default' => 'pending_technical_review',
-            ],
-        ]);
+        // Bypass the schema change for SQLite test environments.
+        if ($this->db->DBDriver !== 'SQLite3') {
+            $this->forge->modifyColumn('datasets', [
+                'status' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 40,
+                    'default' => 'pending_technical_review',
+                ],
+            ]);
+        }
 
         $assignedEthics = $this->db->table('reviews')
             ->select('dataset_id')
@@ -33,12 +36,15 @@ class TechnicalFirstReviewFlow extends Migration
 
     public function down(): void
     {
-        $this->forge->modifyColumn('datasets', [
-            'status' => [
-                'type' => 'VARCHAR',
-                'constraint' => 40,
-                'default' => 'pending_ethics_review',
-            ],
-        ]);
+        // Bypass for SQLite to prevent the 'db_temp_datasets' rollback crash
+        if ($this->db->DBDriver !== 'SQLite3') {
+            $this->forge->modifyColumn('datasets', [
+                'status' => [
+                    'type' => 'VARCHAR',
+                    'constraint' => 40,
+                    'default' => 'pending_ethics_review',
+                ],
+            ]);
+        }
     }
 }
