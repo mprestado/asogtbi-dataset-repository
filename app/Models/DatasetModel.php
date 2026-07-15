@@ -98,4 +98,54 @@ class DatasetModel extends Model
     {
         return self::accessOptions()[$accessType ?? ''] ?? 'Public';
     }
+
+    /**
+     * @return array{label: string, url: ?string, tone: string}
+     */
+    public static function dashboardActionForStatus(?string $status, int $datasetId): array
+    {
+        return match ($status) {
+            self::STATUS_ETHICS_REVISION,
+            self::STATUS_TECHNICAL_REVISION => [
+                'label' => 'Revise dataset and resubmit for review.',
+                'url' => 'datasets/' . $datasetId . '/edit',
+                'tone' => 'attention',
+            ],
+            self::STATUS_PUBLISHED => [
+                'label' => 'Published in the catalog. Submit an update when the record changes.',
+                'url' => 'datasets/' . $datasetId . '/edit',
+                'tone' => 'ready',
+            ],
+            self::STATUS_PENDING_ETHICS => [
+                'label' => 'Locked while ethics review is active.',
+                'url' => null,
+                'tone' => 'locked',
+            ],
+            self::STATUS_PENDING_TECHNICAL => [
+                'label' => 'Locked while technical review is active.',
+                'url' => null,
+                'tone' => 'locked',
+            ],
+            self::STATUS_AWAITING_PUBLICATION => [
+                'label' => 'Approved by reviewers and waiting for publication.',
+                'url' => null,
+                'tone' => 'locked',
+            ],
+            self::STATUS_REJECTED => [
+                'label' => 'Review ended with rejection. Open the record for details.',
+                'url' => null,
+                'tone' => 'closed',
+            ],
+            self::STATUS_ARCHIVED => [
+                'label' => 'Archived from normal browsing.',
+                'url' => null,
+                'tone' => 'closed',
+            ],
+            default => [
+                'label' => 'Open this record to review its current state.',
+                'url' => null,
+                'tone' => 'neutral',
+            ],
+        };
+    }
 }

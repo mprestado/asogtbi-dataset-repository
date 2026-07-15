@@ -84,3 +84,13 @@ This file is append-only. Every material implementation milestone must add a dat
 - Verification: PHP 8.5 syntax checks passed for updated public and portal layouts; `php spark routes` passes; PHPUnit passes with 10 tests and 22 assertions; `git diff --check` passes with only Windows line-ending warnings.
 - Blockers: Manual visual QA should confirm the account dropdown remains readable for multi-role users.
 - Next step: Login as contributor, reviewer, and administrator, then confirm all dashboard/workspace links are reachable from the profile tab without cluttering the main nav.
+
+## 2026-07-14 - Contributor dashboard submission cards
+
+- Branch/commit: `rapid-mvp`, local work after `71c04e3`.
+- Completed behavior: Enriched My Datasets cards with owner, workflow, access type, next action, latest reviewer comments, revision/update actions, archive availability, and a clearer Upload Datasets empty state.
+- Schema changes: None.
+- Important files: `app/Controllers/Dashboard.php`, `app/Models/DatasetModel.php`, `app/Views/dashboard/index.php`, `public/assets/css/app.css`, and `tests/unit/ModerationWorkflowContractTest.php`.
+- Verification: PHP syntax checks pass for touched PHP files; `php spark routes` passes; `composer test` passes with 11 tests and 30 assertions.
+- Blockers: Browser connector was unavailable in this session, so visual QA on `/index.php/dashboard` still needs an in-browser pass with seeded contributor records.
+- Next step: Login as a seeded contributor and inspect `/index.php/dashboard` across pending, revision, awaiting publication, published, rejected, archived, and empty states.

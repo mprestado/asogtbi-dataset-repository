@@ -34,4 +34,22 @@ final class ModerationWorkflowContractTest extends CIUnitTestCase
         $this->assertTrue(DatasetModel::isUnderReview(DatasetModel::STATUS_AWAITING_PUBLICATION));
         $this->assertFalse(DatasetModel::isUnderReview(DatasetModel::STATUS_PUBLISHED));
     }
+
+    public function testContributorDashboardActionsMatchWorkflowState(): void
+    {
+        $revision = DatasetModel::dashboardActionForStatus(DatasetModel::STATUS_ETHICS_REVISION, 42);
+        $published = DatasetModel::dashboardActionForStatus(DatasetModel::STATUS_PUBLISHED, 42);
+        $pending = DatasetModel::dashboardActionForStatus(DatasetModel::STATUS_PENDING_TECHNICAL, 42);
+        $rejected = DatasetModel::dashboardActionForStatus(DatasetModel::STATUS_REJECTED, 42);
+        $archived = DatasetModel::dashboardActionForStatus(DatasetModel::STATUS_ARCHIVED, 42);
+
+        $this->assertSame('attention', $revision['tone']);
+        $this->assertSame('datasets/42/edit', $revision['url']);
+        $this->assertSame('ready', $published['tone']);
+        $this->assertSame('datasets/42/edit', $published['url']);
+        $this->assertSame('locked', $pending['tone']);
+        $this->assertNull($pending['url']);
+        $this->assertSame('closed', $rejected['tone']);
+        $this->assertSame('closed', $archived['tone']);
+    }
 }
