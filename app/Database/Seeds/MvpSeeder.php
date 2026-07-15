@@ -232,6 +232,7 @@ class MvpSeeder extends Seeder
             $userId = (int) $user['id'];
             $this->db->table('users')->where('id', $userId)->update([
                 'name' => 'Demo User',
+                'password_hash' => password_hash('change-me', PASSWORD_DEFAULT),
                 'status' => 'active',
                 'updated_at' => $now,
             ]);
@@ -288,6 +289,12 @@ class MvpSeeder extends Seeder
                 $userId = (int) $this->db->insertID();
             } else {
                 $userId = (int) $user['id'];
+                $this->db->table('users')->where('id', $userId)->update([
+                    'name' => $account['name'],
+                    'password_hash' => password_hash('change-me', PASSWORD_DEFAULT),
+                    'status' => 'active',
+                    'updated_at' => $now,
+                ]);
             }
             $exists = $this->db->table('user_roles')->where(['user_id' => $userId, 'role_id' => $roleId])->get()->getRowArray();
             if (! is_array($exists)) {

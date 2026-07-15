@@ -49,9 +49,12 @@ Run the schema and demo data:
 
 ```powershell
 php spark migrate
+php spark db:seed DemoAccountsSeeder
 php spark db:seed MvpSeeder
 php spark serve
 ```
+
+If you only need the login accounts, run `DemoAccountsSeeder`. `MvpSeeder` also normalizes these same demo accounts and then loads the walkthrough datasets.
 
 Optional large dummy catalog seed:
 

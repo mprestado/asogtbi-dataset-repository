@@ -135,6 +135,16 @@ This file is append-only. Every material implementation milestone must add a dat
 - Blockers: Google OAuth remains intentionally disabled and visual-only until a provider flow is implemented.
 - Next step: Browser-check login/register on desktop and mobile, then decide whether to extend the same auth island treatment to forgot/reset password screens.
 
+## 2026-07-15 - Dedicated demo account seeder
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `b0bd5c5`.
+- Completed behavior: Added an account-only seeder that creates or repairs the contributor, repository administrator, ethics reviewer, and technical reviewer demo accounts, ensures their roles, activates them, and resets all demo passwords to `change-me`. Updated `MvpSeeder` so rerunning the full demo seed also repairs existing demo account passwords.
+- Schema changes: None; existing `users`, `roles`, and `user_roles` migrations already support the accounts.
+- Important files: `app/Database/Seeds/DemoAccountsSeeder.php`, `app/Database/Seeds/MvpSeeder.php`, `README.md`, `SETUP.md`, and `docs/progress.md`.
+- Verification: PHP 8.5 syntax checks passed for `DemoAccountsSeeder` and `MvpSeeder`; `php spark db:seed DemoAccountsSeeder` runs successfully; local login POSTs with `change-me` redirect `admin@example.test` to `/admin`, `ethics@example.test` to `/review/ethics`, and `technical@example.test` to `/review/technical`; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: Teammates must still run `php spark migrate` before either seeder on a fresh database.
+- Next step: Run `php spark db:seed DemoAccountsSeeder`, then sign in as `admin@example.test`, `ethics@example.test`, and `technical@example.test` with `change-me`.
+
 ## 2026-07-14 - Contributor dashboard submission cards
 
 - Branch/commit: `rapid-mvp`, local work after `71c04e3`.

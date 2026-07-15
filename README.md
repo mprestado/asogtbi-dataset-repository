@@ -37,9 +37,12 @@ composer install
 Copy-Item .env.example .env
 php spark key:generate
 php spark migrate
+php spark db:seed DemoAccountsSeeder
 php spark db:seed MvpSeeder
 php spark serve
 ```
+
+Run `DemoAccountsSeeder` when you only need the contributor, admin, ethics reviewer, and technical reviewer demo accounts. Run `MvpSeeder` when you also need the full walkthrough dataset set.
 
 The application requires PHP 8.2 or newer. Uploaded ZIP files stay under `writable/uploads/` and must never be served directly from `public/`.
 
