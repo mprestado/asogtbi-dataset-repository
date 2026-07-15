@@ -114,3 +114,13 @@ This file is append-only. Every material implementation milestone must add a dat
 - Verification: PHP 8.5 syntax check passed for `app/Views/admin/users.php`; `git diff --check` passes with only Windows line-ending warnings; local `/admin/users` returns 200 after the compact UI, portal scroll, and filter visibility fixes.
 - Blockers: Manual browser QA should confirm filtering, expandable editors, and role saves with a larger seeded account list.
 - Next step: Login as administrator, open Users and Roles, filter by role/status/search, expand several rows, and verify active/inactive changes plus multi-role saves still feel clear and safe.
+
+## 2026-07-15 - Seedable dummy published uploads
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `c4ea40a`.
+- Completed behavior: Converted the one-off `dummydata/dataset1.csv` import into an idempotent CodeIgniter seeder that publishes each CSV row as a public dataset owned by user `1`, stores protected CSV copies, and creates matching dataset file/version records.
+- Schema changes: None; this is data seeding only and requires the existing dataset, file, and version migrations.
+- Important files: `app/Database/Seeds/DummyPublishedUploadsSeeder.php`, `dummydata/dataset1.csv`, `SETUP.md`, and `docs/progress.md`.
+- Verification: PHP 8.5 syntax check passed for `DummyPublishedUploadsSeeder`; `php spark db:seed DummyPublishedUploadsSeeder` runs successfully; local MySQL count remains idempotent at 120 published dummy datasets and 120 matching CSV file records; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: The source CSV must be present at `dummydata/dataset1.csv`; run `MvpSeeder` first if user `1` does not exist.
+- Next step: Run `php spark db:seed DummyPublishedUploadsSeeder` after migrations and `MvpSeeder` when a large published dummy catalog is needed.

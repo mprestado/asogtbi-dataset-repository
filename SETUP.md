@@ -53,6 +53,14 @@ php spark db:seed MvpSeeder
 php spark serve
 ```
 
+Optional large dummy catalog seed:
+
+```powershell
+php spark db:seed DummyPublishedUploadsSeeder
+```
+
+This imports `dummydata/dataset1.csv` as published public uploads owned by user `1`. Run `MvpSeeder` first so the demo contributor and administrator accounts exist.
+
 ## Demo Accounts
 
 All seeded accounts use password `change-me`.
