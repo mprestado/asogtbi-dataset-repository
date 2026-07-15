@@ -248,7 +248,7 @@ class Datasets extends BaseController
             'tags' => 'required|max_length[255]',
             'data_type' => 'required|max_length[80]',
             'file_format' => 'required|max_length[30]',
-            'research_title' => 'required|max_length[255]',
+            'research_title' => 'required',
             'project_head' => 'required|max_length[150]',
             'source_type' => 'required|max_length[80]',
             'access_type' => 'required|in_list[public,institutional,restricted,private]',

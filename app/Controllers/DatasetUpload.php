@@ -72,7 +72,7 @@ class DatasetUpload extends BaseController
             'data_type' => 'required|max_length[80]',
             'file_format' => 'required|max_length[30]',
             'source_type' => 'required|max_length[80]',
-            'research_title' => 'required|max_length[255]',
+            'research_title' => 'required',
             'project_head' => 'required|max_length[150]',
             'access_type' => 'required|in_list[public,institutional,restricted,private]',
             'anonymized' => 'required',
