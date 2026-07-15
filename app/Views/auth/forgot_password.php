@@ -27,7 +27,7 @@
                 <button class="button" type="submit">Prepare Reset Link</button>
             </div>
         </form>
-        <p class="muted auth-link">Remembered it? <a href="<?= site_url('login') ?>">Log in</a></p>
+        <p class="muted auth-link">Remembered it? <a href="<?= site_url('login') ?>">Sign in</a></p>
     </section>
 
     <aside class="panel">

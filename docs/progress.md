@@ -85,6 +85,56 @@ This file is append-only. Every material implementation milestone must add a dat
 - Blockers: Manual visual QA should confirm the account dropdown remains readable for multi-role users.
 - Next step: Login as contributor, reviewer, and administrator, then confirm all dashboard/workspace links are reachable from the profile tab without cluttering the main nav.
 
+## 2026-07-15 - Browse preview mockup alignment
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `86f6b08`.
+- Completed behavior: Reworked the browse dataset preview modal to match the provided mockup: updated compact row pills inside the preview header, italic dataset title, gold divider, larger short description, bordered metadata fact sheet, contributor email display when available, compact tag text, single gold Explore action, restored `aria-expanded`, heading-first focus, Escape close, backdrop close, and Tab focus trapping.
+- Schema changes: None.
+- Important files: `app/Controllers/Datasets.php`, `app/Views/datasets/index.php`, and `public/assets/css/app.css`.
+- Verification: PHP 8.5 syntax checks passed for `app/Controllers/Datasets.php` and `app/Views/datasets/index.php`; `php spark routes` passes; PHPUnit passes with 10 tests and 22 assertions; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: Browser-level visual QA is still needed to confirm the modal matches the attached composition across desktop and mobile.
+- Next step: Run PHP 8.5 verification, then open the browse page and compare the preview modal against the mockup.
+
+## 2026-07-15 - Technical-first maintainer workflow
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `925ddb8`.
+- Completed behavior: Reordered moderation so new and updated submissions enter technical verification before ethics review, moved maintainer login destinations into admin/technical/ethics work queues, demoted contributor records for maintainer portal navigation, and added live portal activities with unread yellow badge, toast, and browser-unlocked beep.
+- Schema changes: Added migration `2026-07-15-000014_TechnicalFirstReviewFlow` to change the dataset status default to `pending_technical_review` and move unassigned legacy pending ethics rows into the technical queue.
+- Important files: `app/Services/ModerationWorkflow.php`, `app/Models/DatasetModel.php`, `app/Controllers/Auth.php`, `app/Controllers/Dashboard.php`, `app/Views/layouts/portal.php`, admin/dashboard/upload views, routes, docs, tests, and the new migration.
+- Verification: PHP 8.5 syntax checks passed for changed controllers, model, service, portal layout, and new migration; `php spark routes` passes and shows `portal/notifications/poll`; `php spark migrate:status` recognizes `TechnicalFirstReviewFlow` as pending; PHPUnit passes with 11 tests and 23 assertions; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: Browser sound playback still depends on a user interaction because browsers block autoplay audio.
+- Next step: Run full PHP 8.5 verification, then manually walk through upload -> technical assignment -> technical approval -> ethics assignment -> ethics approval -> publication.
+
+## 2026-07-15 - Admin users and roles polish
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `925ddb8`.
+- Completed behavior: Reworked the administrator Users and Roles screen from dense inline rows into a scalable access directory with account metrics, client-side search/status/role filters, compact account rows, active/inactive pills, current-account marker, role preview chips, expandable role editors, and clearer save actions while preserving existing server-side role safeguards. Added slimmer search/filter controls, tighter chips, a cleaner edit popover for large account lists, fixed desktop portal scrolling so long edit panels scroll inside the content area without dragging the sidebar or exposing a bottom gap, and corrected filtered account rows so search/status/role filters visibly update the list.
+- Schema changes: None.
+- Important files: `app/Views/admin/users.php`, `public/assets/css/app.css`, and `docs/progress.md`.
+- Verification: PHP 8.5 syntax check passed for `app/Views/admin/users.php`; `git diff --check` passes with only Windows line-ending warnings; local `/admin/users` returns 200 after the compact UI, portal scroll, and filter visibility fixes.
+- Blockers: Manual browser QA should confirm filtering, expandable editors, and role saves with a larger seeded account list.
+- Next step: Login as administrator, open Users and Roles, filter by role/status/search, expand several rows, and verify active/inactive changes plus multi-role saves still feel clear and safe.
+
+## 2026-07-15 - Seedable dummy published uploads
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `c4ea40a`.
+- Completed behavior: Converted the one-off `dummydata/dataset1.csv` import into an idempotent CodeIgniter seeder that publishes each CSV row as a public dataset owned by user `1`, stores protected CSV copies, and creates matching dataset file/version records.
+- Schema changes: None; this is data seeding only and requires the existing dataset, file, and version migrations.
+- Important files: `app/Database/Seeds/DummyPublishedUploadsSeeder.php`, `dummydata/dataset1.csv`, `SETUP.md`, and `docs/progress.md`.
+- Verification: PHP 8.5 syntax check passed for `DummyPublishedUploadsSeeder`; `php spark db:seed DummyPublishedUploadsSeeder` runs successfully; local MySQL count remains idempotent at 120 published dummy datasets and 120 matching CSV file records; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: The source CSV must be present at `dummydata/dataset1.csv`; run `MvpSeeder` first if user `1` does not exist.
+- Next step: Run `php spark db:seed DummyPublishedUploadsSeeder` after migrations and `MvpSeeder` when a large published dummy catalog is needed.
+
+## 2026-07-15 - Polished auth entry flow
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `474055d`.
+- Completed behavior: Reworked sign-in and sign-up pages into a centered auth island with clear background, disabled "Continue with Google" placeholder, policy/help copy, autocomplete attributes, inline field errors, mobile stacking, consistent Sign in/Sign up wording, and server-side `@cspc.edu.ph` validation for self-registration. Demoted local demo credentials into a collapsible development note on login so they do not read like a product feature.
+- Schema changes: None.
+- Important files: `app/Controllers/Auth.php`, `app/Views/auth/login.php`, `app/Views/auth/register.php`, `app/Views/auth/forgot_password.php`, `app/Views/layouts/main.php`, `public/assets/css/app.css`, and `docs/progress.md`.
+- Verification: PHP 8.5 syntax checks passed for `Auth.php`, login/register views, forgot-password view, and main layout; local `/login` and `/register` return 200; invalid non-CSPC registration is blocked and renders the inline `@cspc.edu.ph` error when following the local session redirect; `php spark routes` passes; PHPUnit passes with 11 tests and 23 assertions; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: Google OAuth remains intentionally disabled and visual-only until a provider flow is implemented.
+- Next step: Browser-check login/register on desktop and mobile, then decide whether to extend the same auth island treatment to forgot/reset password screens.
+
 ## 2026-07-14 - Contributor dashboard submission cards
 
 - Branch/commit: `rapid-mvp`, local work after `71c04e3`.

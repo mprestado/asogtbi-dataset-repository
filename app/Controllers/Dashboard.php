@@ -53,7 +53,28 @@ class Dashboard extends BaseController
     {
         model(NotificationModel::class)->where('user_id', (int) $this->currentUserId())->where('read_at', null)->set(['read_at' => date('Y-m-d H:i:s')])->update();
 
-        return redirect()->to('/portal/dashboard')->with('info', 'Notifications marked as read.');
+        return redirect()->back()->with('info', 'Notifications marked as read.');
+    }
+
+    public function pollPortalNotifications()
+    {
+        $userId = (int) $this->currentUserId();
+        $notificationModel = model(NotificationModel::class);
+        $latest = $notificationModel
+            ->where('user_id', $userId)
+            ->where('read_at', null)
+            ->orderBy('id', 'DESC')
+            ->first();
+
+        return $this->response->setJSON([
+            'unreadCount' => $notificationModel->where('user_id', $userId)->where('read_at', null)->countAllResults(),
+            'latest' => is_array($latest) ? [
+                'id' => (int) $latest['id'],
+                'title' => (string) ($latest['title'] ?? 'New activity'),
+                'message' => (string) ($latest['message'] ?? ''),
+                'link' => ! empty($latest['link']) ? site_url(ltrim((string) $latest['link'], '/')) : null,
+            ] : null,
+        ]);
     }
 
     /**

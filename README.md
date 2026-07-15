@@ -6,20 +6,20 @@ The `rapid-mvp` branch is a unified CodeIgniter 4 and MySQL repository for publi
 
 - Public catalog, search, filters, dataset details, citation, recommendations, and protected downloads
 - Contributor registration, upload, version updates, revision responses, status notifications, and self-archive
-- Research Ethics review with administrator assignment and a required compliance checklist
 - Technical review with protected ZIP access and a required manual verification checklist
+- Research Ethics review with administrator assignment and a required compliance checklist
 - Repository administration for reviewer assignment, final publication, access classification, users, roles, archive/restore, review history, and audit logs
 
 Only non-archived `published` datasets appear publicly. New and updated submissions move through:
 
 ```text
-Pending Ethics -> Pending Technical -> Awaiting Publication -> Published
+Pending Technical -> Pending Ethics -> Awaiting Publication -> Published
        |                  |
        +-> Revision       +-> Revision
        +-> Rejected       +-> Rejected
 ```
 
-Revision resubmissions return to the same stage. Updates to published datasets restart ethics review.
+Revision resubmissions return to the same stage. Updates to published datasets restart technical verification so package changes are checked before ethics review.
 
 ## Documentation
 
@@ -42,6 +42,16 @@ php spark serve
 ```
 
 The application requires PHP 8.2 or newer. Uploaded ZIP files stay under `writable/uploads/` and must never be served directly from `public/`.
+
+## Testing
+
+This repository uses PHPUnit for feature and unit testing.
+
+### Running Tests
+To run the full suite:
+```bash
+./vendor/bin/phpunit
+```
 
 ## Deferred
 

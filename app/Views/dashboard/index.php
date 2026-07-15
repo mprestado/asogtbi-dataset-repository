@@ -23,7 +23,7 @@
         <article class="panel stat-card">
             <p class="tag">Pending Review</p>
             <h2 class="stat-value"><?= esc((string) (($statusCounts['pending'] ?? 0))) ?></h2>
-            <p class="muted">Submissions moving through ethics, technical, or publication review.</p>
+            <p class="muted">Submissions moving through technical verification, ethics review, or publication approval.</p>
         </article>
         <article class="panel stat-card">
             <p class="tag">Revision Requested</p>
