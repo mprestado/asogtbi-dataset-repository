@@ -997,7 +997,7 @@ img {
     min-height: 34px;
     border-radius: 8px;
     font-weight: 900;
-    text-transform: uppercase;
+    text-transform: none;
 }
 
 .citation-card {
