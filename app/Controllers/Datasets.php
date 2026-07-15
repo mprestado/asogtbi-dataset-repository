@@ -192,7 +192,7 @@ class Datasets extends BaseController
         return $this->response->download($absolutePath, null)->setFileName((string) $latestFile['original_name']);
     }
 
-    public function edit(int $id): string
+    public function edit(int $id)
     {
         $datasetModel = new DatasetModel();
         $dataset = $datasetModel->find($id);
