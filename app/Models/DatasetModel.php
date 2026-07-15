@@ -42,6 +42,7 @@ class DatasetModel extends Model
         'contributor_id',
         'status',
         'access_type',
+        'anonymized',
         'version',
         'approved_by',
         'approved_at',

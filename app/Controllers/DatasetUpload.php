@@ -32,26 +32,59 @@ class DatasetUpload extends BaseController
 
     public function store()
     {
+        $messages = [
+            'title' => ['required' => 'Please enter a dataset title.'],
+            'description' => ['required' => 'Please describe what the dataset contains.'],
+            'category' => [
+                'required' => 'Please enter a category.',
+                'max_length' => 'Category cannot exceed 120 characters.',
+            ],
+            'tags' => [
+                'required' => 'Please enter at least one tag.',
+                'max_length' => 'Tags cannot exceed 255 characters.',
+            ],
+            'data_type' => ['required' => 'Please select a data type.'],
+            'file_format' => ['required' => 'Please enter the file format.'],
+            'source_type' => ['required' => 'Please select a source type.'],
+            'research_title' => ['required' => 'Please enter the research title.'],
+            'project_head' => [
+                'required' => 'Please enter the project head or adviser.',
+                'max_length' => 'Project head cannot exceed 150 characters.',
+            ],
+            'members' => ['max_length' => 'Members list cannot exceed 5000 characters.'],
+            'source_link' => ['valid_url_strict' => 'Please enter a valid URL starting with https://'],
+            'access_type' => ['required' => 'Please select an access type.'],
+            'anonymized' => ['required' => 'You must confirm anonymization before submitting.'],
+            'dataset_file' => [
+                'uploaded' => 'Please select a ZIP file to upload.',
+                'ext_in' => 'Only ZIP files are accepted.',
+            ],
+        ];
+
         $rules = [
-            'title' => 'required|max_length[255]',
+            'title' => 'required',
             'description' => 'required',
             'category' => 'required|max_length[120]',
             'tags' => 'required|max_length[255]',
             'data_type' => 'required|max_length[80]',
             'file_format' => 'required|max_length[30]',
             'source_type' => 'required|max_length[80]',
-            'research_title' => 'required|max_length[255]',
+            'research_title' => 'required',
             'project_head' => 'required|max_length[150]',
             'access_type' => 'required|in_list[public,institutional,restricted,private]',
             'anonymized' => 'required',
-            'dataset_file' => 'uploaded[dataset_file]|ext_in[dataset_file,zip]|max_size[dataset_file,10240]',
+            'members' => 'permit_empty|max_length[5000]',
+            'source_link' => 'permit_empty|valid_url_strict|max_length[255]',
+            'dataset_file' => 'uploaded[dataset_file]|ext_in[dataset_file,zip]',
         ];
 
-        if (! $this->validate($rules)) {
+        if (! $this->validate($rules, $messages)) {
+            $errorMessages = $this->validator->getErrors();
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', implode(' ', $this->validator->getErrors()));
+                ->with('errors', $errorMessages)
+                ->with('error', 'Please fix the highlighted fields below.');
         }
 
         $datasetModel = new DatasetModel();
@@ -65,6 +98,8 @@ class DatasetUpload extends BaseController
             'tags' => trim((string) $this->request->getPost('tags')),
             'data_type' => trim((string) $this->request->getPost('data_type')),
             'file_format' => trim((string) $this->request->getPost('file_format')),
+            'anonymized' => (int) ($this->request->getPost('anonymized') === '1'),
+            'form' => trim((string) $this->request->getPost('form')),
             'source_type' => trim((string) $this->request->getPost('source_type')),
             'source_link' => trim((string) $this->request->getPost('source_link')),
             'research_title' => trim((string) $this->request->getPost('research_title')),
