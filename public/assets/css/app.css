@@ -987,7 +987,7 @@ img {
 .preview-actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 10px;
     margin: 16px 24px 4px;
 }
