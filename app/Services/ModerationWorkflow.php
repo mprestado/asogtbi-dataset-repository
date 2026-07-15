@@ -22,19 +22,19 @@ class ModerationWorkflow
     public static function checklist(string $stage): array
     {
         $lists = [
-            ReviewModel::STAGE_ETHICS => [
-                'consent_clearance' => 'Consent and ethics clearance are documented or not applicable.',
-                'anonymization' => 'Personal or sensitive data is appropriately anonymized.',
-                'sensitive_data' => 'Sensitive-data handling and safeguards are adequate.',
-                'source_legitimacy' => 'The source and proposed use are legitimate and documented.',
-                'access_classification' => 'The requested access classification is appropriate.',
-            ],
             ReviewModel::STAGE_TECHNICAL => [
                 'archive_readable' => 'The protected ZIP can be downloaded and opened.',
                 'metadata_complete' => 'Required metadata is complete and consistent.',
                 'documentation_complete' => 'Documentation is sufficient for repository users.',
                 'formats_match' => 'Declared formats match the submitted package.',
                 'files_suitable' => 'Files are usable and suitable for publication.',
+            ],
+            ReviewModel::STAGE_ETHICS => [
+                'consent_clearance' => 'Consent and ethics clearance are documented or not applicable.',
+                'anonymization' => 'Personal or sensitive data is appropriately anonymized.',
+                'sensitive_data' => 'Sensitive-data handling and safeguards are adequate.',
+                'source_legitimacy' => 'The source and proposed use are legitimate and documented.',
+                'access_classification' => 'The requested access classification is appropriate.',
             ],
         ];
         if (! isset($lists[$stage])) {
@@ -109,7 +109,7 @@ class ModerationWorkflow
                 ? DatasetModel::STATUS_REJECTED
                 : ($decision === ReviewModel::STATUS_REVISION
                     ? ($stage === ReviewModel::STAGE_ETHICS ? DatasetModel::STATUS_ETHICS_REVISION : DatasetModel::STATUS_TECHNICAL_REVISION)
-                    : ($stage === ReviewModel::STAGE_ETHICS ? DatasetModel::STATUS_PENDING_TECHNICAL : DatasetModel::STATUS_AWAITING_PUBLICATION));
+                    : ($stage === ReviewModel::STAGE_TECHNICAL ? DatasetModel::STATUS_PENDING_ETHICS : DatasetModel::STATUS_AWAITING_PUBLICATION));
             $now = date('Y-m-d H:i:s');
             $this->db->table('reviews')->where('id', $reviewId)->update(['status' => $decision, 'checklist' => json_encode($answers), 'comments' => trim($comments), 'decided_at' => $now, 'updated_at' => $now]);
             $this->db->table('datasets')->where('id', $dataset['id'])->update(['status' => $next, 'approved_by' => null, 'approved_at' => null, 'updated_at' => $now]);

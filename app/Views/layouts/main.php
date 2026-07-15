@@ -6,8 +6,8 @@
     <title><?= esc($title ?? 'ASOG TBI Dataset Repository') ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=DM+Serif+Display&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..24,400,0,0&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
 </head>
 <body>
@@ -27,23 +27,33 @@
             <a href="<?= site_url('/') ?>">Home</a>
             <a href="<?= site_url('datasets') ?>">Browse Datasets</a>
             <?php if ($isAuthenticated): ?>
-                <a href="<?= site_url('dashboard') ?>">My Datasets</a>
                 <a href="<?= site_url('upload') ?>">Upload</a>
-                <?php if (in_array('ethics_reviewer', $roles, true)): ?><a href="<?= site_url('review/ethics') ?>">Ethics Portal</a><?php endif; ?>
-                <?php if (in_array('technical_reviewer', $roles, true)): ?><a href="<?= site_url('review/technical') ?>">Technical Portal</a><?php endif; ?>
-                <?php if (in_array('repository_administrator', $roles, true)): ?><a href="<?= site_url('admin') ?>">Admin Portal</a><?php endif; ?>
             <?php endif; ?>
         </nav>
 
         <div class="nav-actions">
             <?php if ($isAuthenticated): ?>
-                <span><?= esc((string) session()->get('user_name')) ?></span>
-                <form class="nav-form" method="post" action="<?= site_url('logout') ?>">
-                    <?= csrf_field() ?>
-                    <button class="nav-cta" type="submit">Logout</button>
-                </form>
+                <details class="account-menu">
+                    <summary class="account-trigger" aria-label="Open account menu">
+                        <span class="material-symbols-rounded" aria-hidden="true">account_circle</span>
+                    </summary>
+                    <div class="account-popover">
+                        <p class="account-name"><?= esc((string) session()->get('user_name')) ?></p>
+                        <a href="<?= site_url('dashboard') ?>"><span class="material-symbols-rounded" aria-hidden="true">database</span> My datasets</a>
+                        <?php if (in_array('ethics_reviewer', $roles, true) || in_array('technical_reviewer', $roles, true) || in_array('repository_administrator', $roles, true)): ?>
+                            <a href="<?= site_url('portal/dashboard') ?>"><span class="material-symbols-rounded" aria-hidden="true">folder_managed</span> Portal records</a>
+                        <?php endif; ?>
+                        <?php if (in_array('ethics_reviewer', $roles, true)): ?><a href="<?= site_url('review/ethics') ?>"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span> Ethics reviews</a><?php endif; ?>
+                        <?php if (in_array('technical_reviewer', $roles, true)): ?><a href="<?= site_url('review/technical') ?>"><span class="material-symbols-rounded" aria-hidden="true">sdk</span> Technical reviews</a><?php endif; ?>
+                        <?php if (in_array('repository_administrator', $roles, true)): ?><a href="<?= site_url('admin') ?>"><span class="material-symbols-rounded" aria-hidden="true">dashboard</span> Admin dashboard</a><?php endif; ?>
+                        <form class="nav-form" method="post" action="<?= site_url('logout') ?>">
+                            <?= csrf_field() ?>
+                            <button type="submit"><span class="material-symbols-rounded" aria-hidden="true">logout</span> Logout</button>
+                        </form>
+                    </div>
+                </details>
             <?php else: ?>
-                <a class="nav-cta" href="<?= site_url('login') ?>">Login</a>
+                <a class="nav-cta" href="<?= site_url('login') ?>"><span class="material-symbols-rounded" aria-hidden="true">login</span> Login</a>
             <?php endif; ?>
         </div>
 
@@ -58,17 +68,23 @@
         <a href="<?= site_url('/') ?>">Home</a>
         <a href="<?= site_url('datasets') ?>">Browse Datasets</a>
         <?php if ($isAuthenticated): ?>
-            <a href="<?= site_url('dashboard') ?>">My Datasets</a>
             <a href="<?= site_url('upload') ?>">Upload</a>
-            <?php if (in_array('ethics_reviewer', $roles, true)): ?><a href="<?= site_url('review/ethics') ?>">Ethics Portal</a><?php endif; ?>
-            <?php if (in_array('technical_reviewer', $roles, true)): ?><a href="<?= site_url('review/technical') ?>">Technical Portal</a><?php endif; ?>
-            <?php if (in_array('repository_administrator', $roles, true)): ?><a href="<?= site_url('admin') ?>">Admin Portal</a><?php endif; ?>
+            <div class="mobile-account-panel">
+                <p><?= esc((string) session()->get('user_name')) ?></p>
+                <a href="<?= site_url('dashboard') ?>"><span class="material-symbols-rounded" aria-hidden="true">database</span> My datasets</a>
+                <?php if (in_array('ethics_reviewer', $roles, true) || in_array('technical_reviewer', $roles, true) || in_array('repository_administrator', $roles, true)): ?>
+                    <a href="<?= site_url('portal/dashboard') ?>"><span class="material-symbols-rounded" aria-hidden="true">folder_managed</span> Portal records</a>
+                <?php endif; ?>
+                <?php if (in_array('ethics_reviewer', $roles, true)): ?><a href="<?= site_url('review/ethics') ?>"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span> Ethics reviews</a><?php endif; ?>
+                <?php if (in_array('technical_reviewer', $roles, true)): ?><a href="<?= site_url('review/technical') ?>"><span class="material-symbols-rounded" aria-hidden="true">sdk</span> Technical reviews</a><?php endif; ?>
+                <?php if (in_array('repository_administrator', $roles, true)): ?><a href="<?= site_url('admin') ?>"><span class="material-symbols-rounded" aria-hidden="true">dashboard</span> Admin dashboard</a><?php endif; ?>
+            </div>
             <form class="nav-form" method="post" action="<?= site_url('logout') ?>">
                 <?= csrf_field() ?>
-                <button class="nav-cta" type="submit">Logout</button>
+                <button class="nav-cta" type="submit"><span class="material-symbols-rounded" aria-hidden="true">logout</span> Logout</button>
             </form>
         <?php else: ?>
-            <a href="<?= site_url('login') ?>">Login</a>
+            <a href="<?= site_url('login') ?>"><span class="material-symbols-rounded" aria-hidden="true">login</span> Login</a>
             <a href="<?= site_url('register') ?>">Register</a>
         <?php endif; ?>
     </nav>

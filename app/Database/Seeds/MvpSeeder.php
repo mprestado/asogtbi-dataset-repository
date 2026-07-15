@@ -12,7 +12,8 @@ class MvpSeeder extends Seeder
         $now = date('Y-m-d H:i:s');
         $roleId = $this->ensureRole($now);
         $userId = $this->ensureDemoUser($roleId, $now);
-        $this->ensurePortalAccounts($now);
+        $portalAccounts = $this->ensurePortalAccounts($now);
+        $adminId = (int) ($portalAccounts['admin@example.test'] ?? $userId);
 
         $datasets = [
             [
@@ -29,6 +30,7 @@ class MvpSeeder extends Seeder
                 'access_type' => DatasetModel::ACCESS_PUBLIC,
                 'version' => '1.0',
                 'file_name' => 'startup-survey-responses.zip',
+                'members' => 'ASOG TBI Research Team',
             ],
             [
                 'title' => 'Innovation Program Interviews',
@@ -41,13 +43,46 @@ class MvpSeeder extends Seeder
                 'research_title' => 'Innovation Program Review',
                 'project_head' => 'Demo Adviser',
                 'status' => DatasetModel::STATUS_PUBLISHED,
-                'access_type' => DatasetModel::ACCESS_PUBLIC,
+                'access_type' => DatasetModel::ACCESS_INSTITUTIONAL,
                 'version' => '1.0',
                 'file_name' => 'innovation-program-interviews.zip',
+                'members' => 'Innovation Program Office',
+            ],
+            [
+                'title' => 'Restricted Incubatee Finance Extract',
+                'description' => 'Sample restricted dataset for testing authenticated catalogue visibility and protected download messaging.',
+                'category' => 'Incubation Finance',
+                'tags' => 'incubatee,finance,restricted',
+                'data_type' => 'Tabular',
+                'file_format' => 'ZIP',
+                'source_type' => 'Primary',
+                'research_title' => 'Incubatee Finance Readiness Review',
+                'project_head' => 'Demo Adviser',
+                'status' => DatasetModel::STATUS_PUBLISHED,
+                'access_type' => DatasetModel::ACCESS_RESTRICTED,
+                'version' => '1.0',
+                'file_name' => 'restricted-incubatee-finance-extract.zip',
+                'members' => 'ASOG TBI Finance Review Team',
+            ],
+            [
+                'title' => 'Private Founder Notes',
+                'description' => 'Sample private published dataset for owner and administrator visibility checks.',
+                'category' => 'Founder Support',
+                'tags' => 'founder,private,notes',
+                'data_type' => 'Text',
+                'file_format' => 'ZIP',
+                'source_type' => 'Primary',
+                'research_title' => 'Founder Support Case Notes',
+                'project_head' => 'Demo Adviser',
+                'status' => DatasetModel::STATUS_PUBLISHED,
+                'access_type' => DatasetModel::ACCESS_PRIVATE,
+                'version' => '1.0',
+                'file_name' => 'private-founder-notes.zip',
+                'members' => 'Founder Support Desk',
             ],
             [
                 'title' => 'Pending Prototype Dataset',
-                'description' => 'Sample pending dataset ready for assignment in the integrated ethics review workflow.',
+                'description' => 'Sample pending dataset ready for technical reviewer assignment before ethics review.',
                 'category' => 'Prototype',
                 'tags' => 'prototype,pending',
                 'data_type' => 'Tabular',
@@ -59,11 +94,109 @@ class MvpSeeder extends Seeder
                 'access_type' => DatasetModel::ACCESS_PUBLIC,
                 'version' => '1.0',
                 'file_name' => 'pending-prototype-dataset.zip',
+                'members' => 'Prototype Team',
+            ],
+            [
+                'title' => 'Ethics Revision Sample',
+                'description' => 'Sample submission returned to the contributor after ethics review requested revisions.',
+                'category' => 'Human Subjects',
+                'tags' => 'ethics,revision,consent',
+                'data_type' => 'Text',
+                'file_format' => 'ZIP',
+                'source_type' => 'Primary',
+                'research_title' => 'Consent Handling Revision Sample',
+                'project_head' => 'Demo Adviser',
+                'status' => DatasetModel::STATUS_ETHICS_REVISION,
+                'access_type' => DatasetModel::ACCESS_RESTRICTED,
+                'version' => '1.1',
+                'file_name' => 'ethics-revision-sample.zip',
+                'members' => 'Ethics Demo Team',
+            ],
+            [
+                'title' => 'Technical Queue Sample',
+                'description' => 'Sample submission waiting for first-pass technical reviewer assignment.',
+                'category' => 'Data Engineering',
+                'tags' => 'technical,queue,metadata',
+                'data_type' => 'Tabular',
+                'file_format' => 'ZIP',
+                'source_type' => 'Secondary',
+                'research_title' => 'Technical Queue Dataset',
+                'project_head' => 'Demo Adviser',
+                'status' => DatasetModel::STATUS_PENDING_TECHNICAL,
+                'access_type' => DatasetModel::ACCESS_INSTITUTIONAL,
+                'version' => '1.0',
+                'file_name' => 'technical-queue-sample.zip',
+                'members' => 'Data Engineering Team',
+            ],
+            [
+                'title' => 'Technical Revision Sample',
+                'description' => 'Sample submission that retained ethics approval but needs technical packaging fixes.',
+                'category' => 'Archive Quality',
+                'tags' => 'technical,revision,archive',
+                'data_type' => 'Image',
+                'file_format' => 'ZIP',
+                'source_type' => 'Primary',
+                'research_title' => 'Archive Quality Revision Sample',
+                'project_head' => 'Demo Adviser',
+                'status' => DatasetModel::STATUS_TECHNICAL_REVISION,
+                'access_type' => DatasetModel::ACCESS_RESTRICTED,
+                'version' => '1.1',
+                'file_name' => 'technical-revision-sample.zip',
+                'members' => 'Archive Quality Team',
+            ],
+            [
+                'title' => 'Publication Gate Sample',
+                'description' => 'Sample technically and ethically approved dataset waiting for repository administrator publication.',
+                'category' => 'Governance',
+                'tags' => 'publication,approval,governance',
+                'data_type' => 'Tabular',
+                'file_format' => 'ZIP',
+                'source_type' => 'Secondary',
+                'research_title' => 'Publication Gate Dataset',
+                'project_head' => 'Demo Adviser',
+                'status' => DatasetModel::STATUS_AWAITING_PUBLICATION,
+                'access_type' => DatasetModel::ACCESS_PUBLIC,
+                'version' => '1.0',
+                'file_name' => 'publication-gate-sample.zip',
+                'members' => 'Repository Governance Team',
+            ],
+            [
+                'title' => 'Rejected Submission Sample',
+                'description' => 'Sample terminal rejected submission for contributor status and admin oversight testing.',
+                'category' => 'Rejected Research',
+                'tags' => 'rejected,terminal,workflow',
+                'data_type' => 'Audio',
+                'file_format' => 'ZIP',
+                'source_type' => 'Primary',
+                'research_title' => 'Rejected Submission Dataset',
+                'project_head' => 'Demo Adviser',
+                'status' => DatasetModel::STATUS_REJECTED,
+                'access_type' => DatasetModel::ACCESS_PRIVATE,
+                'version' => '1.0',
+                'file_name' => 'rejected-submission-sample.zip',
+                'members' => 'Demo Research Team',
+            ],
+            [
+                'title' => 'Archived Public Sample',
+                'description' => 'Sample archived dataset for restore controls and public catalogue exclusion checks.',
+                'category' => 'Archived Research',
+                'tags' => 'archived,restore,catalogue',
+                'data_type' => 'Video',
+                'file_format' => 'ZIP',
+                'source_type' => 'Secondary',
+                'research_title' => 'Archived Dataset Sample',
+                'project_head' => 'Demo Adviser',
+                'status' => DatasetModel::STATUS_ARCHIVED,
+                'access_type' => DatasetModel::ACCESS_PUBLIC,
+                'version' => '1.0',
+                'file_name' => 'archived-public-sample.zip',
+                'members' => 'Demo Archive Team',
+                'archived_from_status' => DatasetModel::STATUS_PUBLISHED,
             ],
         ];
 
         foreach ($datasets as $dataset) {
-            $datasetId = $this->ensureDataset($dataset, $userId, $now);
+            $datasetId = $this->ensureDataset($dataset, $userId, $adminId, $now);
             $fileId = $this->ensureDatasetFile($datasetId, $userId, (string) $dataset['file_name'], $now);
             $this->ensureDatasetVersion($datasetId, $userId, $fileId, (string) $dataset['version'], $now);
         }
@@ -130,13 +263,17 @@ class MvpSeeder extends Seeder
         return $userId;
     }
 
-    private function ensurePortalAccounts(string $now): void
+    /**
+     * @return array<string, int>
+     */
+    private function ensurePortalAccounts(string $now): array
     {
         $accounts = [
             ['name' => 'Repository Administrator', 'email' => 'admin@example.test', 'role' => 'repository_administrator', 'description' => 'Repository governance and publication'],
             ['name' => 'Research Ethics Reviewer', 'email' => 'ethics@example.test', 'role' => 'ethics_reviewer', 'description' => 'Ethics and privacy verification'],
             ['name' => 'Technical Reviewer', 'email' => 'technical@example.test', 'role' => 'technical_reviewer', 'description' => 'Technical dataset verification'],
         ];
+        $accountIds = [];
         foreach ($accounts as $account) {
             $role = $this->db->table('roles')->where('name', $account['role'])->get()->getRowArray();
             if (! is_array($role)) {
@@ -156,13 +293,16 @@ class MvpSeeder extends Seeder
             if (! is_array($exists)) {
                 $this->db->table('user_roles')->insert(['user_id' => $userId, 'role_id' => $roleId]);
             }
+            $accountIds[$account['email']] = $userId;
         }
+
+        return $accountIds;
     }
 
     /**
      * @param array<string, string> $dataset
      */
-    private function ensureDataset(array $dataset, int $userId, string $now): int
+    private function ensureDataset(array $dataset, int $userId, int $adminId, string $now): int
     {
         $existing = $this->db->table('datasets')
             ->where('title', $dataset['title'])
@@ -180,11 +320,15 @@ class MvpSeeder extends Seeder
             'source_type' => $dataset['source_type'],
             'research_title' => $dataset['research_title'],
             'project_head' => $dataset['project_head'],
+            'members' => $dataset['members'] ?? null,
             'contributor_id' => $userId,
             'status' => $dataset['status'],
             'access_type' => $dataset['access_type'],
             'version' => $dataset['version'],
-            'approved_at' => $dataset['status'] === DatasetModel::STATUS_PUBLISHED ? $now : null,
+            'approved_by' => in_array($dataset['status'], [DatasetModel::STATUS_PUBLISHED, DatasetModel::STATUS_ARCHIVED], true) ? $adminId : null,
+            'approved_at' => in_array($dataset['status'], [DatasetModel::STATUS_PUBLISHED, DatasetModel::STATUS_ARCHIVED], true) ? $now : null,
+            'archived_at' => $dataset['status'] === DatasetModel::STATUS_ARCHIVED ? $now : null,
+            'archived_from_status' => $dataset['archived_from_status'] ?? null,
             'updated_at' => $now,
         ];
 

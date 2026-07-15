@@ -23,7 +23,7 @@
         <article class="panel stat-card">
             <p class="tag">Pending Review</p>
             <h2 class="stat-value"><?= esc((string) (($statusCounts['pending'] ?? 0))) ?></h2>
-            <p class="muted">Submissions moving through ethics, technical, or publication review.</p>
+            <p class="muted">Submissions moving through technical verification, ethics review, or publication approval.</p>
         </article>
         <article class="panel stat-card">
             <p class="tag">Revision Requested</p>
@@ -53,7 +53,7 @@
     <?php if (empty($myDatasets)): ?>
         <article class="panel">
             <h2>No submissions yet</h2>
-            <p class="muted">Upload your first dataset package to start the Pending Review flow.</p>
+            <p class="muted">Upload your first dataset package to start technical verification.</p>
             <div class="actions">
                 <a class="button" href="<?= site_url('upload') ?>">Upload Dataset</a>
             </div>

@@ -6,7 +6,7 @@
     <div class="shell">
         <p class="eyebrow">Dataset Lifecycle</p>
         <h1>Upload a Dataset</h1>
-        <p class="lead">Submit metadata and a protected ZIP package. New submissions begin with Research Ethics verification.</p>
+        <p class="lead">Submit metadata and a protected ZIP package. New submissions begin with technical verification before ethics review.</p>
     </div>
 </section>
 

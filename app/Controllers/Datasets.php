@@ -21,7 +21,7 @@ class Datasets extends BaseController
         $dateUploaded = trim((string) ($this->request->getGet('date_uploaded') ?? ''));
 
         $query = $datasetModel
-            ->select('datasets.*, users.name AS author_name')
+            ->select('datasets.*, users.name AS author_name, users.email AS author_email')
             ->join('users', 'users.id = datasets.contributor_id', 'left')
             ->where('datasets.status', DatasetModel::STATUS_PUBLISHED)
             ->where('datasets.archived_at', null);
@@ -56,7 +56,9 @@ class Datasets extends BaseController
         $datasets = $query
             ->orderBy('datasets.approved_at', 'DESC')
             ->orderBy('datasets.created_at', 'DESC')
-            ->paginate(9);
+            ->paginate(10);
+
+        $totalDatasets = $datasetModel->pager->getTotal();
 
         $categoryQuery = model(DatasetModel::class)
             ->select('category')
@@ -83,6 +85,7 @@ class Datasets extends BaseController
         return view('datasets/index', [
             'title' => 'Dataset Catalog',
             'datasets' => $datasets,
+            'totalDatasets' => $totalDatasets,
             'search' => $search,
             'selectedDataType' => $dataType,
             'selectedCategory' => $category,
@@ -192,7 +195,7 @@ class Datasets extends BaseController
         return $this->response->download($absolutePath, null)->setFileName((string) $latestFile['original_name']);
     }
 
-    public function edit(int $id)
+    public function edit(int $id): string|\CodeIgniter\HTTP\RedirectResponse
     {
         $datasetModel = new DatasetModel();
         $dataset = $datasetModel->find($id);
@@ -279,7 +282,8 @@ class Datasets extends BaseController
         $newVersion = $this->incrementVersion((string) ($dataset['version'] ?? '1.0'));
         $newStatus = match ((string) ($dataset['status'] ?? '')) {
             DatasetModel::STATUS_TECHNICAL_REVISION => DatasetModel::STATUS_PENDING_TECHNICAL,
-            DatasetModel::STATUS_ETHICS_REVISION, DatasetModel::STATUS_PUBLISHED => DatasetModel::STATUS_PENDING_ETHICS,
+            DatasetModel::STATUS_ETHICS_REVISION => DatasetModel::STATUS_PENDING_ETHICS,
+            DatasetModel::STATUS_PUBLISHED => DatasetModel::STATUS_PENDING_TECHNICAL,
             default => (string) $dataset['status'],
         };
 
@@ -334,7 +338,7 @@ class Datasets extends BaseController
         }
 
         model(DatasetModel::class)->update($id, [
-            'archived_from_status' => (string) ($dataset['status'] ?? DatasetModel::STATUS_PENDING_ETHICS),
+            'archived_from_status' => (string) ($dataset['status'] ?? DatasetModel::STATUS_PENDING_TECHNICAL),
             'status' => DatasetModel::STATUS_ARCHIVED,
             'archived_at' => date('Y-m-d H:i:s'),
         ]);

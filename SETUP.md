@@ -53,6 +53,14 @@ php spark db:seed MvpSeeder
 php spark serve
 ```
 
+Optional large dummy catalog seed:
+
+```powershell
+php spark db:seed DummyPublishedUploadsSeeder
+```
+
+This imports `dummydata/dataset1.csv` as published public uploads owned by user `1`. Run `MvpSeeder` first so the demo contributor and administrator accounts exist.
+
 ## Demo Accounts
 
 All seeded accounts use password `change-me`.
@@ -68,11 +76,11 @@ Change demo passwords before any shared or production deployment.
 
 ## Verification Walkthrough
 
-1. Sign in as the contributor and upload a ZIP dataset. Confirm `Pending Ethics Review`.
-2. Sign in as the administrator, open Dataset Moderation, and assign the ethics reviewer.
-3. Sign in as the ethics reviewer, open the assigned record, complete every checklist item, and approve.
-4. Sign in as the administrator and assign the technical reviewer.
-5. Sign in as the technical reviewer, download and manually inspect the protected ZIP, complete the checklist, and approve.
+1. Sign in as the contributor and upload a ZIP dataset. Confirm `Pending Technical Review`.
+2. Sign in as the administrator, open Dataset Moderation, and assign the technical reviewer.
+3. Sign in as the technical reviewer, download and manually inspect the protected ZIP, complete the checklist, and approve.
+4. Sign in as the administrator and assign the ethics reviewer.
+5. Sign in as the ethics reviewer, open the assigned record, complete every checklist item, and approve.
 6. Sign in as the administrator, choose the final access type, and publish.
 7. Confirm the dataset appears in the allowed public or authenticated catalog scope and that every action appears in Audit Logs.
 
@@ -85,6 +93,10 @@ php spark routes
 php spark migrate:status
 composer test
 ```
+
+## Deployment Readiness
+
+Deployment remains conditional on server availability and successful PHP 8.2+ verification. Use [docs/DEPLOYMENT_READINESS.md](docs/DEPLOYMENT_READINESS.md) for the go/no-go checklist, production setup steps, and evidence to record after deployment.
 
 Uploaded files belong under `writable/uploads/datasets/`. Do not commit `.env`, credentials, database dumps, `vendor/`, writable runtime data, or uploaded ZIP files.
 

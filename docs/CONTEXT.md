@@ -19,30 +19,31 @@ Accounts may hold multiple roles. An administrator may submit a review decision 
 ## Workflow
 
 ```text
-pending_ethics_review
-  -> ethics_revision_requested -> contributor resubmits -> pending_ethics_review
+pending_technical_review
+  -> technical_revision_requested -> contributor resubmits -> pending_technical_review
   -> rejected
-  -> pending_technical_review
-       -> technical_revision_requested -> contributor resubmits -> pending_technical_review
+  -> pending_ethics_review
+       -> ethics_revision_requested -> contributor resubmits -> pending_ethics_review
        -> rejected
        -> awaiting_publication
             -> published
 ```
 
 - Administrators assign every review; reviewers cannot claim arbitrary submissions.
+- Technical verification is the first maintainer gate so corrupted ZIPs, wrong file entries, and package/metadata mismatches are caught before ethics review.
 - Approval requires every stage checklist item. Rejection and revision require comments.
 - Review records are immutable history. Reassignment closes the old assignment and creates another record in the same round.
 - Contributor edits are locked during active review and publication approval.
-- A published update creates a new version, removes the record from the catalog, and restarts ethics review.
+- A published update creates a new version, removes the record from the catalog, and restarts technical verification.
 - Only non-archived `published` datasets appear in public browsing and recommendations.
 - Protected files are streamed through authorized controllers; direct file URLs are forbidden.
 - Every assignment, decision, publication, lifecycle action, role change, protected review download, login, upload, update, archive, and public download is audited.
 
 ## Review Checklists
 
-Ethics verification covers consent or clearance, anonymization, sensitive-data safeguards, source legitimacy, and access classification.
-
 Technical verification is manual and covers ZIP readability, metadata completeness, documentation, declared formats, and file suitability. Automated package inspection and malware scanning are not part of this release.
+
+Ethics verification covers consent or clearance, anonymization, sensitive-data safeguards, source legitimacy, and access classification after the package passes technical review.
 
 ## Data Ownership
 
