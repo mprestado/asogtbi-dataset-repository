@@ -45,8 +45,12 @@ class Dashboard extends BaseController
     public function readNotifications()
     {
         model(NotificationModel::class)->where('user_id', (int) $this->currentUserId())->where('read_at', null)->set(['read_at' => date('Y-m-d H:i:s')])->update();
+        $returnTo = trim((string) $this->request->getPost('return_to'));
+        if (! str_starts_with($returnTo, '/') || str_starts_with($returnTo, '//')) {
+            $returnTo = '/dashboard';
+        }
 
-        return redirect()->to('/dashboard')->with('info', 'Notifications marked as read.');
+        return redirect()->to($returnTo)->with('info', 'Notifications marked as read.');
     }
 
     public function readPortalNotifications()
@@ -56,7 +60,7 @@ class Dashboard extends BaseController
         return redirect()->back()->with('info', 'Notifications marked as read.');
     }
 
-    public function pollPortalNotifications()
+    public function pollNotifications()
     {
         $userId = (int) $this->currentUserId();
         $notificationModel = model(NotificationModel::class);
@@ -84,34 +88,133 @@ class Dashboard extends BaseController
     {
         $datasetModel = new DatasetModel();
         $userId = (int) $this->currentUserId();
-        $datasets = $datasetModel
-            ->where('contributor_id', $userId)
-            ->orderBy('created_at', 'DESC')
-            ->findAll();
+        $selectedView = trim((string) ($this->request->getGet('view') ?? 'all'));
+        $selectedAccess = trim((string) ($this->request->getGet('access') ?? ''));
+        $search = trim((string) ($this->request->getGet('q') ?? ''));
+        $validViews = ['all', 'technical', 'ethics', 'publication', 'revision', 'published', 'closed'];
+
+        if (! in_array($selectedView, $validViews, true)) {
+            $selectedView = 'all';
+        }
+
+        if (! array_key_exists($selectedAccess, DatasetModel::accessOptions())) {
+            $selectedAccess = '';
+        }
+
+        $query = $datasetModel->where('contributor_id', $userId);
+        $this->applyDashboardView($query, $selectedView);
+
+        if ($selectedAccess !== '') {
+            $query->where('access_type', $selectedAccess);
+        }
+
+        if ($search !== '') {
+            $query->groupStart()
+                ->like('title', $search)
+                ->orLike('description', $search)
+                ->orLike('category', $search)
+                ->orLike('tags', $search)
+                ->groupEnd();
+        }
+
+        $datasets = $query
+            ->orderBy('updated_at', 'DESC')
+            ->paginate(12, 'dashboard');
         $latestReviews = $this->latestReviewsByDataset($datasets);
+        $statusCounts = $this->dashboardCounts($userId);
 
         return [
             'title' => $title,
             'myDatasets' => $this->decorateDatasets($datasets, $latestReviews),
             'statusLabels' => DatasetModel::statusLabels(),
-            'notifications' => model(NotificationModel::class)->where('user_id', $userId)->orderBy('created_at', 'DESC')->findAll(8),
+            'accessOptions' => DatasetModel::accessOptions(),
             'roles' => $this->currentRoles(),
-            'statusCounts' => [
-                'published' => model(DatasetModel::class)
-                    ->where('contributor_id', $userId)
-                    ->where('status', DatasetModel::STATUS_PUBLISHED)
-                    ->where('archived_at', null)
-                    ->countAllResults(),
-                'pending' => model(DatasetModel::class)
-                    ->where('contributor_id', $userId)
-                    ->whereIn('status', [DatasetModel::STATUS_PENDING_ETHICS, DatasetModel::STATUS_PENDING_TECHNICAL, DatasetModel::STATUS_AWAITING_PUBLICATION])
-                    ->countAllResults(),
-                'needsRevision' => model(DatasetModel::class)
-                    ->where('contributor_id', $userId)
-                    ->whereIn('status', [DatasetModel::STATUS_ETHICS_REVISION, DatasetModel::STATUS_TECHNICAL_REVISION])
-                    ->countAllResults(),
-            ],
+            'statusCounts' => $statusCounts,
+            'publishedAccessCounts' => $this->publishedAccessCounts($userId),
+            'selectedView' => $selectedView,
+            'selectedAccess' => $selectedAccess,
+            'search' => $search,
+            'totalDatasets' => $statusCounts['all'],
+            'pager' => $datasetModel->pager,
         ];
+    }
+
+    private function applyDashboardView(DatasetModel $query, string $view): void
+    {
+        match ($view) {
+            'technical' => $query->whereIn('status', [DatasetModel::STATUS_PENDING_TECHNICAL, DatasetModel::STATUS_TECHNICAL_REVISION]),
+            'ethics' => $query->whereIn('status', [DatasetModel::STATUS_PENDING_ETHICS, DatasetModel::STATUS_ETHICS_REVISION]),
+            'publication' => $query->where('status', DatasetModel::STATUS_AWAITING_PUBLICATION),
+            'revision' => $query->whereIn('status', [DatasetModel::STATUS_TECHNICAL_REVISION, DatasetModel::STATUS_ETHICS_REVISION]),
+            'published' => $query->where('status', DatasetModel::STATUS_PUBLISHED)->where('archived_at', null),
+            'closed' => $query->whereIn('status', [DatasetModel::STATUS_REJECTED, DatasetModel::STATUS_ARCHIVED]),
+            default => null,
+        };
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function dashboardCounts(int $userId): array
+    {
+        $count = static function (array $statuses) use ($userId): int {
+            return model(DatasetModel::class)
+                ->where('contributor_id', $userId)
+                ->whereIn('status', $statuses)
+                ->countAllResults();
+        };
+
+        $pendingTechnical = $count([DatasetModel::STATUS_PENDING_TECHNICAL]);
+        $pendingEthics = $count([DatasetModel::STATUS_PENDING_ETHICS]);
+        $technicalRevisions = $count([DatasetModel::STATUS_TECHNICAL_REVISION]);
+        $ethicsRevisions = $count([DatasetModel::STATUS_ETHICS_REVISION]);
+        $publication = $count([DatasetModel::STATUS_AWAITING_PUBLICATION]);
+        $revisions = $technicalRevisions + $ethicsRevisions;
+        $published = model(DatasetModel::class)
+            ->where('contributor_id', $userId)
+            ->where('status', DatasetModel::STATUS_PUBLISHED)
+            ->where('archived_at', null)
+            ->countAllResults();
+        $closed = $count([DatasetModel::STATUS_REJECTED, DatasetModel::STATUS_ARCHIVED]);
+
+        return [
+            'all' => model(DatasetModel::class)->where('contributor_id', $userId)->countAllResults(),
+            'technical' => $pendingTechnical + $technicalRevisions,
+            'ethics' => $pendingEthics + $ethicsRevisions,
+            'pendingTechnical' => $pendingTechnical,
+            'pendingEthics' => $pendingEthics,
+            'publication' => $publication,
+            'revision' => $revisions,
+            'published' => $published,
+            'closed' => $closed,
+            // Preserve the existing portal summary contract.
+            'pending' => $pendingTechnical + $pendingEthics + $publication,
+            'needsRevision' => $revisions,
+        ];
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function publishedAccessCounts(int $userId): array
+    {
+        $counts = array_fill_keys(array_keys(DatasetModel::accessOptions()), 0);
+        $rows = model(DatasetModel::class)
+            ->select('access_type, COUNT(*) AS total')
+            ->where('contributor_id', $userId)
+            ->where('status', DatasetModel::STATUS_PUBLISHED)
+            ->where('archived_at', null)
+            ->groupBy('access_type')
+            ->findAll();
+
+        foreach ($rows as $row) {
+            $accessType = (string) ($row['access_type'] ?? '');
+            if (array_key_exists($accessType, $counts)) {
+                $counts[$accessType] = (int) ($row['total'] ?? 0);
+            }
+        }
+
+        return $counts;
     }
 
     /**
@@ -161,6 +264,7 @@ class Dashboard extends BaseController
             $dataset['ownershipLabel'] = $ownerName . ' owns this submission';
             $dataset['latestReview'] = $latestReviews[$datasetId] ?? null;
             $dataset['nextAction'] = DatasetModel::dashboardActionForStatus($status, $datasetId);
+            $dataset['workflow'] = DatasetModel::dashboardWorkflowForStatus($status, $accessType);
             $dataset['canEdit'] = DatasetModel::isRevisionStatus($status) || $status === DatasetModel::STATUS_PUBLISHED;
             $dataset['canArchive'] = ! DatasetModel::isUnderReview($status)
                 && ! in_array($status, [DatasetModel::STATUS_ARCHIVED, DatasetModel::STATUS_REJECTED], true);

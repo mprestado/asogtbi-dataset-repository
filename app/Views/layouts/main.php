@@ -21,6 +21,18 @@
 <?php $roles = (array) session()->get('roles'); ?>
 <?php $flashInfo = session()->getFlashdata('info'); ?>
 <?php $flashError = session()->getFlashdata('error'); ?>
+<?php
+    $headerNotifications = [];
+    $unreadNotificationCount = 0;
+    $latestNotificationId = 0;
+    if ($isAuthenticated) {
+        $notificationModel = model(\App\Models\NotificationModel::class);
+        $headerNotifications = $notificationModel->where('user_id', (int) session()->get('user_id'))->orderBy('created_at', 'DESC')->findAll(6);
+        $unreadNotificationCount = $notificationModel->where('user_id', (int) session()->get('user_id'))->where('read_at', null)->countAllResults();
+        $latestUnreadNotification = $notificationModel->where('user_id', (int) session()->get('user_id'))->where('read_at', null)->orderBy('id', 'DESC')->first();
+        $latestNotificationId = is_array($latestUnreadNotification) ? (int) $latestUnreadNotification['id'] : 0;
+    }
+?>
 <header class="site-header" id="site-header">
     <div class="wide-shell header-inner">
         <a class="brand" href="<?= site_url('/') ?>" aria-label="ASOG TBI Dataset Repository home">
@@ -41,6 +53,13 @@
 
         <div class="nav-actions">
             <?php if ($isAuthenticated): ?>
+                <?= view('components/notification_menu', [
+                    'headerNotifications' => $headerNotifications,
+                    'unreadNotificationCount' => $unreadNotificationCount,
+                    'latestNotificationId' => $latestNotificationId,
+                    'notificationLabel' => 'Notifications',
+                    'notificationMenuClass' => 'notification-menu--public',
+                ]) ?>
                 <details class="account-menu">
                     <summary class="account-trigger" aria-label="Open account menu">
                         <span class="material-symbols-rounded" aria-hidden="true">account_circle</span>
@@ -80,6 +99,13 @@
             <a href="<?= site_url('upload') ?>">Upload</a>
             <div class="mobile-account-panel">
                 <p><?= esc((string) session()->get('user_name')) ?></p>
+                <?= view('components/notification_menu', [
+                    'headerNotifications' => $headerNotifications,
+                    'unreadNotificationCount' => $unreadNotificationCount,
+                    'latestNotificationId' => $latestNotificationId,
+                    'notificationLabel' => 'Notifications',
+                    'notificationMenuClass' => 'notification-menu--mobile',
+                ]) ?>
                 <a href="<?= site_url('account/settings') ?>"><span class="material-symbols-rounded" aria-hidden="true">manage_accounts</span> Profile settings</a>
                 <a href="<?= site_url('dashboard') ?>"><span class="material-symbols-rounded" aria-hidden="true">database</span> My datasets</a>
                 <?php if (in_array('ethics_reviewer', $roles, true) || in_array('technical_reviewer', $roles, true) || in_array('repository_administrator', $roles, true)): ?>
@@ -101,6 +127,12 @@
 </header>
 
 <main class="page-shell">
+    <?php if ($isAuthenticated): ?>
+        <div class="portal-live-toast" data-live-toast hidden>
+            <strong data-live-toast-title>New activity</strong>
+            <span data-live-toast-message>Open notifications for details.</span>
+        </div>
+    <?php endif; ?>
     <div class="flash-stack" aria-live="polite" aria-atomic="true">
         <?php if ($flashInfo): ?>
             <div class="flash-toast flash-toast--success" role="status" data-flash-toast>
@@ -193,5 +225,6 @@
         window.setTimeout(close, toast.classList.contains('flash-toast--error') ? 9000 : 5600);
     });
 </script>
+<?php if ($isAuthenticated): ?><?= view('components/notification_script') ?><?php endif; ?>
 </body>
 </html>

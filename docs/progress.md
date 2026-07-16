@@ -15,6 +15,16 @@ This file is append-only. Every material implementation milestone must add a dat
 - Next step:
 ```
 
+## 2026-07-16 - Comprehensive governance dashboard overhaul
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `6781cb5`.
+- Completed behavior: Rebuilt technical and ethics queues with workload metrics, action/completed/all tabs, search, filters, sorting, aging, package context, checklist progress, and pagination. Rebuilt review workspaces with stage-specific evidence, structured Confirmed/Issue found/Not reviewed checklist responses, item-level findings, draft saving, progress guidance, explicit confirmation, and immutable completed decisions. Rebuilt administrator governance with operational metrics, oldest-record attention queue, stage tabs, queue filters, workload-aware assignment, explicit reassignment with required reasons and reviewer notifications, publication confirmation, workflow stepper, version and review timelines, lifecycle controls, and audit activity.
+- Schema changes: Added nullable `reviews.draft_saved_at` and `reviews.reassignment_reason` through `2026-07-16-000016_EnhanceReviewWorkflow.php`. The migration completed successfully on local MySQL.
+- Important files: `app/Services/ModerationWorkflow.php`, `app/Controllers/Reviews.php`, `app/Controllers/Admin.php`, review/admin views, `app/Config/Routes.php`, `app/Models/ReviewModel.php`, `public/assets/css/app.css`, `tests/unit/ModerationWorkflowContractTest.php`, and governance documentation.
+- Verification: PHP syntax checks pass for all new workflow files; Spark routes include review draft and administrator reassignment endpoints; PHP 8.5.7 unit tests pass with 14 tests and 37 assertions; live role-based requests return 200 for administrator overview/stage board/inspection, technical completed queue/immutable decision, and ethics active queue/structured workspace. Live guards reject completed-review drafts, reassignment without a reason, and publication without confirmation. A controlled ethics draft stored structured findings and was then restored without leaving test data.
+- Blockers: The full database feature suite remains blocked because the installed PHP 8.5 runtime lacks the SQLite3 extension. Screenshot-level browser QA remains unavailable in this session.
+- Next step: Enable SQLite3 for PHP 8.5, run the full PHPUnit suite, then complete desktop/mobile visual QA and a real two-reviewer reassignment walkthrough.
+
 ## 2026-07-13 - Baseline and workflow foundation
 
 - Branch/commit: `rapid-mvp` at `9989246` before local implementation changes.
@@ -125,6 +135,26 @@ This file is append-only. Every material implementation milestone must add a dat
 - Blockers: Manual browser QA should confirm animation timing and positioning on public, portal, and mobile layouts.
 - Next step: Trigger a successful profile save and a validation error to confirm the popup copy and dismissal behavior feel right.
 
+## 2026-07-16 - Cover radius refinement and governance UX plan
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `6781cb5`.
+- Completed behavior: Reduced dataset cover, detail hero, contributor card, and upload-preview corner rounding from the oversized 42-50px treatment to a restrained 20px radius across desktop and mobile. Audited the current administrator moderation, technical review, ethics review, portal navigation, workflow service, review schema, notifications, and tests, then documented a staged dashboard improvement plan centered on queue triage, focused evidence review, structured checklists, safe decisions, workload-aware assignment, explicit reassignment, and final publication gating.
+- Schema changes: None for this planning milestone. The plan recommends optional review draft and reassignment fields during implementation.
+- Important files: `public/assets/css/app.css`, `docs/ADMIN_REVIEW_DASHBOARD_PLAN.md`, and `docs/progress.md`.
+- Verification: Confirmed all cover-related radius declarations now use `20px`; reviewed the active routes, controllers, views, `ModerationWorkflow`, `reviews` and `notifications` migrations, and existing moderation contract tests before defining the plan.
+- Blockers: This milestone plans the dashboard overhaul but does not implement the new reviewer or administrator interfaces yet.
+- Next step: Begin Milestone 1 in `docs/ADMIN_REVIEW_DASHBOARD_PLAN.md` by building paginated, filterable technical and ethics queues with workload and aging summaries.
+
+## 2026-07-16 - Dataset cover images and legacy placeholders
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `6781cb5`.
+- Completed behavior: Added optional dataset cover uploads for new submissions and dataset revisions, with live client-side previews and JPG/PNG/WebP validation. Covers are stored under protected writable storage and streamed through an authorization-aware dataset route. Browse rows, dataset details, and contributor dataset cards now display rounded cover images with approximately 50px corners; all existing datasets automatically use the shared repository placeholder without requiring data updates.
+- Schema changes: Added nullable `datasets.cover_image` through migration `2026-07-16-000015_AddDatasetCoverImage.php`. The migration completed successfully against the local MySQL database and existing rows remain null.
+- Important files: `app/Database/Migrations/2026-07-16-000015_AddDatasetCoverImage.php`, `app/Helpers/dataset_helper.php`, `app/Controllers/DatasetUpload.php`, `app/Controllers/Datasets.php`, `app/Models/DatasetModel.php`, dataset upload/edit/catalog/detail/dashboard views, `public/assets/css/app.css`, `public/assets/img/placeholders/dataset-placeholder-img.png`, and `tests/unit/RapidMvpContractTest.php`.
+- Verification: PHP 8.0.30 syntax checks passed for every touched PHP file; PHP 8.5.7 migration completed; unit tests pass with 12 tests and 32 assertions; live MySQL-backed requests confirm 10 catalog entries render placeholder cover references, authenticated upload renders the cover control and placeholder preview, dataset detail renders its cover element, the legacy cover route redirects to the placeholder, and the placeholder asset returns `200 image/png`.
+- Blockers: The full PHPUnit run reaches 27 tests but its 14 database feature tests cannot start because the installed PHP 8.5 runtime does not have the SQLite3 extension enabled. In-app browser screenshot-level visual QA was unavailable in this session.
+- Next step: Enable SQLite3 for PHP 8.5 and rerun the full PHPUnit suite, then upload one custom cover through the browser and visually confirm desktop/mobile cropping and replacement behavior.
+
 ## 2026-07-16 - Protected profile settings
 
 - Branch/commit: `rapid-mvp`, local uncommitted implementation after `ff68bbd`.
@@ -204,3 +234,33 @@ This file is append-only. Every material implementation milestone must add a dat
 - Verification: PHP syntax checks pass for touched PHP files; `php spark routes` passes; `composer test` passes with 11 tests and 30 assertions.
 - Blockers: Browser connector was unavailable in this session, so visual QA on `/index.php/dashboard` still needs an in-browser pass with seeded contributor records.
 - Next step: Login as a seeded contributor and inspect `/index.php/dashboard` across pending, revision, awaiting publication, published, rejected, archived, and empty states.
+
+## 2026-07-16 - Governance dashboard final verification
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `6781cb5`.
+- Completed behavior: Completed the implementation and safety sweep for the technical-first reviewer queues, structured review workspace, administrator stage board, reviewer reassignment, publication confirmation, lifecycle guards, protected cover access, and responsive governance UI.
+- Schema changes: Confirmed local MySQL is migrated through `2026-07-16-000016_EnhanceReviewWorkflow.php`; `reviews.draft_saved_at` and `reviews.reassignment_reason` are present and nullable.
+- Important files: `app/Services/ModerationWorkflow.php`, `app/Controllers/Reviews.php`, `app/Controllers/Admin.php`, review/admin views, `public/assets/css/app.css`, workflow migrations, unit contracts, and `docs/ADMIN_REVIEW_DASHBOARD_PLAN.md`.
+- Verification: PHP 8.0.30 syntax checks pass for all 24 changed or new PHP files. PHP 8.5.7 unit tests pass with 14 tests and 37 assertions. All seven administrator moderation stages and reviewer queue search/filter combinations return HTTP 200 against the live MySQL-backed app. Protected cover requests return 404 for guests and 200 for the assigned reviewer and administrator. Temporary authorization-test data and files were removed. `git diff --check` reports no whitespace errors or conflict markers.
+- Blockers: The complete PHPUnit run reaches 29 tests, but all 14 database feature tests stop during setup because PHP 8.5 does not have the SQLite3 extension installed. In-app screenshot automation was not exposed in this session, so final visual approval remains a manual browser pass.
+- Next step: Enable the PHP 8.5 SQLite3 extension and rerun `vendor/bin/phpunit`, then perform desktop and mobile visual QA of the technical queue, ethics queue, review workspace, administrator stage board, and dataset inspection page.
+
+## 2026-07-16 - Contributor dataset library overhaul
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `6781cb5`.
+- Completed behavior: Rebuilt My Datasets as a paginated contributor library with technical, ethics, publication, revision, published, and closed workflow views; search and access filters; per-record workflow progress; reviewer notes; explicit published access states; a published-access summary; compact actions; collapsible repository updates; a guided first-upload experience; and a separate filtered no-results state. The visual direction now shares the login workspace's soft blue-and-cream canvas, editorial headings, white islands, and thin gold dividers.
+- Schema changes: None.
+- Important files: `app/Controllers/Dashboard.php`, `app/Models/DatasetModel.php`, `app/Views/dashboard/index.php`, `app/Views/dashboard/portal.php`, `public/assets/css/app.css`, and `tests/unit/ModerationWorkflowContractTest.php`.
+- Verification: PHP 8.0.30 syntax checks pass for the controller, model, public dashboard, portal dashboard, and updated unit test. PHP 8.5.7 unit tests pass with 15 tests and 44 assertions. Live MySQL-backed requests confirm the 123-record contributor receives 12 records per page, second-page navigation, workflow filters, published access filtering, and the access breakdown; an account with zero uploads receives the guided empty state; and a search with no matches receives the filtered no-results state. Public and portal dashboard routes return HTTP 200.
+- Blockers: Final visual approval still requires a manual desktop/mobile browser pass. The complete database feature suite remains blocked by the missing SQLite3 extension in PHP 8.5.
+- Next step: Visually inspect `/dashboard` with the seeded contributor and an empty contributor account at desktop and mobile widths, then enable SQLite3 and rerun the complete PHPUnit suite.
+
+## 2026-07-16 - Unified header notifications
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `6781cb5`.
+- Completed behavior: Consolidated persistent repository notifications into one reusable bell menu in the public header and governance portal top bar. Removed duplicate notification panels from My Datasets and portal contributor records, removed the sidebar activity disclosure, retained the live unread badge, bounded activity history, mark-all-read control, polling, transient toast, and opt-in beep, and added a mobile header variant.
+- Schema changes: None.
+- Important files: `app/Views/components/notification_menu.php`, `app/Views/components/notification_script.php`, `app/Views/layouts/main.php`, `app/Views/layouts/portal.php`, `app/Views/dashboard/index.php`, `app/Views/dashboard/portal.php`, `app/Controllers/Dashboard.php`, `app/Config/Routes.php`, and `public/assets/css/app.css`.
+- Verification: PHP 8.0.30 syntax checks pass for routes, controller, layouts, notification components, and both dashboard views. PHP 8.5.7 routes include protected `/notifications/read` and `/notifications/poll`; unit tests pass with 15 tests and 44 assertions. Live contributor, ethics reviewer, technical reviewer, and administrator pages return HTTP 200, render the header notification component, return successful polling JSON, hide zero-count badges, and contain no body-level or sidebar notification panels.
+- Blockers: Final interaction and responsive visual approval still requires a manual browser pass.
+- Next step: Open the public header and portal top bar notification menus at desktop and mobile widths, confirm popover positioning and mark-all-read behavior, then enable SQLite3 and rerun the complete feature suite.

@@ -25,16 +25,16 @@
         ? site_url('admin')
         : (in_array('technical_reviewer', $roles, true) ? site_url('review/technical') : (in_array('ethics_reviewer', $roles, true) ? site_url('review/ethics') : site_url('portal/dashboard')));
     $portalUserId = (int) session()->get('user_id');
-    $portalNotifications = $portalUserId > 0
+    $headerNotifications = $portalUserId > 0
         ? model(\App\Models\NotificationModel::class)->where('user_id', $portalUserId)->orderBy('created_at', 'DESC')->findAll(5)
         : [];
-    $portalUnreadCount = $portalUserId > 0
+    $unreadNotificationCount = $portalUserId > 0
         ? model(\App\Models\NotificationModel::class)->where('user_id', $portalUserId)->where('read_at', null)->countAllResults()
         : 0;
     $latestUnread = $portalUserId > 0
         ? model(\App\Models\NotificationModel::class)->where('user_id', $portalUserId)->where('read_at', null)->orderBy('id', 'DESC')->first()
         : null;
-    $latestUnreadId = is_array($latestUnread) ? (int) $latestUnread['id'] : 0;
+    $latestNotificationId = is_array($latestUnread) ? (int) $latestUnread['id'] : 0;
 ?>
 <div class="portal-frame">
     <aside class="portal-sidebar">
@@ -51,25 +51,6 @@
                 <a href="<?= site_url('admin/users') ?>"><span class="material-symbols-rounded" aria-hidden="true">group</span> Users and roles</a>
                 <a href="<?= site_url('admin/audit-logs') ?>"><span class="material-symbols-rounded" aria-hidden="true">manage_search</span> Audit logs</a>
             <?php endif; ?>
-            <details class="portal-activity-menu" data-activity-menu data-latest-id="<?= esc((string) $latestUnreadId, 'attr') ?>">
-                <summary>
-                    <span><span class="material-symbols-rounded" aria-hidden="true">notifications_active</span> New activities</span>
-                    <span class="portal-activity-badge" data-activity-count <?= $portalUnreadCount < 1 ? 'hidden' : '' ?>><?= esc((string) $portalUnreadCount) ?></span>
-                </summary>
-                <div class="portal-activity-list" data-activity-list>
-                    <?php if ($portalNotifications === []): ?>
-                        <p class="muted">No recent activities.</p>
-                    <?php else: ?>
-                        <?php foreach ($portalNotifications as $notification): ?>
-                            <a class="<?= empty($notification['read_at']) ? 'is-unread' : '' ?>" href="<?= ! empty($notification['link']) ? site_url(ltrim((string) $notification['link'], '/')) : '#' ?>">
-                                <strong><?= esc($notification['title']) ?></strong>
-                                <small><?= esc($notification['message']) ?></small>
-                            </a>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                    <form method="post" action="<?= site_url('portal/notifications/read') ?>"><?= csrf_field() ?><button class="text-button" type="submit">Mark activities read</button></form>
-                </div>
-            </details>
             <?php if (! $isMaintainer): ?><a href="<?= site_url('portal/dashboard') ?>"><span class="material-symbols-rounded" aria-hidden="true">folder_managed</span> Contributor records</a><?php endif; ?>
         </nav>
         <div class="portal-account">
@@ -93,6 +74,16 @@
         </div>
     </aside>
     <main class="portal-main">
+        <header class="portal-topbar">
+            <div><small>Repository governance</small><strong><?= esc((string) ($title ?? 'Workspace')) ?></strong></div>
+            <?= view('components/notification_menu', [
+                'headerNotifications' => $headerNotifications,
+                'unreadNotificationCount' => $unreadNotificationCount,
+                'latestNotificationId' => $latestNotificationId,
+                'notificationLabel' => 'Notifications',
+                'notificationMenuClass' => 'notification-menu--portal',
+            ]) ?>
+        </header>
         <div class="portal-live-toast" data-live-toast hidden>
             <strong data-live-toast-title>New activity</strong>
             <span data-live-toast-message>Open New activities for details.</span>
@@ -133,70 +124,8 @@
         window.setTimeout(close, toast.classList.contains('flash-toast--error') ? 9000 : 5600);
     });
 
-    const menu = document.querySelector('[data-activity-menu]');
-    const badge = document.querySelector('[data-activity-count]');
-    const toast = document.querySelector('[data-live-toast]');
-    if (!menu || !badge || !toast) return;
-
-    let latestId = Number(menu.dataset.latestId || 0);
-    let audioContext = null;
-    let audioReady = false;
-
-    const unlockAudio = () => {
-        audioReady = true;
-        audioContext ??= new (window.AudioContext || window.webkitAudioContext)();
-    };
-    window.addEventListener('pointerdown', unlockAudio, { once: true });
-    window.addEventListener('keydown', unlockAudio, { once: true });
-
-    const beep = () => {
-        if (!audioReady || !audioContext) return;
-        const oscillator = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.value = 880;
-        gain.gain.setValueAtTime(0.0001, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.08, audioContext.currentTime + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.24);
-        oscillator.connect(gain).connect(audioContext.destination);
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.25);
-    };
-
-    const showToast = (latest) => {
-        toast.querySelector('[data-live-toast-title]').textContent = latest?.title || 'New activity';
-        toast.querySelector('[data-live-toast-message]').textContent = latest?.message || 'Open New activities for details.';
-        toast.hidden = false;
-        window.setTimeout(() => { toast.hidden = true; }, 7000);
-    };
-
-    const updateBadge = (count) => {
-        badge.textContent = String(count);
-        badge.hidden = count < 1;
-    };
-
-    const poll = async () => {
-        try {
-            const response = await fetch('<?= site_url('portal/notifications/poll') ?>', { headers: { 'Accept': 'application/json' } });
-            if (!response.ok) return;
-            const data = await response.json();
-            updateBadge(Number(data.unreadCount || 0));
-            const incomingId = Number(data.latest?.id || 0);
-            if (incomingId > latestId) {
-                if (latestId > 0) {
-                    showToast(data.latest);
-                    beep();
-                }
-                latestId = incomingId;
-                menu.dataset.latestId = String(incomingId);
-            }
-        } catch (error) {
-            // Keep polling quiet; visual badge refresh resumes when the next request succeeds.
-        }
-    };
-
-    window.setInterval(poll, 25000);
 })();
 </script>
+<?= view('components/notification_script') ?>
 </body>
 </html>

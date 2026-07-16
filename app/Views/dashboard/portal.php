@@ -25,29 +25,6 @@
     </article>
 </section>
 
-<?php if (! empty($notifications)): ?>
-    <section class="panel portal-section">
-        <div class="panel-head">
-            <div>
-                <p class="tag">Repository updates</p>
-                <h2>Notifications</h2>
-            </div>
-            <form method="post" action="<?= site_url('portal/notifications/read') ?>">
-                <?= csrf_field() ?>
-                <button class="button secondary" type="submit">Mark all read</button>
-            </form>
-        </div>
-        <div class="portal-stack">
-            <?php foreach ($notifications as $notification): ?>
-                <article class="panel <?= empty($notification['read_at']) ? 'notification-unread' : '' ?>">
-                    <h3><?= esc($notification['title']) ?></h3>
-                    <p><?= esc($notification['message']) ?></p>
-                </article>
-            <?php endforeach; ?>
-        </div>
-    </section>
-<?php endif; ?>
-
 <section class="panel portal-section">
     <div class="panel-head">
         <div>
@@ -79,6 +56,9 @@
                 </article>
             <?php endforeach; ?>
         </div>
+        <?php if (isset($pager) && $pager->getPageCount('dashboard') > 1): ?>
+            <nav class="portal-pagination" aria-label="Contributor record pagination"><?= $pager->links('dashboard') ?></nav>
+        <?php endif; ?>
     <?php endif; ?>
 </section>
 <?= $this->endSection() ?>

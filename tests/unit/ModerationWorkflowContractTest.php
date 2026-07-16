@@ -20,6 +20,36 @@ final class ModerationWorkflowContractTest extends CIUnitTestCase
         $this->assertCount(5, $technical);
     }
 
+    public function testStructuredChecklistNormalizesLegacyAndDetailedResponses(): void
+    {
+        $legacy = ModerationWorkflow::normalizeChecklist(ReviewModel::STAGE_TECHNICAL, [
+            'archive_readable' => '1',
+        ]);
+        $detailed = ModerationWorkflow::normalizeChecklist(ReviewModel::STAGE_TECHNICAL, [
+            'metadata_complete' => ['result' => 'issue', 'note' => 'Missing data dictionary.'],
+        ]);
+
+        $this->assertSame('confirmed', $legacy['archive_readable']['result']);
+        $this->assertSame('not_reviewed', $legacy['metadata_complete']['result']);
+        $this->assertSame('issue', $detailed['metadata_complete']['result']);
+        $this->assertSame('Missing data dictionary.', $detailed['metadata_complete']['note']);
+    }
+
+    public function testChecklistProgressSeparatesReviewedConfirmedAndIssues(): void
+    {
+        $answers = ModerationWorkflow::normalizeChecklist(ReviewModel::STAGE_ETHICS, [
+            'consent_clearance' => ['result' => 'confirmed'],
+            'anonymization' => ['result' => 'issue', 'note' => 'Identifiers remain.'],
+        ]);
+
+        $this->assertSame([
+            'reviewed' => 2,
+            'confirmed' => 1,
+            'issues' => 1,
+            'total' => 5,
+        ], ModerationWorkflow::checklistProgress($answers));
+    }
+
     public function testContributorRevisionStatesAreExplicit(): void
     {
         $this->assertTrue(DatasetModel::isRevisionStatus(DatasetModel::STATUS_ETHICS_REVISION));
@@ -51,5 +81,20 @@ final class ModerationWorkflowContractTest extends CIUnitTestCase
         $this->assertNull($pending['url']);
         $this->assertSame('closed', $rejected['tone']);
         $this->assertSame('closed', $archived['tone']);
+    }
+
+    public function testContributorDashboardWorkflowExplainsReviewAndPublishedAccess(): void
+    {
+        $technical = DatasetModel::dashboardWorkflowForStatus(DatasetModel::STATUS_PENDING_TECHNICAL);
+        $ethics = DatasetModel::dashboardWorkflowForStatus(DatasetModel::STATUS_PENDING_ETHICS);
+        $restricted = DatasetModel::dashboardWorkflowForStatus(DatasetModel::STATUS_PUBLISHED, DatasetModel::ACCESS_RESTRICTED);
+
+        $this->assertSame('Technical review', $technical['stage']);
+        $this->assertSame(1, $technical['step']);
+        $this->assertSame('Research ethics review', $ethics['stage']);
+        $this->assertSame(2, $ethics['step']);
+        $this->assertSame('Published with restricted access', $restricted['stage']);
+        $this->assertSame('key', $restricted['icon']);
+        $this->assertStringContainsString('authorization', $restricted['detail']);
     }
 }
