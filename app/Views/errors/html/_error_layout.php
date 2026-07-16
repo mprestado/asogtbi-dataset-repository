@@ -54,21 +54,33 @@ $actionClassMap = [
                         <?php
                         $variant = $action['variant'] ?? 'secondary';
                         $classes = $actionClassMap[$variant] ?? $actionClassMap['secondary'];
+                        $isHistoryBack = ($action['behavior'] ?? null) === 'history-back';
                         $attributes = [];
 
                         foreach (($action['attributes'] ?? []) as $name => $value) {
                             $attributes[] = esc($name, 'attr') . '="' . esc((string) $value, 'attr') . '"';
                         }
                         ?>
-                        <a
-                            class="<?= esc($classes) ?>"
-                            href="<?= esc($action['href'] ?? '#', 'attr') ?>"
-                            <?php if (! empty($action['target'])) : ?>target="<?= esc($action['target'], 'attr') ?>"<?php endif; ?>
-                            <?php if (! empty($action['rel'])) : ?>rel="<?= esc($action['rel'], 'attr') ?>"<?php endif; ?>
-                            <?= $attributes ? implode(' ', $attributes) : '' ?>
-                        >
-                            <?= esc($action['label'] ?? '') ?>
-                        </a>
+                        <?php if ($isHistoryBack) : ?>
+                            <button
+                                class="<?= esc($classes) ?>"
+                                type="button"
+                                onclick="window.history.back(); return false;"
+                                <?= $attributes ? implode(' ', $attributes) : '' ?>
+                            >
+                                <?= esc($action['label'] ?? '') ?>
+                            </button>
+                        <?php else : ?>
+                            <a
+                                class="<?= esc($classes) ?>"
+                                href="<?= esc($action['href'] ?? '#', 'attr') ?>"
+                                <?php if (! empty($action['target'])) : ?>target="<?= esc($action['target'], 'attr') ?>"<?php endif; ?>
+                                <?php if (! empty($action['rel'])) : ?>rel="<?= esc($action['rel'], 'attr') ?>"<?php endif; ?>
+                                <?= $attributes ? implode(' ', $attributes) : '' ?>
+                            >
+                                <?= esc($action['label'] ?? '') ?>
+                            </a>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
