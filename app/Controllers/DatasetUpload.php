@@ -59,6 +59,12 @@ class DatasetUpload extends BaseController
                 'uploaded' => 'Please select a ZIP file to upload.',
                 'ext_in' => 'Only ZIP files are accepted.',
             ],
+            'cover_image' => [
+                'is_image' => 'The dataset cover must be a valid image.',
+                'mime_in' => 'Use a JPG, PNG, or WebP image for the dataset cover.',
+                'max_size' => 'The dataset cover cannot exceed 4 MB.',
+                'max_dims' => 'The dataset cover cannot exceed 4000 by 4000 pixels.',
+            ],
         ];
 
         $rules = [
@@ -76,6 +82,7 @@ class DatasetUpload extends BaseController
             'members' => 'permit_empty|max_length[5000]',
             'source_link' => 'permit_empty|valid_url_strict|max_length[255]',
             'dataset_file' => 'uploaded[dataset_file]|ext_in[dataset_file,zip]',
+            'cover_image' => 'permit_empty|is_image[cover_image]|mime_in[cover_image,image/jpeg,image/png,image/webp]|max_size[cover_image,4096]|max_dims[cover_image,4000,4000]',
         ];
 
         if (! $this->validate($rules, $messages)) {
@@ -113,6 +120,12 @@ class DatasetUpload extends BaseController
 
         $uploadedFile = $this->request->getFile('dataset_file');
         $fileRecordId = $this->storeDatasetFile($datasetId, $uploadedFile, (int) $this->currentUserId());
+        $coverImage = $this->request->getFile('cover_image');
+        if ($coverImage && $coverImage->isValid() && ! $coverImage->hasMoved()) {
+            $datasetModel->update($datasetId, [
+                'cover_image' => $this->storeCoverImage($datasetId, $coverImage),
+            ]);
+        }
 
         $versionModel->insert([
             'dataset_id' => $datasetId,
@@ -149,5 +162,18 @@ class DatasetUpload extends BaseController
             'file_type' => (string) $uploadedFile->getClientMimeType(),
             'uploaded_by' => $userId,
         ], true);
+    }
+
+    private function storeCoverImage(int $datasetId, object $uploadedFile): string
+    {
+        $targetDir = WRITEPATH . 'uploads/dataset-covers/' . $datasetId;
+        if (! is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $storedName = $uploadedFile->getRandomName();
+        $uploadedFile->move($targetDir, $storedName);
+
+        return 'uploads/dataset-covers/' . $datasetId . '/' . $storedName;
     }
 }

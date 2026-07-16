@@ -48,9 +48,16 @@
                     <span class="dataset-hero-version">v<?= esc($dataset['version'] ?? '1.0') ?></span>
                 </div>
 
-                <div class="dataset-hero-copy">
-                    <h1><?= esc($dataset['title']) ?></h1>
-                    <p class="dataset-hero-date">Published on: <?= esc($publishedDate) ?></p>
+                <div class="dataset-hero-content">
+                    <img
+                        class="dataset-hero-image"
+                        src="<?= esc(dataset_cover_url($dataset), 'attr') ?>"
+                        alt="Cover for <?= esc($dataset['title'], 'attr') ?>"
+                    >
+                    <div class="dataset-hero-copy">
+                        <h1><?= esc($dataset['title']) ?></h1>
+                        <p class="dataset-hero-date">Published on: <?= esc($publishedDate) ?></p>
+                    </div>
                 </div>
             </div>
 

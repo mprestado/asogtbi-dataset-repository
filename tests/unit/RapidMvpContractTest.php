@@ -12,7 +12,7 @@ final class RapidMvpContractTest extends CIUnitTestCase
     {
         parent::setUp();
 
-        helper(['citation', 'recommendation']);
+        helper(['citation', 'recommendation', 'dataset']);
     }
 
     public function testDatasetStatusLabelsMatchPublicSiteLifecycle(): void
@@ -72,5 +72,14 @@ final class RapidMvpContractTest extends CIUnitTestCase
         ]);
 
         $this->assertGreaterThanOrEqual(70, $score);
+    }
+
+    public function testDatasetCoverUsesPlaceholderUntilAnUploadExists(): void
+    {
+        $placeholder = dataset_cover_url(['id' => 42, 'cover_image' => null]);
+        $uploaded = dataset_cover_url(['id' => 42, 'cover_image' => 'uploads/dataset-covers/42/cover.webp']);
+
+        $this->assertStringEndsWith('/assets/img/placeholders/dataset-placeholder-img.png', $placeholder);
+        $this->assertStringEndsWith('/datasets/42/cover', $uploaded);
     }
 }

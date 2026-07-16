@@ -212,6 +212,31 @@ class Datasets extends BaseController
         return $this->response->download($absolutePath, null)->setFileName((string) $latestFile['original_name']);
     }
 
+    public function cover(int $id)
+    {
+        $dataset = model(DatasetModel::class)->find($id);
+        if (! is_array($dataset) || (! $this->canViewDataset($dataset) && ! $this->hasAssignedReviewForDataset($id))) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $relativePath = (string) ($dataset['cover_image'] ?? '');
+        if ($relativePath !== '' && ! str_starts_with($relativePath, 'uploads/dataset-covers/')) {
+            throw PageNotFoundException::forPageNotFound();
+        }
+
+        $absolutePath = WRITEPATH . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+        if ($relativePath === '' || ! is_file($absolutePath)) {
+            return redirect()->to(base_url('assets/img/placeholders/dataset-placeholder-img.png'));
+        }
+
+        $mimeType = mime_content_type($absolutePath) ?: 'application/octet-stream';
+
+        return $this->response
+            ->setHeader('Content-Type', $mimeType)
+            ->setHeader('Cache-Control', 'private, max-age=3600')
+            ->setBody((string) file_get_contents($absolutePath));
+    }
+
     public function edit(int $id): string|\CodeIgniter\HTTP\RedirectResponse
     {
         $datasetModel = new DatasetModel();
@@ -278,6 +303,10 @@ class Datasets extends BaseController
         if ($uploadedFile && $uploadedFile->isValid() && ! $uploadedFile->hasMoved()) {
             $rules['dataset_file'] = 'ext_in[dataset_file,zip]|max_size[dataset_file,10240]';
         }
+        $coverImage = $this->request->getFile('cover_image');
+        if ($coverImage && $coverImage->isValid() && ! $coverImage->hasMoved()) {
+            $rules['cover_image'] = 'is_image[cover_image]|mime_in[cover_image,image/jpeg,image/png,image/webp]|max_size[cover_image,4096]|max_dims[cover_image,4000,4000]';
+        }
 
         if (! $this->validate($rules)) {
             return redirect()
@@ -296,6 +325,11 @@ class Datasets extends BaseController
             $fileRecordId = $this->storeDatasetFile($id, $uploadedFile, (int) $this->currentUserId());
         }
 
+        $coverPath = (string) ($dataset['cover_image'] ?? '');
+        if ($coverImage && $coverImage->isValid() && ! $coverImage->hasMoved()) {
+            $coverPath = $this->replaceCoverImage($id, $coverImage, $coverPath);
+        }
+
         $newVersion = $this->incrementVersion((string) ($dataset['version'] ?? '1.0'));
         $newStatus = match ((string) ($dataset['status'] ?? '')) {
             DatasetModel::STATUS_TECHNICAL_REVISION => DatasetModel::STATUS_PENDING_TECHNICAL,
@@ -307,6 +341,7 @@ class Datasets extends BaseController
         $datasetModel->update($id, [
             'title' => trim((string) $this->request->getPost('title')),
             'description' => trim((string) $this->request->getPost('description')),
+            'cover_image' => $coverPath !== '' ? $coverPath : null,
             'category' => trim((string) $this->request->getPost('category')),
             'tags' => trim((string) $this->request->getPost('tags')),
             'data_type' => trim((string) $this->request->getPost('data_type')),
@@ -388,6 +423,27 @@ class Datasets extends BaseController
         ], true);
     }
 
+    private function replaceCoverImage(int $datasetId, object $uploadedFile, string $currentPath): string
+    {
+        $targetDir = WRITEPATH . 'uploads/dataset-covers/' . $datasetId;
+        if (! is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $storedName = $uploadedFile->getRandomName();
+        $uploadedFile->move($targetDir, $storedName);
+        $newPath = 'uploads/dataset-covers/' . $datasetId . '/' . $storedName;
+
+        if (str_starts_with($currentPath, 'uploads/dataset-covers/')) {
+            $oldAbsolutePath = WRITEPATH . str_replace('/', DIRECTORY_SEPARATOR, $currentPath);
+            if (is_file($oldAbsolutePath)) {
+                unlink($oldAbsolutePath);
+            }
+        }
+
+        return $newPath;
+    }
+
     private function incrementVersion(string $currentVersion): string
     {
         if (preg_match('/^(\d+)\.(\d+)$/', $currentVersion, $matches) === 1) {
@@ -447,6 +503,21 @@ class Datasets extends BaseController
         return (($dataset['status'] ?? '') === DatasetModel::STATUS_PUBLISHED)
             && (($dataset['archived_at'] ?? null) === null)
             && $this->canAccessPublishedDataset($dataset);
+    }
+
+    private function hasAssignedReviewForDataset(int $datasetId): bool
+    {
+        if (! $this->isAuthenticated()) {
+            return false;
+        }
+
+        return model(\App\Models\ReviewModel::class)
+            ->where([
+                'dataset_id' => $datasetId,
+                'reviewer_id' => (int) $this->currentUserId(),
+                'status' => \App\Models\ReviewModel::STATUS_ASSIGNED,
+            ])
+            ->countAllResults() > 0;
     }
 
     /**

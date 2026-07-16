@@ -102,6 +102,26 @@
             <textarea id="description" name="description" rows="4" placeholder="e.g., Survey responses from incubatees covering startup needs, challenges, and resource gaps." class="<?= !empty($errors['description']) ? 'field-error__input' : '' ?>"><?= old('description') ?></textarea>
             <?php if (!empty($errors['description'])): ?><span class="field-error"><?= esc($errors['description']) ?></span><?php endif; ?>
 
+            <label for="cover_image">Dataset Cover <span class="label-optional">(OPTIONAL)</span></label>
+            <span class="help-text">Add a square or landscape JPG, PNG, or WebP image. Maximum 4 MB.</span>
+            <div class="cover-upload-control<?= ! empty($errors['cover_image']) ? ' cover-upload-control--error' : '' ?>">
+                <img
+                    class="cover-upload-preview"
+                    id="cover-preview"
+                    src="<?= base_url('assets/img/placeholders/dataset-placeholder-img.png') ?>"
+                    alt="Dataset cover preview"
+                >
+                <div class="cover-upload-copy">
+                    <strong>Catalog cover image</strong>
+                    <p class="muted">This image appears beside the dataset entry. The repository placeholder is used when no cover is selected.</p>
+                    <input id="cover_image" type="file" name="cover_image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                    <button class="button secondary cover-clear-button" id="cover-clear" type="button" hidden>Use placeholder</button>
+                </div>
+            </div>
+            <?php if (! empty($errors['cover_image'])): ?>
+                <span class="field-error"><?= esc($errors['cover_image']) ?></span>
+            <?php endif; ?>
+
             <label for="tags">Tags<span class="required-asterisk">*</span></label>
             <span class="help-text">Comma-separated keywords for discoverability</span>
             <input id="tags" name="tags" value="<?= old('tags') ?>" placeholder="e.g., startup, survey, tabular" class="<?= !empty($errors['tags']) ? 'field-error__input' : '' ?>">
@@ -445,6 +465,36 @@
     var fileName = document.getElementById('file-name');
     var fileSize = document.getElementById('file-size');
     var fileClear = document.getElementById('file-clear');
+    var coverInput = document.getElementById('cover_image');
+    var coverPreview = document.getElementById('cover-preview');
+    var coverClear = document.getElementById('cover-clear');
+    var coverPlaceholder = '<?= esc(base_url('assets/img/placeholders/dataset-placeholder-img.png'), 'js') ?>';
+    var coverObjectUrl = null;
+
+    if (coverInput && coverPreview) {
+        coverInput.addEventListener('change', function() {
+            if (coverObjectUrl) URL.revokeObjectURL(coverObjectUrl);
+            if (coverInput.files.length === 0) {
+                coverPreview.src = coverPlaceholder;
+                if (coverClear) coverClear.hidden = true;
+                return;
+            }
+
+            coverObjectUrl = URL.createObjectURL(coverInput.files[0]);
+            coverPreview.src = coverObjectUrl;
+            if (coverClear) coverClear.hidden = false;
+        });
+    }
+
+    if (coverClear && coverInput && coverPreview) {
+        coverClear.addEventListener('click', function() {
+            if (coverObjectUrl) URL.revokeObjectURL(coverObjectUrl);
+            coverObjectUrl = null;
+            coverInput.value = '';
+            coverPreview.src = coverPlaceholder;
+            coverClear.hidden = true;
+        });
+    }
 
     if (!fileInput || !fileTrigger) return;
 

@@ -29,6 +29,7 @@ class DatasetModel extends Model
     protected $allowedFields = [
         'title',
         'description',
+        'cover_image',
         'category',
         'tags',
         'data_type',
@@ -147,6 +148,100 @@ class DatasetModel extends Model
                 'url' => null,
                 'tone' => 'neutral',
             ],
+        };
+    }
+
+    /**
+     * @return array{stage: string, detail: string, icon: string, tone: string, step: int}
+     */
+    public static function dashboardWorkflowForStatus(?string $status, ?string $accessType = null): array
+    {
+        return match ($status) {
+            self::STATUS_PENDING_TECHNICAL => [
+                'stage' => 'Technical review',
+                'detail' => 'The ZIP package, metadata, documentation, and declared file formats are being verified.',
+                'icon' => 'sdk',
+                'tone' => 'technical',
+                'step' => 1,
+            ],
+            self::STATUS_TECHNICAL_REVISION => [
+                'stage' => 'Technical corrections required',
+                'detail' => 'Update the package or metadata, then resubmit it to the technical reviewer.',
+                'icon' => 'build_circle',
+                'tone' => 'attention',
+                'step' => 1,
+            ],
+            self::STATUS_PENDING_ETHICS => [
+                'stage' => 'Research ethics review',
+                'detail' => 'Technical verification passed. Consent, anonymization, clearance, and data handling are being reviewed.',
+                'icon' => 'verified_user',
+                'tone' => 'ethics',
+                'step' => 2,
+            ],
+            self::STATUS_ETHICS_REVISION => [
+                'stage' => 'Ethics corrections required',
+                'detail' => 'Address the ethics reviewer findings, then resubmit without repeating technical approval.',
+                'icon' => 'policy',
+                'tone' => 'attention',
+                'step' => 2,
+            ],
+            self::STATUS_AWAITING_PUBLICATION => [
+                'stage' => 'Ready for publication',
+                'detail' => 'Both review stages passed. A repository administrator is confirming final access and publication.',
+                'icon' => 'publish',
+                'tone' => 'publication',
+                'step' => 3,
+            ],
+            self::STATUS_PUBLISHED => [
+                'stage' => 'Published with ' . strtolower(self::accessLabel($accessType)) . ' access',
+                'detail' => self::publishedAccessDescription($accessType),
+                'icon' => self::accessIcon($accessType),
+                'tone' => 'published',
+                'step' => 4,
+            ],
+            self::STATUS_REJECTED => [
+                'stage' => 'Submission rejected',
+                'detail' => 'This submission is closed. Open the record to review the final decision and comments.',
+                'icon' => 'block',
+                'tone' => 'closed',
+                'step' => 0,
+            ],
+            self::STATUS_ARCHIVED => [
+                'stage' => 'Archived',
+                'detail' => 'This dataset is retained in your records but removed from active workflow and catalog surfaces.',
+                'icon' => 'inventory_2',
+                'tone' => 'closed',
+                'step' => 0,
+            ],
+            default => [
+                'stage' => 'Workflow status unavailable',
+                'detail' => 'Open the record to inspect its current repository state.',
+                'icon' => 'info',
+                'tone' => 'neutral',
+                'step' => 0,
+            ],
+        };
+    }
+
+    private static function accessIcon(?string $accessType): string
+    {
+        return match ($accessType) {
+            self::ACCESS_PUBLIC => 'public',
+            self::ACCESS_INSTITUTIONAL => 'school',
+            self::ACCESS_RESTRICTED => 'key',
+            self::ACCESS_PRIVATE => 'lock',
+            default => 'visibility',
+        };
+    }
+
+    private static function publishedAccessDescription(?string $accessType): string
+    {
+        return match ($accessType) {
+            self::ACCESS_PUBLIC => 'Visible in the public catalog. Signed-in users can download the published ZIP.',
+            self::ACCESS_INSTITUTIONAL => 'Visible to signed-in repository users within the institution.',
+            self::ACCESS_RESTRICTED => 'Catalog access is limited and downloads require repository authorization.',
+            self::ACCESS_PRIVATE => 'Kept private to authorized repository maintainers and the contributor.',
+            default => 'Published using the repository access classification.',
         };
     }
 }

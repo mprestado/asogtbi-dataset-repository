@@ -184,6 +184,9 @@
                         }
                     ?>
                     <article class="compact-result-row">
+                        <a class="dataset-row-cover" href="<?= site_url('datasets/' . $dataset['id']) ?>" aria-label="Open <?= esc($dataset['title'], 'attr') ?>">
+                            <img src="<?= esc(dataset_cover_url($dataset), 'attr') ?>" alt="" loading="lazy">
+                        </a>
                         <div class="row-main-details">
                             <div class="row-badge-line">
                                 <span class="row-pill tech-type"><?= esc($dataset['data_type'] ?: 'Dataset') ?></span>

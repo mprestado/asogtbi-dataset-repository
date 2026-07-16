@@ -55,6 +55,23 @@
             <label for="description">Description</label>
             <textarea id="description" name="description" rows="5"><?= old('description', $dataset['description'] ?? '') ?></textarea>
 
+            <label for="cover_image">Dataset Cover <span class="label-optional">(OPTIONAL)</span></label>
+            <span class="help-text">Upload a JPG, PNG, or WebP image up to 4 MB to replace the current catalog cover.</span>
+            <div class="cover-upload-control">
+                <img
+                    class="cover-upload-preview"
+                    id="cover-preview"
+                    src="<?= esc(dataset_cover_url($dataset), 'attr') ?>"
+                    alt="Current cover for <?= esc($dataset['title'] ?? 'dataset', 'attr') ?>"
+                >
+                <div class="cover-upload-copy">
+                    <strong>Current catalog cover</strong>
+                    <p class="muted">Leave this empty to keep the current image. Existing datasets without a cover use the repository placeholder.</p>
+                    <input id="cover_image" type="file" name="cover_image" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+                    <button class="button secondary cover-clear-button" id="cover-clear" type="button" hidden>Keep current cover</button>
+                </div>
+            </div>
+
             <label for="tags">Tags</label>
             <input id="tags" name="tags" value="<?= old('tags', $dataset['tags'] ?? '') ?>">
 
@@ -110,4 +127,36 @@
         </form>
     </aside>
 </section>
+<script>
+(() => {
+    const input = document.getElementById('cover_image');
+    const preview = document.getElementById('cover-preview');
+    const clear = document.getElementById('cover-clear');
+    if (!input || !preview || !clear) return;
+
+    const currentCover = preview.src;
+    let objectUrl = null;
+
+    input.addEventListener('change', () => {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        if (input.files.length === 0) {
+            preview.src = currentCover;
+            clear.hidden = true;
+            return;
+        }
+
+        objectUrl = URL.createObjectURL(input.files[0]);
+        preview.src = objectUrl;
+        clear.hidden = false;
+    });
+
+    clear.addEventListener('click', () => {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+        objectUrl = null;
+        input.value = '';
+        preview.src = currentCover;
+        clear.hidden = true;
+    });
+})();
+</script>
 <?= $this->endSection() ?>
