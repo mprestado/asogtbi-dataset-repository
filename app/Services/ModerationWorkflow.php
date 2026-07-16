@@ -44,6 +44,71 @@ class ModerationWorkflow
         return $lists[$stage];
     }
 
+    /**
+     * @param array<string, mixed> $input
+     * @return array<string, array{result: string, note: string}>
+     */
+    public static function normalizeChecklist(string $stage, array $input): array
+    {
+        $normalized = [];
+        foreach (array_keys(self::checklist($stage)) as $key) {
+            $value = $input[$key] ?? null;
+            if (is_array($value)) {
+                $result = (string) ($value['result'] ?? 'not_reviewed');
+                $note = trim((string) ($value['note'] ?? ''));
+            } else {
+                $result = ! empty($value) ? 'confirmed' : 'not_reviewed';
+                $note = '';
+            }
+
+            if (! in_array($result, ['confirmed', 'issue', 'not_reviewed'], true)) {
+                $result = 'not_reviewed';
+            }
+
+            $normalized[$key] = ['result' => $result, 'note' => $note];
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * @param array<string, mixed>|string|null $stored
+     * @return array<string, array{result: string, note: string}>
+     */
+    public static function decodeChecklist(string $stage, array|string|null $stored): array
+    {
+        if (is_string($stored) && $stored !== '') {
+            $decoded = json_decode($stored, true);
+            $stored = is_array($decoded) ? $decoded : [];
+        }
+
+        return self::normalizeChecklist($stage, is_array($stored) ? $stored : []);
+    }
+
+    /**
+     * @param array<string, array{result: string, note: string}> $checklist
+     * @return array{reviewed: int, confirmed: int, issues: int, total: int}
+     */
+    public static function checklistProgress(array $checklist): array
+    {
+        $reviewed = 0;
+        $confirmed = 0;
+        $issues = 0;
+        foreach ($checklist as $answer) {
+            if (($answer['result'] ?? 'not_reviewed') !== 'not_reviewed') {
+                $reviewed++;
+            }
+            if (($answer['result'] ?? '') === 'confirmed') {
+                $confirmed++;
+            }
+            if (($answer['result'] ?? '') === 'issue') {
+                $issues++;
+            }
+        }
+
+        return ['reviewed' => $reviewed, 'confirmed' => $confirmed, 'issues' => $issues, 'total' => count($checklist)];
+    }
+
     public function assign(int $datasetId, string $stage, int $reviewerId, int $adminId, string $ip): int
     {
         if (! in_array($stage, [ReviewModel::STAGE_ETHICS, ReviewModel::STAGE_TECHNICAL], true)) {
@@ -61,8 +126,7 @@ class ModerationWorkflow
             $this->requireRole($reviewerId, $role);
             $active = $this->db->table('reviews')->where(['dataset_id' => $datasetId, 'stage' => $stage, 'status' => ReviewModel::STATUS_ASSIGNED])->orderBy('id', 'DESC')->get()->getRowArray();
             if (is_array($active)) {
-                $round = (int) $active['review_round'];
-                $this->db->table('reviews')->where('id', $active['id'])->update(['status' => ReviewModel::STATUS_REASSIGNED, 'comments' => 'Reassigned by repository administrator.', 'decided_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]);
+                throw new RuntimeException('This stage already has an active reviewer. Use reassignment instead.');
             } else {
                 $last = $this->db->table('reviews')->selectMax('review_round')->where(['dataset_id' => $datasetId, 'stage' => $stage])->get()->getRowArray();
                 $round = max(1, ((int) ($last['review_round'] ?? 0)) + 1);
@@ -78,6 +142,89 @@ class ModerationWorkflow
         });
     }
 
+    public function reassign(int $datasetId, string $stage, int $reviewerId, int $adminId, string $reason, string $ip): int
+    {
+        if (trim($reason) === '') {
+            throw new RuntimeException('A reassignment reason is required.');
+        }
+        if (! in_array($stage, [ReviewModel::STAGE_ETHICS, ReviewModel::STAGE_TECHNICAL], true)) {
+            throw new RuntimeException('Invalid review stage.');
+        }
+
+        $role = $stage === ReviewModel::STAGE_ETHICS ? self::ROLE_ETHICS : self::ROLE_TECHNICAL;
+
+        return $this->transaction(function () use ($datasetId, $stage, $reviewerId, $adminId, $reason, $ip, $role): int {
+            $this->requireRole($adminId, self::ROLE_ADMIN);
+            $this->requireRole($reviewerId, $role);
+            $active = $this->db->table('reviews')
+                ->where(['dataset_id' => $datasetId, 'stage' => $stage, 'status' => ReviewModel::STATUS_ASSIGNED])
+                ->orderBy('id', 'DESC')
+                ->get()
+                ->getRowArray();
+            if (! is_array($active)) {
+                throw new RuntimeException('There is no active review to reassign.');
+            }
+            if ((int) $active['reviewer_id'] === $reviewerId) {
+                throw new RuntimeException('Select a different reviewer for reassignment.');
+            }
+
+            $dataset = $this->dataset($datasetId);
+            $expected = $stage === ReviewModel::STAGE_ETHICS ? DatasetModel::STATUS_PENDING_ETHICS : DatasetModel::STATUS_PENDING_TECHNICAL;
+            if ($dataset['status'] !== $expected) {
+                throw new RuntimeException('This dataset is no longer in the selected review stage.');
+            }
+
+            $now = date('Y-m-d H:i:s');
+            $this->db->table('reviews')->where('id', $active['id'])->update([
+                'status' => ReviewModel::STATUS_REASSIGNED,
+                'reassignment_reason' => trim($reason),
+                'decided_at' => $now,
+                'updated_at' => $now,
+            ]);
+            $this->db->table('reviews')->insert([
+                'dataset_id' => $datasetId,
+                'dataset_version_id' => $active['dataset_version_id'] ?? null,
+                'stage' => $stage,
+                'review_round' => (int) $active['review_round'],
+                'reviewer_id' => $reviewerId,
+                'assigned_by' => $adminId,
+                'status' => ReviewModel::STATUS_ASSIGNED,
+                'assigned_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+            $newReviewId = (int) $this->db->insertID();
+
+            $this->notify((int) $active['reviewer_id'], 'review_reassigned', 'Review reassigned', 'The ' . $stage . ' review for "' . $dataset['title'] . '" was reassigned. Reason: ' . trim($reason), '/review/' . $stage);
+            $this->notify($reviewerId, 'review_assigned', 'Review assigned', 'The dataset "' . $dataset['title'] . '" has been assigned to your ' . $stage . ' review queue.', '/review/' . $stage . '/' . $newReviewId);
+            $this->audit($adminId, 'review_reassigned', 'review', $newReviewId, 'Reassigned ' . $stage . ' review for dataset #' . $datasetId . '. Reason: ' . trim($reason), $ip);
+
+            return $newReviewId;
+        });
+    }
+
+    public function saveDraft(int $reviewId, int $reviewerId, array $checklist, string $comments, string $ip): void
+    {
+        $this->transaction(function () use ($reviewId, $reviewerId, $checklist, $comments, $ip): void {
+            $review = $this->activeAssignedReview($reviewId, $reviewerId);
+            $stage = (string) $review['stage'];
+            $dataset = $this->dataset((int) $review['dataset_id']);
+            $expected = $stage === ReviewModel::STAGE_ETHICS ? DatasetModel::STATUS_PENDING_ETHICS : DatasetModel::STATUS_PENDING_TECHNICAL;
+            if ($dataset['status'] !== $expected) {
+                throw new RuntimeException('The dataset workflow changed before this draft was saved.');
+            }
+            $answers = self::normalizeChecklist($stage, $checklist);
+            $now = date('Y-m-d H:i:s');
+            $this->db->table('reviews')->where('id', $reviewId)->update([
+                'checklist' => json_encode($answers),
+                'comments' => trim($comments),
+                'draft_saved_at' => $now,
+                'updated_at' => $now,
+            ]);
+            $this->audit($reviewerId, 'review_draft_saved', 'review', $reviewId, ucfirst($stage) . ' review draft saved.', $ip);
+        });
+    }
+
     public function decide(int $reviewId, int $reviewerId, string $decision, array $checklist, string $comments, string $ip): void
     {
         if (! in_array($decision, [ReviewModel::STATUS_APPROVED, ReviewModel::STATUS_REJECTED, ReviewModel::STATUS_REVISION], true)) {
@@ -87,10 +234,7 @@ class ModerationWorkflow
             throw new RuntimeException('Comments are required for rejection or revision requests.');
         }
         $this->transaction(function () use ($reviewId, $reviewerId, $decision, $checklist, $comments, $ip): void {
-            $review = $this->db->table('reviews')->where('id', $reviewId)->get()->getRowArray();
-            if (! is_array($review) || $review['status'] !== ReviewModel::STATUS_ASSIGNED || (int) $review['reviewer_id'] !== $reviewerId) {
-                throw new RuntimeException('This review is not assigned to the current reviewer.');
-            }
+            $review = $this->activeAssignedReview($reviewId, $reviewerId);
             $stage = (string) $review['stage'];
             $this->requireRole($reviewerId, $stage === ReviewModel::STAGE_ETHICS ? self::ROLE_ETHICS : self::ROLE_TECHNICAL);
             $dataset = $this->dataset((int) $review['dataset_id']);
@@ -98,12 +242,15 @@ class ModerationWorkflow
             if ($dataset['status'] !== $expected) {
                 throw new RuntimeException('The dataset workflow changed before this decision was submitted.');
             }
-            $answers = [];
-            foreach (array_keys(self::checklist($stage)) as $key) {
-                $answers[$key] = ! empty($checklist[$key]);
-            }
-            if ($decision === ReviewModel::STATUS_APPROVED && in_array(false, $answers, true)) {
+            $answers = self::normalizeChecklist($stage, $checklist);
+            $progress = self::checklistProgress($answers);
+            if ($decision === ReviewModel::STATUS_APPROVED && $progress['confirmed'] !== $progress['total']) {
                 throw new RuntimeException('Every checklist item must be confirmed before approval.');
+            }
+            foreach ($answers as $answer) {
+                if ($answer['result'] === 'issue' && $answer['note'] === '') {
+                    throw new RuntimeException('Every checklist issue must include a finding note.');
+                }
             }
             $next = $decision === ReviewModel::STATUS_REJECTED
                 ? DatasetModel::STATUS_REJECTED
@@ -111,10 +258,23 @@ class ModerationWorkflow
                     ? ($stage === ReviewModel::STAGE_ETHICS ? DatasetModel::STATUS_ETHICS_REVISION : DatasetModel::STATUS_TECHNICAL_REVISION)
                     : ($stage === ReviewModel::STAGE_TECHNICAL ? DatasetModel::STATUS_PENDING_ETHICS : DatasetModel::STATUS_AWAITING_PUBLICATION));
             $now = date('Y-m-d H:i:s');
-            $this->db->table('reviews')->where('id', $reviewId)->update(['status' => $decision, 'checklist' => json_encode($answers), 'comments' => trim($comments), 'decided_at' => $now, 'updated_at' => $now]);
+            $this->db->table('reviews')->where('id', $reviewId)->update(['status' => $decision, 'checklist' => json_encode($answers), 'comments' => trim($comments), 'draft_saved_at' => null, 'decided_at' => $now, 'updated_at' => $now]);
             $this->db->table('datasets')->where('id', $dataset['id'])->update(['status' => $next, 'approved_by' => null, 'approved_at' => null, 'updated_at' => $now]);
             $message = 'Your dataset "' . $dataset['title'] . '" is now ' . DatasetModel::statusLabel($next) . '.' . (trim($comments) ? ' Reviewer comments: ' . trim($comments) : '');
-            $this->notify((int) $dataset['contributor_id'], 'review_result', ucfirst($stage) . ' review completed', $message, '/datasets/' . $dataset['id'] . '/edit');
+            $contributorLink = in_array($next, [DatasetModel::STATUS_TECHNICAL_REVISION, DatasetModel::STATUS_ETHICS_REVISION], true)
+                ? '/datasets/' . $dataset['id'] . '/edit'
+                : '/datasets/' . $dataset['id'];
+            $this->notify((int) $dataset['contributor_id'], 'review_result', ucfirst($stage) . ' review completed', $message, $contributorLink);
+            $administratorMessage = $decision === ReviewModel::STATUS_APPROVED
+                ? 'The dataset "' . $dataset['title'] . '" is ready for ' . ($stage === ReviewModel::STAGE_TECHNICAL ? 'ethics assignment.' : 'final publication.')
+                : ucfirst($stage) . ' review for "' . $dataset['title'] . '" ended with ' . str_replace('_', ' ', $decision) . '.';
+            $this->notifyAdministrators(
+                $stage === ReviewModel::STAGE_TECHNICAL && $decision === ReviewModel::STATUS_APPROVED
+                    ? 'Technical review approved'
+                    : ($stage === ReviewModel::STAGE_ETHICS && $decision === ReviewModel::STATUS_APPROVED ? 'Dataset ready to publish' : ucfirst($stage) . ' review completed'),
+                $administratorMessage,
+                '/admin/datasets/' . $dataset['id']
+            );
             $this->audit($reviewerId, 'review_' . $decision, 'review', $reviewId, ucfirst($stage) . ' decision for dataset #' . $dataset['id'] . '.', $ip);
         });
     }
@@ -128,7 +288,7 @@ class ModerationWorkflow
             $this->requireRole($adminId, self::ROLE_ADMIN);
             $dataset = $this->dataset($datasetId);
             if ($dataset['status'] !== DatasetModel::STATUS_AWAITING_PUBLICATION) {
-                throw new RuntimeException('Only technically approved datasets can be published.');
+                throw new RuntimeException('Only datasets approved by both review stages can be published.');
             }
             $now = date('Y-m-d H:i:s');
             $this->db->table('datasets')->where('id', $datasetId)->update(['status' => DatasetModel::STATUS_PUBLISHED, 'access_type' => $accessType, 'approved_by' => $adminId, 'approved_at' => $now, 'archived_at' => null, 'archived_from_status' => null, 'updated_at' => $now]);
@@ -137,9 +297,13 @@ class ModerationWorkflow
         });
     }
 
-    public function setArchived(int $datasetId, int $adminId, bool $restore, string $ip): void
+    public function setArchived(int $datasetId, int $adminId, bool $restore, string $reason, string $ip): void
     {
-        $this->transaction(function () use ($datasetId, $adminId, $restore, $ip): void {
+        if (! $restore && trim($reason) === '') {
+            throw new RuntimeException('An archive reason is required.');
+        }
+
+        $this->transaction(function () use ($datasetId, $adminId, $restore, $reason, $ip): void {
             $this->requireRole($adminId, self::ROLE_ADMIN);
             $dataset = $this->dataset($datasetId);
             if ($restore && $dataset['status'] !== DatasetModel::STATUS_ARCHIVED) {
@@ -148,12 +312,21 @@ class ModerationWorkflow
             if (! $restore && $dataset['status'] === DatasetModel::STATUS_ARCHIVED) {
                 throw new RuntimeException('This dataset is already archived.');
             }
+            if (! $restore) {
+                $activeReview = $this->db->table('reviews')->where(['dataset_id' => $datasetId, 'status' => ReviewModel::STATUS_ASSIGNED])->get()->getRowArray();
+                if (is_array($activeReview)) {
+                    throw new RuntimeException('Reassign or complete the active review before archiving this dataset.');
+                }
+            }
             $data = $restore
                 ? ['status' => (string) ($dataset['archived_from_status'] ?: DatasetModel::STATUS_PENDING_ETHICS), 'archived_at' => null, 'archived_from_status' => null]
                 : ['status' => DatasetModel::STATUS_ARCHIVED, 'archived_at' => date('Y-m-d H:i:s'), 'archived_from_status' => $dataset['status']];
             $data['updated_at'] = date('Y-m-d H:i:s');
             $this->db->table('datasets')->where('id', $datasetId)->update($data);
-            $this->audit($adminId, $restore ? 'dataset_restore' : 'dataset_archive', 'dataset', $datasetId, 'Dataset lifecycle changed by administrator.', $ip);
+            $details = $restore
+                ? 'Dataset restored to its previous lifecycle state.'
+                : 'Dataset archived. Reason: ' . trim($reason);
+            $this->audit($adminId, $restore ? 'dataset_restore' : 'dataset_archive', 'dataset', $datasetId, $details, $ip);
         });
     }
 
@@ -184,9 +357,26 @@ class ModerationWorkflow
         return $row;
     }
 
+    private function activeAssignedReview(int $reviewId, int $reviewerId): array
+    {
+        $review = $this->db->table('reviews')->where('id', $reviewId)->get()->getRowArray();
+        if (! is_array($review) || $review['status'] !== ReviewModel::STATUS_ASSIGNED || (int) $review['reviewer_id'] !== $reviewerId) {
+            throw new RuntimeException('This review is not assigned to the current reviewer.');
+        }
+
+        $this->requireRole($reviewerId, $review['stage'] === ReviewModel::STAGE_ETHICS ? self::ROLE_ETHICS : self::ROLE_TECHNICAL);
+
+        return $review;
+    }
+
     private function requireRole(int $userId, string $role): void
     {
-        $row = $this->db->table('user_roles')->join('roles', 'roles.id = user_roles.role_id')->where(['user_roles.user_id' => $userId, 'roles.name' => $role])->get()->getRowArray();
+        $row = $this->db->table('user_roles')
+            ->join('roles', 'roles.id = user_roles.role_id')
+            ->join('users', 'users.id = user_roles.user_id')
+            ->where(['user_roles.user_id' => $userId, 'roles.name' => $role, 'users.status' => 'active'])
+            ->get()
+            ->getRowArray();
         if (! is_array($row)) {
             throw new RuntimeException('The selected account does not have the required role.');
         }
@@ -196,6 +386,20 @@ class ModerationWorkflow
     {
         $now = date('Y-m-d H:i:s');
         $this->db->table('notifications')->insert(['user_id' => $userId, 'type' => $type, 'title' => $title, 'message' => $message, 'link' => $link, 'created_at' => $now, 'updated_at' => $now]);
+    }
+
+    private function notifyAdministrators(string $title, string $message, string $link): void
+    {
+        $administrators = $this->db->table('users')
+            ->select('users.id')
+            ->join('user_roles', 'user_roles.user_id = users.id')
+            ->join('roles', 'roles.id = user_roles.role_id')
+            ->where(['roles.name' => self::ROLE_ADMIN, 'users.status' => 'active'])
+            ->get()
+            ->getResultArray();
+        foreach ($administrators as $administrator) {
+            $this->notify((int) $administrator['id'], 'workflow_attention', $title, $message, $link);
+        }
     }
 
     private function audit(int $userId, string $action, string $entityType, int $entityId, string $details, string $ip): void

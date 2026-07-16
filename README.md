@@ -6,9 +6,9 @@ The `rapid-mvp` branch is a unified CodeIgniter 4 and MySQL repository for publi
 
 - Public catalog, search, filters, dataset details, citation, recommendations, and protected downloads
 - Contributor registration, upload, version updates, revision responses, status notifications, and self-archive
-- Technical review with protected ZIP access and a required manual verification checklist
-- Research Ethics review with administrator assignment and a required compliance checklist
-- Repository administration for reviewer assignment, final publication, access classification, users, roles, archive/restore, review history, and audit logs
+- Technical review with protected ZIP access, searchable queues, assignment aging, structured findings, draft saving, and required manual verification
+- Research Ethics review with technical-approval context, structured compliance findings, draft saving, and immutable decisions
+- Repository administration with operational metrics, stage queues, workload-aware assignment, accountable reassignment, final publication gating, users, roles, archive/restore, review timelines, and audit logs
 
 Only non-archived `published` datasets appear publicly. New and updated submissions move through:
 
@@ -28,6 +28,7 @@ Revision resubmissions return to the same stage. Updates to published datasets r
 - [docs/DESIGN.md](docs/DESIGN.md) defines the shared public and governance visual language.
 - [docs/SKILL.md](docs/SKILL.md) gives agents implementation guardrails.
 - [docs/progress.md](docs/progress.md) is the append-only implementation and verification ledger.
+- [docs/ADMIN_REVIEW_DASHBOARD_PLAN.md](docs/ADMIN_REVIEW_DASHBOARD_PLAN.md) records the governance dashboard design and implemented milestones.
 - [Database-Repo-SRS.md](Database-Repo-SRS.md) remains the full requirements source.
 
 ## Quick Start

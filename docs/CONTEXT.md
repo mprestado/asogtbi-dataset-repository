@@ -31,7 +31,8 @@ pending_technical_review
 
 - Administrators assign every review; reviewers cannot claim arbitrary submissions.
 - Technical verification is the first maintainer gate so corrupted ZIPs, wrong file entries, and package/metadata mismatches are caught before ethics review.
-- Approval requires every stage checklist item. Rejection and revision require comments.
+- Checklist drafts may be saved without changing dataset state. Each item records `confirmed`, `issue`, or `not_reviewed`; issue findings require an item note.
+- Approval requires every stage checklist item to be confirmed. Rejection and revision require contributor-facing comments.
 - Review records are immutable history. Reassignment closes the old assignment and creates another record in the same round.
 - Contributor edits are locked during active review and publication approval.
 - A published update creates a new version, removes the record from the catalog, and restarts technical verification.
@@ -41,15 +42,15 @@ pending_technical_review
 
 ## Review Checklists
 
-Technical verification is manual and covers ZIP readability, metadata completeness, documentation, declared formats, and file suitability. Automated package inspection and malware scanning are not part of this release.
+Technical verification is manual and covers ZIP readability, metadata completeness, documentation, declared formats, and file suitability. Reviewers work from paginated assigned queues with aging indicators, protected file context, draft saving, and structured findings. Automated package inspection and malware scanning are not part of this release.
 
-Ethics verification covers consent or clearance, anonymization, sensitive-data safeguards, source legitimacy, and access classification after the package passes technical review.
+Ethics verification covers consent or clearance, anonymization, sensitive-data safeguards, source legitimacy, and access classification after the package passes technical review. The ethics workspace displays the retained technical approval before a final ethics decision.
 
 ## Data Ownership
 
 - `datasets` stores current lifecycle state and publication metadata.
 - `dataset_versions` and `dataset_files` preserve submission versions and protected packages.
-- `reviews` preserves assignment, stage, round, checklist, comments, and decision history.
+- `reviews` preserves assignment, stage, round, structured checklist drafts, comments, reassignment reasons, and decision history.
 - `notifications` currently carries review assignments, review outcomes, and publication results.
 - `audit_logs` is the accountability record visible to repository administrators.
 

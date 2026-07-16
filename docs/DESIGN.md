@@ -295,6 +295,14 @@ Status chips only ever appear where a user is looking at *their own* datasets (d
 
 **My Datasets (user dashboard)** — Page Header Band with an inline "Upload Dataset" button, body is a grid of the user's own **dataset cards**, each showing its status chip and review notifications. Governance actions do not render here; they remain in the dedicated portal shell.
 
+**Reviewer queues** — Use a compact operational workspace rather than public dataset cards. Start with workload metrics, `Needs action / Completed / All records` tabs, and a thin filter row. Queue records show cover, assignment age, contributor, version, access request, protected package name, checklist progress, and one stage-appropriate action.
+
+**Review workspace** — Keep evidence in the main column and a sticky checklist/decision panel on desktop. Checklist rows use three explicit states: Confirmed, Issue found, and Not reviewed. Issue found reveals an item-level note. Save Draft is secondary; revision is warning; rejection is danger; approval is the single primary completion action and remains disabled until every item is confirmed.
+
+**Administrator moderation board** — Organize records by workflow-stage tabs instead of one mixed list. Assignment controls reveal reviewer workload. Reassignment is a separate action requiring a reason. Publication displays both approval summaries, current version, final access classification, and an explicit confirmation before the primary Publish action.
+
+**Administrator inspection** — Use a workflow stepper and anchored Summary, Files and versions, Review timeline, Publication, and Audit activity sections. Archive and restore remain secondary lifecycle actions and never compete visually with the valid stage action.
+
 ## Motion
 
 Keep it minimal and functional — this is an institutional tool, not a marketing site:

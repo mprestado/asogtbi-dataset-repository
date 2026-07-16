@@ -82,14 +82,16 @@ Change demo passwords before any shared or production deployment.
 ## Verification Walkthrough
 
 1. Sign in as the contributor and upload a ZIP dataset. Confirm `Pending Technical Review`.
-2. Sign in as the administrator, open Dataset Moderation, and assign the technical reviewer.
-3. Sign in as the technical reviewer, download and manually inspect the protected ZIP, complete the checklist, and approve.
-4. Sign in as the administrator and assign the ethics reviewer.
-5. Sign in as the ethics reviewer, open the assigned record, complete every checklist item, and approve.
-6. Sign in as the administrator, choose the final access type, and publish.
+2. Sign in as the administrator, open Dataset Moderation, select `Technical assignment`, and assign the technical reviewer using the workload information.
+3. Sign in as the technical reviewer, open `Needs action`, download and manually inspect the protected ZIP, record each checklist item as Confirmed, Issue found, or Not reviewed, save a draft, then approve.
+4. Sign in as the administrator, select `Ethics assignment`, and assign the ethics reviewer.
+5. Sign in as the ethics reviewer, confirm the technical approval context, complete every ethics checklist item, and approve.
+6. Sign in as the administrator, open `Ready to publish`, inspect both approvals, choose the final access type, check the publication confirmation, and publish.
 7. Confirm the dataset appears in the allowed public or authenticated catalog scope and that every action appears in Audit Logs.
 
 For revision testing, request revision at either stage, update the dataset as the contributor, and confirm it returns to that same stage with a new review round.
+
+For reassignment testing, create or activate a second reviewer with the matching role, open an active stage record as administrator, choose `Reassign review`, provide a reason, and confirm the previous reviewer loses decision access immediately.
 
 ## Commands
 

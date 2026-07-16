@@ -18,5 +18,19 @@ class ReviewModel extends Model
     protected $primaryKey = 'id';
     protected $returnType = 'array';
     protected $useTimestamps = true;
-    protected $allowedFields = ['dataset_id', 'dataset_version_id', 'stage', 'review_round', 'reviewer_id', 'assigned_by', 'status', 'checklist', 'comments', 'assigned_at', 'decided_at'];
+    protected $allowedFields = [
+        'dataset_id',
+        'dataset_version_id',
+        'stage',
+        'review_round',
+        'reviewer_id',
+        'assigned_by',
+        'status',
+        'checklist',
+        'comments',
+        'draft_saved_at',
+        'reassignment_reason',
+        'assigned_at',
+        'decided_at',
+    ];
 }
