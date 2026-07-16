@@ -203,12 +203,118 @@
             <?php if (!empty($errors['anonymized'])): ?><span class="field-error"><?= esc($errors['anonymized']) ?></span><?php endif; ?>
 
             <div class="actions" style="margin-top:28px">
-                <button class="button" type="submit">Submit for Review</button>
+                <button class="button" type="submit" id="upload-submit-button">Review Before Upload</button>
                 <a class="button secondary" href="<?= site_url('dashboard') ?>">Cancel</a>
             </div>
         </form>
     </section>
 </section>
+
+<div class="preview-modal upload-preview-modal" id="upload-preview-modal" role="dialog" aria-modal="true" aria-labelledby="upload-preview-modal-title" aria-describedby="upload-preview-modal-summary" hidden>
+    <div class="preview-backdrop" data-preview-close></div>
+    <article class="preview-card upload-preview-card" tabindex="-1">
+        <button class="preview-close" type="button" aria-label="Close preview" data-preview-close>&times;</button>
+        <div class="preview-title-row">
+            <div>
+                <p class="tag">Confirmation Preview</p>
+                <h2 id="upload-preview-modal-title" tabindex="-1" data-preview-initial>Review your submission</h2>
+                <p class="preview-kicker" id="upload-preview-modal-summary">Check the details below. Your dataset will only be uploaded after you confirm this preview.</p>
+                <div class="row-badge-line preview-pill-line" aria-label="Preview state">
+                    <span class="row-pill tech-type">Draft</span>
+                    <span class="row-pill tech-outline">Not uploaded yet</span>
+                </div>
+            </div>
+        </div>
+        <div class="upload-preview-body">
+            <section class="upload-preview-section">
+                <div class="upload-preview-section-head">
+                    <span class="upload-preview-accent"></span>
+                    <h3>Dataset details</h3>
+                </div>
+                <div class="upload-preview-grid upload-preview-grid--three">
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Title</span>
+                        <strong id="upload-preview-modal-title-value">Not entered yet</strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Category</span>
+                        <strong id="upload-preview-modal-category-value">Not entered yet</strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Access type</span>
+                        <strong id="upload-preview-modal-access-value">Not selected</strong>
+                    </div>
+                    <div class="upload-preview-field upload-preview-field--full">
+                        <span class="upload-preview-label">Description</span>
+                        <strong id="upload-preview-modal-description-value">Not entered yet</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="upload-preview-section">
+                <div class="upload-preview-section-head">
+                    <span class="upload-preview-accent"></span>
+                    <h3>Research details</h3>
+                </div>
+                <div class="upload-preview-grid upload-preview-grid--two">
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Research title</span>
+                        <strong id="upload-preview-modal-research-title-value">Not entered yet</strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Project head</span>
+                        <strong id="upload-preview-modal-project-head-value">Not entered yet</strong>
+                    </div>
+                    <div class="upload-preview-field upload-preview-field--full">
+                        <span class="upload-preview-label">Members</span>
+                        <strong id="upload-preview-modal-members-value">Not listed</strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Anonymized</span>
+                        <strong id="upload-preview-modal-anonymized-value">Not confirmed</strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Data type</span>
+                        <strong id="upload-preview-modal-data-type-value">Not selected</strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="upload-preview-section">
+                <div class="upload-preview-section-head">
+                    <span class="upload-preview-accent"></span>
+                    <h3>Source and file</h3>
+                </div>
+                <div class="upload-preview-grid upload-preview-grid--two">
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Source type</span>
+                        <strong id="upload-preview-modal-source-type-value">Not selected</strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Source link</span>
+                        <strong id="upload-preview-modal-source-link-value">Not provided</strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">File format</span>
+                        <strong id="upload-preview-modal-file-format-value">Not entered yet</strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Tags</span>
+                        <strong id="upload-preview-modal-tags-value">Not entered yet</strong>
+                    </div>
+                    <div class="upload-preview-field upload-preview-field--full">
+                        <span class="upload-preview-label">ZIP file</span>
+                        <strong id="upload-preview-modal-file-value">No file selected</strong>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="preview-actions">
+            <button type="button" class="button secondary" data-preview-close>Back to edit</button>
+            <button type="button" class="button" id="confirm-upload-submit">Confirm &amp; Upload</button>
+        </div>
+    </article>
+</div>
 
 <script>
 (function() {
@@ -226,10 +332,112 @@
         'access_type':  'Please select an access type.',
         'source_type':  'Please select a source type.'
     };
+    var previewConfirmed = false;
 
     document.querySelectorAll('label[for]').forEach(function(lbl) {
         lbl.addEventListener('click', function(e) { e.preventDefault(); });
     });
+
+    function getInputValue(id, fallback) {
+        var el = document.getElementById(id);
+        if (!el) return fallback;
+        var value = el.value ? el.value.trim() : '';
+        return value || fallback;
+    }
+
+    function getDropdownValue(field, fallback) {
+        var wrap = document.querySelector('.dropdown-wrap[data-field="' + field + '"]');
+        if (!wrap) return fallback;
+        var display = wrap.querySelector('.dropdown-display');
+        var value = display && display.textContent ? display.textContent.trim() : '';
+        return value && !/^select /i.test(value) ? value : fallback;
+    }
+
+    function getFileSummary() {
+        var input = document.getElementById('dataset_file');
+        if (!input || !input.files || input.files.length === 0) {
+            return {
+                name: 'No file selected',
+                size: ''
+            };
+        }
+
+        var file = input.files[0];
+        return {
+            name: file.name || 'Selected file',
+            size: file.size ? '(' + (file.size / 1024 / 1024).toFixed(1) + ' MB)' : ''
+        };
+    }
+
+    function setPreviewText(id, value) {
+        var el = document.getElementById(id);
+        if (el) {
+            el.textContent = value;
+        }
+    }
+
+    function renderUploadPreview() {
+        var title = getInputValue('title', 'Not entered yet');
+        var category = getInputValue('category', 'Not entered yet');
+        var description = getInputValue('description', 'Not entered yet');
+        var dataType = getDropdownValue('data_type', 'Not selected');
+        var accessType = getDropdownValue('access_type', 'Not selected');
+        var researchTitle = getInputValue('research_title', 'Not entered yet');
+        var projectHead = getInputValue('project_head', 'Not entered yet');
+        var members = getInputValue('members', 'Not listed');
+        var sourceType = getDropdownValue('source_type', 'Not selected');
+        var sourceLink = getInputValue('source_link', 'Not provided');
+        var fileFormat = getInputValue('file_format', 'Not entered yet');
+        var tags = getInputValue('tags', 'Not entered yet');
+        var anonymized = document.getElementById('anonymized');
+        var file = getFileSummary();
+
+        setPreviewText('upload-preview-title-value', title);
+        setPreviewText('upload-preview-category-value', category);
+        setPreviewText('upload-preview-data-type-value', dataType);
+        setPreviewText('upload-preview-access-value', accessType);
+        setPreviewText('upload-preview-research-title-value', researchTitle);
+        setPreviewText('upload-preview-project-head-value', projectHead);
+        setPreviewText('upload-preview-source-type-value', sourceType);
+        setPreviewText('upload-preview-file-format-value', fileFormat);
+        setPreviewText('upload-preview-tags-value', tags);
+        setPreviewText('upload-preview-file-value', file.name + (file.size ? ' ' + file.size : ''));
+
+        setPreviewText('upload-preview-modal-title-value', title);
+        setPreviewText('upload-preview-modal-category-value', category);
+        setPreviewText('upload-preview-modal-description-value', description);
+        setPreviewText('upload-preview-modal-data-type-value', dataType);
+        setPreviewText('upload-preview-modal-access-value', accessType);
+        setPreviewText('upload-preview-modal-anonymized-value', anonymized && anonymized.checked ? 'Confirmed' : 'Not confirmed');
+        setPreviewText('upload-preview-modal-research-title-value', researchTitle);
+        setPreviewText('upload-preview-modal-project-head-value', projectHead);
+        setPreviewText('upload-preview-modal-members-value', members);
+        setPreviewText('upload-preview-modal-source-type-value', sourceType);
+        setPreviewText('upload-preview-modal-source-link-value', sourceLink);
+        setPreviewText('upload-preview-modal-file-format-value', fileFormat);
+        setPreviewText('upload-preview-modal-tags-value', tags);
+        setPreviewText('upload-preview-modal-file-value', file.name + (file.size ? ' ' + file.size : ''));
+    }
+
+    function openUploadPreview() {
+        var modal = document.getElementById('upload-preview-modal');
+        var card = modal ? modal.querySelector('.preview-card') : null;
+        if (!modal || !card) return;
+
+        renderUploadPreview();
+        modal.hidden = false;
+        document.documentElement.classList.add('preview-open');
+        card.focus();
+    }
+
+    function closeUploadPreview() {
+        var modal = document.getElementById('upload-preview-modal');
+        if (!modal) return;
+
+        modal.hidden = true;
+        document.documentElement.classList.remove('preview-open');
+        previewConfirmed = false;
+    }
 
     function ensureErrorSpan(el) {
         var sib = el.nextElementSibling;
@@ -376,10 +584,17 @@
 
             if (!ok) {
                 e.preventDefault();
+                previewConfirmed = false;
                 if (firstInvalid) {
                     if (typeof firstInvalid.focus === 'function') setTimeout(function() { firstInvalid.focus(); }, 50);
                     firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
+                return;
+            }
+
+            if (!previewConfirmed) {
+                e.preventDefault();
+                openUploadPreview();
             }
         });
 
@@ -399,6 +614,7 @@
         if (fInput) {
             fInput.addEventListener('change', function() {
                 if (fInput.files.length > 0) clearFileInvalid();
+                renderUploadPreview();
             });
         }
 
@@ -425,6 +641,11 @@
                 }
             });
         }
+
+        document.querySelectorAll('input, textarea').forEach(function(el) {
+            el.addEventListener('input', renderUploadPreview);
+            el.addEventListener('change', renderUploadPreview);
+        });
 
     }
 
@@ -462,6 +683,7 @@
         filePlaceholder.hidden = true;
         filePreview.hidden = false;
         fileZone.classList.add('file-zone--has-file');
+        renderUploadPreview();
     });
 
     if (fileClear) {
@@ -472,6 +694,7 @@
             filePreview.hidden = true;
             fileZone.classList.remove('file-zone--has-file');
             clearFileInvalid();
+            renderUploadPreview();
         });
     }
 
@@ -547,6 +770,7 @@
             });
             option.classList.add('selected');
             closeDropdown(wrap);
+            renderUploadPreview();
             return;
         }
 
@@ -567,6 +791,44 @@
             });
         }
     });
+
+    var openUploadPreviewButton = document.getElementById('open-upload-preview');
+    var confirmUploadButton = document.getElementById('confirm-upload-submit');
+    var uploadPreviewModal = document.getElementById('upload-preview-modal');
+
+    if (openUploadPreviewButton) {
+        openUploadPreviewButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            openUploadPreview();
+        });
+    }
+
+    if (confirmUploadButton) {
+        confirmUploadButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            previewConfirmed = true;
+            if (formEl && typeof formEl.requestSubmit === 'function') {
+                formEl.requestSubmit();
+            } else if (formEl) {
+                formEl.submit();
+            }
+        });
+    }
+
+    if (uploadPreviewModal) {
+        uploadPreviewModal.querySelectorAll('[data-preview-close]').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeUploadPreview();
+            });
+        });
+
+        uploadPreviewModal.addEventListener('click', function(e) {
+            if (e.target === uploadPreviewModal) {
+                closeUploadPreview();
+            }
+        });
+    }
 
     var infoTrigger = document.getElementById('source-type-info');
     var infoPopup = document.getElementById('source-type-popup');
@@ -594,6 +856,8 @@
             }
         });
     }
+
+    renderUploadPreview();
 })();
 </script>
 <?= $this->endSection() ?>
