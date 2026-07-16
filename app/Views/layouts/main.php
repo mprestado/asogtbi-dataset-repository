@@ -45,6 +45,7 @@
                     </summary>
                     <div class="account-popover">
                         <p class="account-name"><?= esc((string) session()->get('user_name')) ?></p>
+                        <a href="<?= site_url('account/settings') ?>"><span class="material-symbols-rounded" aria-hidden="true">manage_accounts</span> Profile settings</a>
                         <a href="<?= site_url('dashboard') ?>"><span class="material-symbols-rounded" aria-hidden="true">database</span> My datasets</a>
                         <?php if (in_array('ethics_reviewer', $roles, true) || in_array('technical_reviewer', $roles, true) || in_array('repository_administrator', $roles, true)): ?>
                             <a href="<?= site_url('portal/dashboard') ?>"><span class="material-symbols-rounded" aria-hidden="true">folder_managed</span> Portal records</a>
@@ -77,6 +78,7 @@
             <a href="<?= site_url('upload') ?>">Upload</a>
             <div class="mobile-account-panel">
                 <p><?= esc((string) session()->get('user_name')) ?></p>
+                <a href="<?= site_url('account/settings') ?>"><span class="material-symbols-rounded" aria-hidden="true">manage_accounts</span> Profile settings</a>
                 <a href="<?= site_url('dashboard') ?>"><span class="material-symbols-rounded" aria-hidden="true">database</span> My datasets</a>
                 <?php if (in_array('ethics_reviewer', $roles, true) || in_array('technical_reviewer', $roles, true) || in_array('repository_administrator', $roles, true)): ?>
                     <a href="<?= site_url('portal/dashboard') ?>"><span class="material-symbols-rounded" aria-hidden="true">folder_managed</span> Portal records</a>

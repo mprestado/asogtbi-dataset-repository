@@ -16,6 +16,8 @@ $routes->post('reset-password', 'Auth::updatePassword');
 $routes->post('logout', 'Auth::logout', ['filter' => 'auth']);
 
 $routes->group('', ['filter' => 'auth'], static function (RouteCollection $routes): void {
+    $routes->get('account/settings', 'Account::settings');
+    $routes->post('account/settings', 'Account::updateSettings');
     $routes->get('dashboard', 'Dashboard::index');
     $routes->post('dashboard/notifications/read', 'Dashboard::readNotifications');
     $routes->get('portal/dashboard', 'Dashboard::portal');

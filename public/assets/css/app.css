@@ -2418,6 +2418,162 @@ input:checked + .check-box::after {
     color: rgba(3, 85, 140, .5);
 }
 
+.profile-hero .lead {
+    max-width: 680px;
+}
+
+.profile-settings-shell {
+    display: grid;
+    grid-template-columns: minmax(260px, .38fr) minmax(420px, .62fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.profile-summary-card,
+.profile-settings-card,
+.profile-settings-form,
+.profile-password-panel {
+    display: grid;
+}
+
+.profile-summary-card {
+    gap: 18px;
+    position: sticky;
+    top: 104px;
+}
+
+.profile-avatar {
+    width: 64px;
+    height: 64px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(248, 175, 33, .55);
+    border-radius: 18px;
+    background: linear-gradient(135deg, #fff3cf, #f8af21);
+    color: var(--navy);
+    font-size: 1.45rem;
+    font-weight: 900;
+}
+
+.profile-summary-card h2,
+.profile-settings-card h2 {
+    margin: 0;
+    color: var(--navy);
+}
+
+.profile-meta-list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+}
+
+.profile-meta-list div {
+    display: grid;
+    gap: 5px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+}
+
+.profile-meta-list dt {
+    color: var(--muted);
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.profile-meta-list dd {
+    margin: 0;
+    color: var(--navy);
+    font-weight: 800;
+}
+
+.profile-role-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.profile-role-list span,
+.status-chip {
+    width: max-content;
+    border: 1px solid #d8cebd;
+    border-radius: 999px;
+    background: #fffaf0;
+    color: var(--navy);
+    padding: 4px 9px;
+    font-size: .76rem;
+    font-weight: 900;
+}
+
+.status-chip.status-active {
+    border-color: rgba(0, 131, 116, .18);
+    background: #dff8f4;
+    color: #006f63;
+}
+
+.status-chip.status-inactive {
+    border-color: rgba(179, 38, 30, .18);
+    background: #fff0ef;
+    color: #9c221b;
+}
+
+.profile-settings-card {
+    gap: 18px;
+}
+
+.profile-settings-form {
+    gap: 8px;
+}
+
+.profile-settings-form label {
+    margin-top: 8px;
+    color: var(--navy);
+    font-size: .76rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.profile-settings-form input {
+    width: 100%;
+    min-height: 40px;
+    box-sizing: border-box;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--navy);
+    font: inherit;
+    padding: 8px 11px;
+}
+
+.profile-settings-form input:focus {
+    outline: 0;
+    border-color: rgba(248, 175, 33, .92);
+    box-shadow: 0 0 0 3px rgba(248, 175, 33, .16);
+}
+
+.profile-password-panel {
+    gap: 8px;
+    margin-top: 18px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--off);
+    padding: 17px;
+}
+
+.profile-password-panel .tag,
+.profile-password-panel .muted {
+    margin: 0;
+}
+
+.profile-settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+
 .status-rejected {
     border: 1px solid #020d18;
     background: var(--white);
