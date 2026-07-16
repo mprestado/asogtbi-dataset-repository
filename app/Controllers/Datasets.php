@@ -149,6 +149,8 @@ class Datasets extends BaseController
             'downloadCount' => $this->countDatasetEvents(new DatasetDownloadModel(), $id, 'downloaded_at'),
             'canEdit' => $this->isAuthenticated() && $this->canManageDataset($dataset),
             'isOwner' => $this->isAuthenticated() && $this->canManageDataset($dataset),
+            'canDownload' => $this->canDownloadDataset($dataset),
+            'downloadRequiresLogin' => ! $this->isAuthenticated(),
             'statusLabel' => DatasetModel::statusLabel((string) ($dataset['status'] ?? '')),
             'accessLabel' => DatasetModel::accessLabel((string) ($dataset['access_type'] ?? '')),
         ]);
@@ -161,19 +163,19 @@ class Datasets extends BaseController
             throw PageNotFoundException::forPageNotFound();
         }
 
-        $canDownload = (($dataset['status'] ?? '') === DatasetModel::STATUS_PUBLISHED && ($dataset['archived_at'] ?? null) === null && $this->canAccessPublishedDataset($dataset))
-            || ($this->isAuthenticated() && ($this->canManageDataset($dataset) || $this->hasRole('repository_administrator')));
+        if (! $this->isAuthenticated()) {
+            $this->recordDeniedDownload($id, 'Guest attempted to download a dataset file without an account session.');
 
-        if (! $canDownload) {
-            // User failed access check. If private dataset, throw a 404 to prevent ID enumeration
-            if (($dataset['access_type'] ?? '') === 'private') {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'Please sign in to download dataset files.');
+        }
+
+        if (! $this->canDownloadDataset($dataset)) {
+            $this->recordDeniedDownload($id, 'Authenticated account failed dataset download authorization.');
+
+            if (($dataset['access_type'] ?? '') === DatasetModel::ACCESS_PRIVATE) {
                 throw PageNotFoundException::forPageNotFound();
-            }
-
-            if (! $this->isAuthenticated() && ($dataset['access_type'] ?? DatasetModel::ACCESS_PUBLIC) !== DatasetModel::ACCESS_PUBLIC) {
-                return redirect()
-                    ->to('/login')
-                    ->with('error', 'Please log in to access this dataset.');
             }
 
             return redirect()
@@ -463,6 +465,37 @@ class Datasets extends BaseController
         }
 
         return $this->isAuthenticated();
+    }
+
+    /**
+     * @param array<string, mixed> $dataset
+     */
+    private function canDownloadDataset(array $dataset): bool
+    {
+        if (! $this->isAuthenticated()) {
+            return false;
+        }
+
+        if ($this->hasRole('repository_administrator') || $this->canManageDataset($dataset)) {
+            return true;
+        }
+
+        $isPublished = (($dataset['status'] ?? '') === DatasetModel::STATUS_PUBLISHED)
+            && (($dataset['archived_at'] ?? null) === null);
+        if (! $isPublished) {
+            return false;
+        }
+
+        return in_array((string) ($dataset['access_type'] ?? DatasetModel::ACCESS_PUBLIC), [
+            DatasetModel::ACCESS_PUBLIC,
+            DatasetModel::ACCESS_INSTITUTIONAL,
+            DatasetModel::ACCESS_RESTRICTED,
+        ], true);
+    }
+
+    private function recordDeniedDownload(int $datasetId, string $details): void
+    {
+        $this->recordAudit('dataset_download_denied', 'dataset', $datasetId, $details);
     }
 
     private function applyPublishedAccessScope(object $query): void

@@ -278,10 +278,14 @@
         </dl>
 
         <div class="actions dataset-sidebar-actions">
-            <?php if (! empty($latestFile)): ?>
+            <?php if (empty($latestFile)): ?>
+                <span class="button is-disabled" aria-disabled="true">Download unavailable</span>
+            <?php elseif (! empty($downloadRequiresLogin)): ?>
+                <a class="button" href="<?= site_url('login') ?>">Sign in to download</a>
+            <?php elseif (! empty($canDownload)): ?>
                 <a class="button" href="<?= site_url('datasets/' . $datasetId . '/download') ?>">Download</a>
             <?php else: ?>
-                <span class="button is-disabled" aria-disabled="true">Download unavailable</span>
+                <span class="button secondary is-disabled" aria-disabled="true">Download restricted</span>
             <?php endif; ?>
             <button
                 class="button gold citation-trigger"

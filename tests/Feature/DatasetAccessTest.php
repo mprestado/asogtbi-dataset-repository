@@ -174,36 +174,35 @@ final class DatasetAccessTest extends CIUnitTestCase
     // Request-gated downloads
     // ------------------------------------------------------------------
 
-    public function testGuestCanDownloadPublicDataset(): void
+    public function testGuestDownloadOfPublicDatasetRedirectsToLoginAndIsLogged(): void
     {
         $id = $this->datasetIdByTitle('Startup Survey Responses');
 
         $result = $this->get('/datasets/' . $id . '/download');
 
-        $result->assertStatus(200);
+        $result->assertRedirectTo(site_url('login'));
+        $this->assertDownloadDeniedAuditExists($id, 'Guest attempted to download');
     }
 
-    public function testGuestDownloadOfNonPublicDatasetRedirectsToLogin(): void
+    public function testGuestDownloadOfNonPublicDatasetRedirectsToLoginAndIsLogged(): void
     {
-        // Only Institutional and Restricted should prompt a guest to log in.
-        foreach (['Innovation Program Interviews', 'Restricted Incubatee Finance Extract'] as $title) {
+        foreach (['Innovation Program Interviews', 'Restricted Incubatee Finance Extract', 'Private Founder Notes'] as $title) {
             $id = $this->datasetIdByTitle($title);
             $result = $this->get('/datasets/' . $id . '/download');
 
             $result->assertRedirectTo(site_url('login'));
+            $this->assertDownloadDeniedAuditExists($id, 'Guest attempted to download');
         }
     }
 
-    public function testGuestGetsNotFoundForPrivateDatasetDownload(): void
+    public function testGuestPublicDatasetDetailPromptsSignInToDownload(): void
     {
-        $id = $this->datasetIdByTitle('Private Founder Notes');
-        
-        try {
-            $this->get('/datasets/' . $id . '/download');
-            $this->fail('Expected a PageNotFoundException for the private dataset download.');
-        } catch (PageNotFoundException $exception) {
-            $this->assertInstanceOf(PageNotFoundException::class, $exception);
-        }
+        $id = $this->datasetIdByTitle('Startup Survey Responses');
+
+        $this->get('/datasets/' . $id)
+            ->assertStatus(200)
+            ->assertSee('Sign in to download')
+            ->assertDontSee('Download ZIP');
     }
 
     public function testAuthenticatedNonOwnerCanDownloadInstitutionalAndRestrictedButNotPrivate(): void
@@ -227,6 +226,7 @@ final class DatasetAccessTest extends CIUnitTestCase
         } catch (PageNotFoundException $exception) {
             $this->assertInstanceOf(PageNotFoundException::class, $exception);
         }
+        $this->assertDownloadDeniedAuditExists($privateId, 'Authenticated account failed');
     }
 
     public function testOwnerCanDownloadOwnPrivateDataset(): void
@@ -345,5 +345,17 @@ final class DatasetAccessTest extends CIUnitTestCase
         } catch (PageNotFoundException $exception) {
             $this->assertInstanceOf(PageNotFoundException::class, $exception);
         }
+    }
+
+    private function assertDownloadDeniedAuditExists(int $datasetId, string $detailsLike): void
+    {
+        $count = db_connect()->table('audit_logs')
+            ->where('action', 'dataset_download_denied')
+            ->where('entity_type', 'dataset')
+            ->where('entity_id', $datasetId)
+            ->like('details', $detailsLike)
+            ->countAllResults();
+
+        $this->assertGreaterThan(0, $count, 'Expected denied download attempt to be written to audit logs.');
     }
 }

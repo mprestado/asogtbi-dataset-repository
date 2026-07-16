@@ -105,6 +105,16 @@ This file is append-only. Every material implementation milestone must add a dat
 - Blockers: Browser sound playback still depends on a user interaction because browsers block autoplay audio.
 - Next step: Run full PHP 8.5 verification, then manually walk through upload -> technical assignment -> technical approval -> ethics assignment -> ethics approval -> publication.
 
+## 2026-07-16 - Authenticated download gate
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `be12739`.
+- Completed behavior: Changed dataset ZIP download flow so guests can browse/view public metadata but cannot download any dataset file. All direct `/datasets/{id}/download` requests now require an authenticated account; public, institutional, and restricted published files are downloadable by logged-in users, while private files require owner or administrator authorization. Denied download attempts are written to audit logs, and public dataset detail pages show "Sign in to download" for guests instead of a direct ZIP action.
+- Schema changes: None.
+- Important files: `app/Controllers/Datasets.php`, `app/Views/datasets/show.php`, `public/assets/css/app.css`, `tests/Feature/DatasetAccessTest.php`, and `docs/progress.md`.
+- Verification: PHP 8.0.30 syntax checks passed for `Datasets.php`, dataset detail view, and `DatasetAccessTest.php`; `git diff --check` passes with only Windows line-ending warnings; live local app redirects guest direct download to login, public detail page shows "Sign in to download" instead of "Download ZIP", logged-in seeded user receives a 200 attachment response, and MySQL audit log contains `dataset_download_denied` for the guest attempt. PHPUnit feature execution is blocked locally because the XAMPP CLI PHP is 8.0.30 while this PHPUnit requires PHP 8.1+.
+- Blockers: Manual browser QA should confirm the login redirect toast and audit-log visibility in the administrator portal.
+- Next step: Login as a regular user and verify public/restricted downloads work, then logout and confirm the same direct download URLs redirect to login and create denied audit log entries.
+
 ## 2026-07-16 - Stylized flash feedback
 
 - Branch/commit: `rapid-mvp`, local uncommitted implementation after profile settings work.
