@@ -6,27 +6,38 @@
     $errors = is_array($validation ?? null) ? $validation : (is_array($flashValidation) ? $flashValidation : []);
 ?>
 
-<section class="auth-stage">
-    <div class="auth-island">
-        <section class="auth-panel">
-            <a class="auth-back-link" href="<?= site_url('/') ?>">
-                <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>
-                Back to repository
-            </a>
+<section class="auth-stage auth-stage--register">
+    <a class="auth-back-link" href="<?= site_url('datasets') ?>">
+        <span class="material-symbols-rounded" aria-hidden="true">arrow_back</span>
+        Browse as guest
+    </a>
 
+    <div class="auth-island auth-island--workspace">
+        <aside class="auth-intro-panel">
             <div class="auth-heading">
-                <p class="eyebrow">Contributor Enrollment</p>
-                <h1>Sign up for repository access</h1>
-                <p>Create a contributor account for dataset uploads, citation tools, revision loops, and authenticated catalog access.</p>
+                <h1>Register your workspace</h1>
+                <p>Create contributor access for dataset uploads, citation tools, revision loops, and authenticated catalog features.</p>
             </div>
 
-            <button class="auth-google-button" type="button" disabled aria-disabled="true">
-                <span class="auth-google-mark" aria-hidden="true">G</span>
-                Continue with Google
-                <small>Coming soon</small>
-            </button>
+            <div class="auth-policy-copy">
+                <p class="eyebrow">CSPC Account Required</p>
+                <p>Self-registration is limited to official <strong>@cspc.edu.ph</strong> accounts. Already have access? <a href="<?= site_url('login') ?>">Sign in here.</a></p>
+            </div>
 
-            <div class="auth-divider"><span>or create an account</span></div>
+            <ul class="auth-policy-list">
+                <?php foreach (($registerNotes ?? []) as $note): ?>
+                    <li><?= esc($note) ?></li>
+                <?php endforeach; ?>
+            </ul>
+
+            <div class="auth-brand-row" aria-label="Repository partners">
+                <img src="<?= base_url('assets/img/brand/asogtbi-logo.webp') ?>" alt="DOST Bicol ASOG Technology Business Incubator">
+                <img src="<?= base_url('assets/img/brand/ccs-logo.png') ?>" alt="College of Computer Studies">
+            </div>
+        </aside>
+
+        <section class="auth-panel" aria-labelledby="register-heading">
+            <h2 class="sr-only" id="register-heading">Register</h2>
 
             <form class="auth-form" method="post" action="<?= site_url('register') ?>" novalidate>
                 <?= csrf_field() ?>
@@ -47,7 +58,7 @@
                 </div>
 
                 <div class="auth-field">
-                    <label for="email">CSPC email address</label>
+                    <label for="email">CSPC email</label>
                     <input
                         id="email"
                         type="email"
@@ -59,7 +70,7 @@
                         aria-describedby="email-help <?= isset($errors['email']) ? 'email-error' : '' ?>"
                         <?= isset($errors['email']) ? 'aria-invalid="true"' : '' ?>
                     >
-                    <p class="field-help" id="email-help">For this release, self-registration is limited to official `@cspc.edu.ph` addresses.</p>
+                    <p class="field-help" id="email-help">Use your official school email. Maintainer roles are assigned later by an administrator.</p>
                     <?php if (isset($errors['email'])): ?><p class="field-error" id="email-error"><?= esc($errors['email']) ?></p><?php endif; ?>
                 </div>
 
@@ -74,29 +85,22 @@
                         aria-describedby="password-help <?= isset($errors['password']) ? 'password-error' : '' ?>"
                         <?= isset($errors['password']) ? 'aria-invalid="true"' : '' ?>
                     >
-                    <p class="field-help" id="password-help">Use at least 8 characters. Avoid passwords reused from school or personal accounts.</p>
+                    <p class="field-help" id="password-help">Use at least 8 characters and avoid reused passwords.</p>
                     <?php if (isset($errors['password'])): ?><p class="field-error" id="password-error"><?= esc($errors['password']) ?></p><?php endif; ?>
                 </div>
 
-                <button class="button auth-submit" type="submit">Sign up</button>
+                <button class="button auth-submit" type="submit">REGISTER</button>
             </form>
+
+            <div class="auth-divider"><span>or</span></div>
+
+            <button class="auth-google-button" type="button" disabled aria-disabled="true">
+                <span class="auth-google-mark" aria-hidden="true">G</span>
+                CONTINUE WITH CSPC GOOGLE ACCOUNT
+            </button>
 
             <p class="auth-footnotes">Already have access? <a href="<?= site_url('login') ?>">Sign in</a></p>
         </section>
-
-        <aside class="auth-policy-card">
-            <p class="tag">Access Policy</p>
-            <h2>What this account can do</h2>
-            <ul class="auth-policy-list">
-                <?php foreach (($registerNotes ?? []) as $note): ?>
-                    <li><?= esc($note) ?></li>
-                <?php endforeach; ?>
-            </ul>
-            <div class="auth-domain-note">
-                <span class="material-symbols-rounded" aria-hidden="true">policy</span>
-                <p>Reviewer and administrator privileges are assigned separately by repository administrators after account creation.</p>
-            </div>
-        </aside>
     </div>
 </section>
 <?= $this->endSection() ?>

@@ -105,6 +105,16 @@ This file is append-only. Every material implementation milestone must add a dat
 - Blockers: Browser sound playback still depends on a user interaction because browsers block autoplay audio.
 - Next step: Run full PHP 8.5 verification, then manually walk through upload -> technical assignment -> technical approval -> ethics assignment -> ethics approval -> publication.
 
+## 2026-07-16 - Mockup-aligned auth workspace
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `3bfb0c2`.
+- Completed behavior: Reworked login/register into a mockup-aligned workspace entry screen with a top "Browse as guest" escape, large editorial left-side copy, compact right-side credential card, disabled CSPC Google account button, quieter local demo-account disclosure, and partner logos placed from organized public brand assets.
+- Schema changes: None.
+- Important files: `app/Views/auth/login.php`, `app/Views/auth/register.php`, `public/assets/css/app.css`, `public/assets/img/brand/asogtbi-logo.webp`, `public/assets/img/brand/ccs-logo.png`, and `docs/progress.md`.
+- Verification: PHP 8.0.30 syntax checks passed for login/register views; `git diff --check` passes with only Windows line-ending warnings; local `/login` and `/register` return 200; organized brand asset URLs return 200; rendered `/login` includes the guest link, workspace heading, disabled CSPC Google button, and brand asset references.
+- Blockers: In-app browser was unavailable in this session, so manual visual QA is still needed on desktop and mobile to confirm logo sizing and the mockup spacing with real browser rendering.
+- Next step: Open `/login` and `/register`, check desktop/mobile layout, then decide whether forgot/reset password should adopt the same workspace treatment.
+
 ## 2026-07-15 - Admin users and roles polish
 
 - Branch/commit: `rapid-mvp`, local uncommitted implementation after `925ddb8`.
