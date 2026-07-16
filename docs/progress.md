@@ -105,6 +105,26 @@ This file is append-only. Every material implementation milestone must add a dat
 - Blockers: Browser sound playback still depends on a user interaction because browsers block autoplay audio.
 - Next step: Run full PHP 8.5 verification, then manually walk through upload -> technical assignment -> technical approval -> ethics assignment -> ethics approval -> publication.
 
+## 2026-07-16 - Stylized flash feedback
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after profile settings work.
+- Completed behavior: Replaced plain session flash notices in public and portal layouts with dismissible toast-style popups for success and error feedback, including icons, clear headings, auto-dismiss behavior, mobile positioning, and preserved in-page `.notice` styling for non-flash content such as development reset links.
+- Schema changes: None.
+- Important files: `app/Views/layouts/main.php`, `app/Views/layouts/portal.php`, `public/assets/css/app.css`, and `docs/progress.md`.
+- Verification: PHP 8.0.30 syntax checks passed for public and portal layouts; `git diff --check` passes with only Windows line-ending warnings.
+- Blockers: Manual browser QA should confirm animation timing and positioning on public, portal, and mobile layouts.
+- Next step: Trigger a successful profile save and a validation error to confirm the popup copy and dismissal behavior feel right.
+
+## 2026-07-16 - Protected profile settings
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after `ff68bbd`.
+- Completed behavior: Added protected `/account/settings` page for logged-in users to review account status, roles, timestamps, and update full name, email, and optional password with current-password confirmation. Linked profile settings from public and portal account menus, refreshed session name/email after saves, recorded profile update audit logs, and strengthened the auth filter so inactive or missing accounts are signed out before accessing protected routes.
+- Schema changes: None.
+- Important files: `app/Controllers/Account.php`, `app/Views/account/settings.php`, `app/Config/Routes.php`, `app/Filters/AuthFilter.php`, `app/Views/layouts/main.php`, `app/Views/layouts/portal.php`, `public/assets/css/app.css`, and `docs/progress.md`.
+- Verification: PHP 8.0.30 syntax checks passed for `Account.php`, settings view, `AuthFilter.php`, routes, and both layouts; `git diff --check` passes with only Windows line-ending warnings; anonymous `/account/settings` redirects to `/login`; logged-in seeded user reaches the settings page; unchanged profile save shows success feedback; password change with a bad current password is rejected inline. `php spark routes` is blocked locally because XAMPP CLI PHP is 8.0.30 while the app requires PHP 8.2+.
+- Blockers: Manual QA should still confirm inactive-account forced logout after deactivating an already logged-in user from the admin interface.
+- Next step: Log in as a seeded account, open Profile settings from the account menu, save profile changes, test a bad current password, then deactivate the account from admin and confirm protected routes force logout.
+
 ## 2026-07-16 - Mockup-aligned auth workspace
 
 - Branch/commit: `rapid-mvp`, local uncommitted implementation after `3bfb0c2`.

@@ -18,6 +18,8 @@
 <body class="portal-body">
 <?php
     $roles = (array) session()->get('roles');
+    $flashInfo = session()->getFlashdata('info');
+    $flashError = session()->getFlashdata('error');
     $isMaintainer = array_intersect($roles, ['repository_administrator', 'technical_reviewer', 'ethics_reviewer']) !== [];
     $portalHome = in_array('repository_administrator', $roles, true)
         ? site_url('admin')
@@ -95,13 +97,42 @@
             <strong data-live-toast-title>New activity</strong>
             <span data-live-toast-message>Open New activities for details.</span>
         </div>
-        <?php if (session()->getFlashdata('info')): ?><div class="notice"><?= esc(session()->getFlashdata('info')) ?></div><?php endif; ?>
-        <?php if (session()->getFlashdata('error')): ?><div class="notice error"><?= esc(session()->getFlashdata('error')) ?></div><?php endif; ?>
+        <div class="flash-stack flash-stack--portal" aria-live="polite" aria-atomic="true">
+            <?php if ($flashInfo): ?>
+                <div class="flash-toast flash-toast--success" role="status" data-flash-toast>
+                    <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
+                    <div>
+                        <strong>Changes saved</strong>
+                        <p><?= esc($flashInfo) ?></p>
+                    </div>
+                    <button type="button" data-flash-dismiss aria-label="Dismiss notification"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+                </div>
+            <?php endif; ?>
+            <?php if ($flashError): ?>
+                <div class="flash-toast flash-toast--error" role="alert" data-flash-toast>
+                    <span class="material-symbols-rounded" aria-hidden="true">error</span>
+                    <div>
+                        <strong>Needs attention</strong>
+                        <p><?= esc($flashError) ?></p>
+                    </div>
+                    <button type="button" data-flash-dismiss aria-label="Dismiss notification"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+                </div>
+            <?php endif; ?>
+        </div>
         <?= $this->renderSection('content') ?>
     </main>
 </div>
 <script>
 (() => {
+    document.querySelectorAll('[data-flash-toast]').forEach((toast) => {
+        const close = () => {
+            toast.classList.add('is-leaving');
+            window.setTimeout(() => toast.remove(), 220);
+        };
+        toast.querySelector('[data-flash-dismiss]')?.addEventListener('click', close);
+        window.setTimeout(close, toast.classList.contains('flash-toast--error') ? 9000 : 5600);
+    });
+
     const menu = document.querySelector('[data-activity-menu]');
     const badge = document.querySelector('[data-activity-count]');
     const toast = document.querySelector('[data-live-toast]');

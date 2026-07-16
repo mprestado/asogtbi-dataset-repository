@@ -19,6 +19,8 @@
 <body>
 <?php $isAuthenticated = (bool) session()->get('user_id'); ?>
 <?php $roles = (array) session()->get('roles'); ?>
+<?php $flashInfo = session()->getFlashdata('info'); ?>
+<?php $flashError = session()->getFlashdata('error'); ?>
 <header class="site-header" id="site-header">
     <div class="wide-shell header-inner">
         <a class="brand" href="<?= site_url('/') ?>" aria-label="ASOG TBI Dataset Repository home">
@@ -99,12 +101,26 @@
 </header>
 
 <main class="page-shell">
-    <div class="shell flash-shell">
-        <?php if (session()->getFlashdata('info')): ?>
-            <div class="notice"><?= esc(session()->getFlashdata('info')) ?></div>
+    <div class="flash-stack" aria-live="polite" aria-atomic="true">
+        <?php if ($flashInfo): ?>
+            <div class="flash-toast flash-toast--success" role="status" data-flash-toast>
+                <span class="material-symbols-rounded" aria-hidden="true">check_circle</span>
+                <div>
+                    <strong>Changes saved</strong>
+                    <p><?= esc($flashInfo) ?></p>
+                </div>
+                <button type="button" data-flash-dismiss aria-label="Dismiss notification"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+            </div>
         <?php endif; ?>
-        <?php if (session()->getFlashdata('error')): ?>
-            <div class="notice error"><?= esc(session()->getFlashdata('error')) ?></div>
+        <?php if ($flashError): ?>
+            <div class="flash-toast flash-toast--error" role="alert" data-flash-toast>
+                <span class="material-symbols-rounded" aria-hidden="true">error</span>
+                <div>
+                    <strong>Needs attention</strong>
+                    <p><?= esc($flashError) ?></p>
+                </div>
+                <button type="button" data-flash-dismiss aria-label="Dismiss notification"><span class="material-symbols-rounded" aria-hidden="true">close</span></button>
+            </div>
         <?php endif; ?>
     </div>
     <?= $this->renderSection('content') ?>
@@ -166,6 +182,15 @@
     toggle?.addEventListener('click', () => {
         const isOpen = header.classList.toggle('is-menu-open');
         toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+
+    document.querySelectorAll('[data-flash-toast]').forEach((toast) => {
+        const close = () => {
+            toast.classList.add('is-leaving');
+            window.setTimeout(() => toast.remove(), 220);
+        };
+        toast.querySelector('[data-flash-dismiss]')?.addEventListener('click', close);
+        window.setTimeout(close, toast.classList.contains('flash-toast--error') ? 9000 : 5600);
     });
 </script>
 </body>
