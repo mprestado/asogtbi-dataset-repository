@@ -165,6 +165,14 @@
         const isOpen = header.classList.toggle('is-menu-open');
         toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
+
+    document.querySelectorAll('.flash-shell .notice').forEach((notice) => {
+        const delay = notice.classList.contains('error') ? 3200 : 2200;
+        window.setTimeout(() => {
+            notice.classList.add('is-dismissed');
+            window.setTimeout(() => notice.remove(), 180);
+        }, delay);
+    });
 </script>
 </body>
 </html>
