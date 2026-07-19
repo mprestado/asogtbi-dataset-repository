@@ -1,0 +1,73 @@
+/* Featured incubatees logo carousel */
+@keyframes logo-scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.inc-carousel {
+  position: relative;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+  padding: 1rem 0;
+}
+
+.inc-track {
+  display: flex;
+  width: max-content;
+  animation: logo-scroll 30s linear infinite;
+}
+
+.inc-track:hover {
+  animation-play-state: paused;
+}
+
+.inc-logo-item {
+  flex-shrink: 0;
+  width: clamp(132px, 42vw, 220px);
+  height: clamp(82px, 24vw, 130px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 clamp(0.65rem, 4vw, 3rem);
+  opacity: 0.45;
+  filter: grayscale(1);
+  transition: all 0.4s ease;
+  cursor: default;
+}
+
+.inc-logo-item:hover {
+  opacity: 1;
+  filter: grayscale(0);
+  transform: scale(1.08);
+}
+
+.inc-logo-item img {
+  max-width: clamp(112px, 35vw, 190px);
+  max-height: clamp(68px, 20vw, 110px);
+  object-fit: contain;
+}
+
+.inc-logo-item .inc-initials {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.6rem;
+  color: rgba(3, 85, 140, 0.25);
+  letter-spacing: 0.04em;
+  transition: color 0.4s;
+}
+
+.inc-logo-item:hover .inc-initials {
+  color: rgba(3, 85, 140, 0.7);
+}
+
+@media (max-width: 640px) {
+  .inc-carousel {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 6%, black 94%, transparent);
+  }
+}

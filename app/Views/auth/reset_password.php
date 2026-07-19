@@ -5,7 +5,7 @@
     <div class="shell">
         <p class="eyebrow">Account Recovery</p>
         <h1>Reset Password</h1>
-        <p class="lead">Choose a new password for your dataset repository account.</p>
+        <p class="lead">Choose a new password for your repository password account.</p>
     </div>
 </section>
 

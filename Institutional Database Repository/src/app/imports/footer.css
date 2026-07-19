@@ -1,0 +1,229 @@
+/* Footer — Classic columnar design, navy / gold theme  (refreshed) */
+
+/* ── Base ────────────────────────────────── */
+.site-footer {
+    background: #03558C;
+    color: rgba(255,255,255,.72);
+    padding-top: 3rem;
+    padding-bottom: 0;
+    width: 100%;
+}
+
+/* ── Grid: 4 columns on large, 2 on md ──── */
+.ft-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.8rem 2rem;
+    padding-bottom: 2.8rem;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+@media (min-width: 640px) {
+    .ft-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (min-width: 1024px) {
+    .ft-grid {
+        grid-template-columns: 1.6fr 1fr 1fr 1.3fr;
+        gap: 2rem 3.5rem;
+    }
+}
+
+/* ── Column base ─────────────────────────── */
+.ft-col {}
+
+/* ── Brand column ────────────────────────── */
+.ft-logo {
+    width: auto;
+    height: 56px;
+    max-width: 220px;
+    object-fit: contain;
+    margin-bottom: 1rem;
+    opacity: .9;
+    transition: opacity .3s;
+}
+.ft-logo:hover { opacity: 1; }
+
+@media (max-width: 639px) {
+    .ft-logo {
+        height: 42px;
+        max-width: 170px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .ft-logo {
+        height: 64px;
+        max-width: 260px;
+    }
+}
+
+.ft-tagline {
+    font-size: .8rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: rgba(255,255,255,.42);
+    margin: 0 0 1.4rem;
+    max-width: 300px;
+}
+
+/* ── Social Icons (in brand column) ──────── */
+.ft-social {
+    display: flex;
+    gap: .55rem;
+}
+.ft-social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,.1);
+    text-decoration: none;
+    color: rgba(255,255,255,.35);
+    transition: color .3s, border-color .3s, background .3s, transform .3s;
+}
+.ft-social-link:hover {
+    color: #F8AF21;
+    border-color: rgba(248,175,33,.4);
+    background: rgba(248,175,33,.08);
+    transform: translateY(-2px);
+}
+.ft-social-link svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ── Headings ────────────────────────────── */
+.ft-heading {
+    font-family: 'DM Sans', sans-serif;
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: #F8AF21;
+    margin: 0 0 1.2rem;
+    position: relative;
+    padding-bottom: .6rem;
+}
+.ft-heading::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 24px;
+    height: 2px;
+    background: rgba(248,175,33,.35);
+    border-radius: 1px;
+}
+
+/* ── Link lists ──────────────────────────── */
+.ft-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.ft-links li {
+    margin-bottom: .65rem;
+}
+.ft-links a {
+    font-size: .82rem;
+    font-weight: 400;
+    color: rgba(255,255,255,.5);
+    text-decoration: none;
+    position: relative;
+    transition: color .25s, padding-left .25s;
+}
+.ft-links a::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #F8AF21;
+    transition: width .3s ease;
+}
+.ft-links a:hover {
+    color: #F8AF21;
+    padding-left: 6px;
+}
+.ft-links a:hover::before {
+    width: 100%;
+}
+
+/* ── Contact info list ───────────────────── */
+.ft-contact-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.ft-contact-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    margin-bottom: .9rem;
+    font-size: .8rem;
+    font-weight: 300;
+    line-height: 1.7;
+    color: rgba(255,255,255,.48);
+}
+.ft-contact-list a {
+    color: rgba(255,255,255,.48);
+    text-decoration: none;
+    transition: color .25s;
+}
+.ft-contact-list a:hover {
+    color: #F8AF21;
+}
+.ft-contact-icon {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: rgba(248,175,33,.5);
+    transition: color .25s;
+}
+.ft-contact-list li:hover .ft-contact-icon {
+    color: #F8AF21;
+}
+
+/* ── Bottom Bar ──────────────────────────── */
+.ft-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    align-items: center;
+    text-align: center;
+    padding: 1.6rem 0;
+}
+@media (min-width: 768px) {
+    .ft-bottom {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+.ft-copyright {
+    font-size: .54rem;
+    font-weight: 500;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.22);
+    transition: color .2s;
+}
+.ft-copyright:hover {
+    color: rgba(255,255,255,.35);
+}
+.ft-funded {
+    font-size: .5rem;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: rgba(248,175,33,.32);
+    transition: color .2s;
+}
+.ft-funded:hover {
+    color: rgba(248,175,33,.85);
+}
+

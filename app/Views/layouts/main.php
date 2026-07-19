@@ -121,7 +121,7 @@
             </form>
         <?php else: ?>
             <a href="<?= site_url('login') ?>"><span class="material-symbols-rounded" aria-hidden="true">login</span> Sign in</a>
-            <a href="<?= site_url('register') ?>">Sign up</a>
+            <a href="<?= site_url('register') ?>">Request access</a>
         <?php endif; ?>
     </nav>
 </header>
@@ -180,7 +180,7 @@
                 <h3 class="ft-heading">Repository</h3>
                 <ul class="ft-links">
                     <li><a href="<?= site_url('datasets') ?>">Search Catalog</a></li>
-                    <li><a href="<?= site_url('register') ?>">Sign up</a></li>
+                    <li><a href="<?= site_url('register') ?>">Request credentials</a></li>
                     <li><a href="<?= site_url('login') ?>">Contributor sign in</a></li>
                     <li><a href="<?= site_url('upload') ?>">Submit Dataset</a></li>
                 </ul>

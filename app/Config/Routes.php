@@ -7,6 +7,8 @@ $routes->get('/', 'Home::index');
 
 $routes->get('login', 'Auth::login');
 $routes->post('login', 'Auth::attemptLogin');
+$routes->get('auth/google', 'Auth::google');
+$routes->get('auth/google/callback', 'Auth::googleCallback');
 $routes->get('register', 'Auth::register');
 $routes->post('register', 'Auth::attemptRegister');
 $routes->get('forgot-password', 'Auth::forgotPassword');

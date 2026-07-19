@@ -24,6 +24,26 @@ class Account extends BaseController
     {
         $user = $this->currentUser();
         $userId = (int) $user['id'];
+        $isGoogleAccount = $this->isGoogleAccount($user);
+
+        if ($isGoogleAccount) {
+            if ($this->hasPasswordPostFields()) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Google sign-in accounts do not use repository passwords.');
+            }
+
+            $this->session->set([
+                'user_name' => (string) ($user['name'] ?? ''),
+                'user_email' => (string) ($user['email'] ?? ''),
+            ]);
+
+            return redirect()
+                ->to('/account/settings')
+                ->with('info', 'Google account details are managed by your verified my.cspc.edu.ph Google profile.');
+        }
+
+        $newPassword = (string) $this->request->getPost('new_password');
 
         $rules = [
             'name' => [
@@ -32,11 +52,15 @@ class Account extends BaseController
             ],
             'email' => [
                 'label' => 'Email address',
-                'rules' => 'required|valid_email|max_length[190]|is_unique[users.email,id,' . $userId . ']',
+                'rules' => 'required|valid_email|max_length[190]|regex_match[/^[^@\s]+@my\.cspc\.edu\.ph$/i]|is_unique[users.email,id,' . $userId . ']',
                 'errors' => [
+                    'regex_match' => 'Use your official CSPC student email address ending in @my.cspc.edu.ph.',
                     'is_unique' => 'That email address is already used by another account.',
                 ],
             ],
+        ];
+
+        $rules += [
             'current_password' => [
                 'label' => 'Current password',
                 'rules' => 'permit_empty',
@@ -51,7 +75,6 @@ class Account extends BaseController
             ],
         ];
 
-        $newPassword = (string) $this->request->getPost('new_password');
         if ($newPassword !== '') {
             $rules['current_password']['rules'] = 'required';
             $rules['new_password_confirm']['rules'] = 'required|matches[new_password]';
@@ -109,6 +132,21 @@ class Account extends BaseController
         }
 
         return $user;
+    }
+
+    /**
+     * @param array<string, mixed> $user
+     */
+    private function isGoogleAccount(array $user): bool
+    {
+        return strtolower(trim((string) ($user['auth_provider'] ?? 'local'))) === 'google';
+    }
+
+    private function hasPasswordPostFields(): bool
+    {
+        return trim((string) $this->request->getPost('current_password')) !== ''
+            || trim((string) $this->request->getPost('new_password')) !== ''
+            || trim((string) $this->request->getPost('new_password_confirm')) !== '';
     }
 
     /**

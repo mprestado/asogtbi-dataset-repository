@@ -6,9 +6,12 @@ use App\Models\RoleModel;
 use App\Models\PasswordResetModel;
 use App\Models\UserModel;
 use App\Models\UserRoleModel;
+use Config\GoogleAuth;
 
 class Auth extends BaseController
 {
+    private ?string $googleAccountFailure = null;
+
     public function login(): string
     {
         return view('auth/login', [
@@ -25,6 +28,7 @@ class Auth extends BaseController
                 'Seeded demo accounts exist for local walkthroughs after migrations and seeding.',
                 'Inactive accounts are blocked before a session is created.',
             ],
+            'googleAuthEnabled' => config(GoogleAuth::class)->isConfigured(),
         ]);
     }
 
@@ -44,7 +48,16 @@ class Auth extends BaseController
         }
 
         $userModel = new UserModel();
-        $user = $userModel->where('email', (string) $this->request->getPost('email'))->first();
+        $email = strtolower(trim((string) $this->request->getPost('email')));
+        $user = $userModel->where('email', $email)->first();
+
+        if (is_array($user) && $this->isGoogleAccount($user)) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('validation', ['email' => 'This account uses Google sign-in. Continue with your my.cspc Google account instead.'])
+                ->with('error', 'Use Google sign-in for this account.');
+        }
 
         if (! is_array($user) || ! password_verify((string) $this->request->getPost('password'), (string) ($user['password_hash'] ?? ''))) {
             return redirect()
@@ -64,33 +77,110 @@ class Auth extends BaseController
 
         $roles = $this->findUserRoleNames((int) $user['id']);
 
-        $this->session->set([
-            'user_id' => (int) $user['id'],
-            'user_name' => $user['name'],
-            'user_email' => $user['email'],
-            'role' => $roles[0] ?? 'user',
-            'roles' => $roles,
-        ]);
+        return $this->completeLogin($userModel, $user, $roles, 'login', 'User logged into the repository.');
+    }
 
-        $userModel->update((int) $user['id'], ['last_login_at' => date('Y-m-d H:i:s')]);
-        $this->recordAudit('login', 'user', (int) $user['id'], 'User logged into the repository.');
+    public function google()
+    {
+        $config = config(GoogleAuth::class);
+        if (! $config->isConfigured()) {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'Google sign-in is not configured yet.');
+        }
 
-        return redirect()
-            ->to($this->postLoginDestination($roles))
-            ->with('info', 'Welcome back, ' . $user['name'] . '.');
+        $state = bin2hex(random_bytes(24));
+        $this->session->set('google_oauth_state', $state);
+
+        return redirect()->to($config->authEndpoint . '?' . http_build_query([
+            'client_id' => $config->clientId,
+            'redirect_uri' => $this->googleRedirectUri($config),
+            'response_type' => 'code',
+            'scope' => implode(' ', $config->scopes),
+            'state' => $state,
+            'prompt' => 'select_account',
+            'access_type' => 'online',
+            'include_granted_scopes' => 'true',
+        ], '', '&', PHP_QUERY_RFC3986));
+    }
+
+    public function googleCallback()
+    {
+        $config = config(GoogleAuth::class);
+        if (! $config->isConfigured()) {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'Google sign-in is not configured yet.');
+        }
+
+        $error = trim((string) $this->request->getGet('error'));
+        if ($error !== '') {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'Google sign-in was cancelled or denied.');
+        }
+
+        $state = (string) $this->request->getGet('state');
+        $storedState = (string) $this->session->get('google_oauth_state');
+        $this->session->remove('google_oauth_state');
+        if ($state === '' || $storedState === '' || ! hash_equals($storedState, $state)) {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'Google sign-in could not be verified. Please try again.');
+        }
+
+        $code = trim((string) $this->request->getGet('code'));
+        if ($code === '') {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'Google did not return an authorization code.');
+        }
+
+        $token = $this->exchangeGoogleCode($config, $code);
+        if (! is_array($token) || empty($token['access_token'])) {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'Google sign-in could not be completed.');
+        }
+
+        $profile = $this->fetchGoogleProfile($config, (string) $token['access_token']);
+        if (! is_array($profile) || ! $this->isAllowedGoogleProfile($profile, $config)) {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'Use a verified Google Workspace account ending in @' . $config->allowedDomain . '.');
+        }
+
+        $this->googleAccountFailure = null;
+        $user = $this->findOrCreateGoogleUser($profile);
+        if (! is_array($user)) {
+            return redirect()
+                ->to('/login')
+                ->with('error', $this->googleAccountFailure ?? 'Google sign-in could not store your repository account.');
+        }
+
+        if (($user['status'] ?? 'inactive') !== 'active') {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'This account is inactive and cannot log in yet.');
+        }
+
+        $roles = $this->findUserRoleNames((int) $user['id']);
+
+        return $this->completeLogin(model(UserModel::class), $user, $roles, 'login_google', 'User logged into the repository with Google.');
     }
 
     public function register(): string
     {
         return view('auth/register', [
-            'title' => 'Sign up',
+            'title' => 'Request access',
             'validation' => session()->getFlashdata('validation'),
-            'requiredFields' => ['Name', 'Email', 'Password'],
             'registerNotes' => [
-                'The user-facing MVP supports self-registration for contributors.',
-                'Passwords must remain hashed before persistence.',
-                'New accounts receive the User role for browsing, citation, download, upload, update, and archive flows.',
+                'CSPC users sign in with their verified my.cspc.edu.ph Google account.',
+                'Password credentials are issued by repository administrators for approved external collaborators.',
+                'Issued password accounts can be used for authenticated dataset access without a CSPC Google account.',
             ],
+            'accessContactEmail' => 'repository@cspc.edu.ph',
+            'googleAuthEnabled' => config(GoogleAuth::class)->isConfigured(),
         ]);
     }
 
@@ -120,7 +210,7 @@ class Auth extends BaseController
         $email = trim((string) $this->request->getPost('email'));
         $user = model(UserModel::class)->where('email', $email)->first();
 
-        if (is_array($user) && ($user['status'] ?? 'inactive') === 'active') {
+        if (is_array($user) && ($user['status'] ?? 'inactive') === 'active' && ! $this->isGoogleAccount($user)) {
             $token = bin2hex(random_bytes(32));
             $tokenHash = hash('sha256', $token);
 
@@ -137,7 +227,7 @@ class Auth extends BaseController
 
         return redirect()
             ->to('/forgot-password')
-            ->with('info', 'If that active account exists, a password reset link has been prepared.');
+            ->with('info', 'If that active password account exists, a reset link has been prepared.');
     }
 
     public function resetPassword(): string
@@ -195,6 +285,12 @@ class Auth extends BaseController
                 ->with('error', 'That password reset link is invalid or expired.');
         }
 
+        if ($this->isGoogleAccount($user)) {
+            return redirect()
+                ->to('/login')
+                ->with('error', 'This account uses Google sign-in and does not have a repository password to reset.');
+        }
+
         model(UserModel::class)->update((int) $user['id'], [
             'password_hash' => password_hash((string) $this->request->getPost('password'), PASSWORD_DEFAULT),
         ]);
@@ -210,64 +306,9 @@ class Auth extends BaseController
 
     public function attemptRegister()
     {
-        $rules = [
-            'name' => [
-                'label' => 'Full name',
-                'rules' => 'required|min_length[3]|max_length[150]',
-            ],
-            'email' => [
-                'label' => 'CSPC email',
-                'rules' => 'required|valid_email|regex_match[/^[^@\s]+@cspc\.edu\.ph$/i]|is_unique[users.email]',
-                'errors' => [
-                    'regex_match' => 'Use your official CSPC email address ending in @cspc.edu.ph.',
-                    'is_unique' => 'This email is already registered. Try logging in instead.',
-                ],
-            ],
-            'password' => [
-                'label' => 'Password',
-                'rules' => 'required|min_length[8]',
-            ],
-        ];
-
-        if (! $this->validate($rules)) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('validation', $this->validator->getErrors())
-                ->with('error', implode(' ', $this->validator->getErrors()));
-        }
-
-        $userModel = new UserModel();
-        $roleModel = new RoleModel();
-        $userRoleModel = new UserRoleModel();
-
-        $userId = (int) $userModel->insert([
-            'name' => trim((string) $this->request->getPost('name')),
-            'email' => trim((string) $this->request->getPost('email')),
-            'password_hash' => password_hash((string) $this->request->getPost('password'), PASSWORD_DEFAULT),
-            'status' => 'active',
-        ], true);
-
-        $role = $roleModel->where('name', 'user')->first();
-        if (! is_array($role)) {
-            $roleId = (int) $roleModel->insert([
-                'name' => 'user',
-                'description' => 'Authorized dataset user',
-            ], true);
-        } else {
-            $roleId = (int) $role['id'];
-        }
-
-        $userRoleModel->insert([
-            'user_id' => $userId,
-            'role_id' => $roleId,
-        ]);
-
-        $this->recordAudit('register', 'user', $userId, 'New user account created through registration.');
-
         return redirect()
-            ->to('/login')
-            ->with('info', 'Account created successfully. You can now log in.');
+            ->to('/register')
+            ->with('info', 'Password accounts are issued by repository administrators. Contact repository@cspc.edu.ph to request credentials.');
     }
 
     public function logout()
@@ -294,6 +335,253 @@ class Auth extends BaseController
         $roles = array_values(array_filter(array_map(static fn (array $row): string => (string) ($row['name'] ?? ''), $roleRows)));
 
         return $roles !== [] ? $roles : ['user'];
+    }
+
+    /**
+     * @param array<string, mixed> $user
+     * @param array<int, string> $roles
+     */
+    private function completeLogin(UserModel $userModel, array $user, array $roles, string $auditAction, string $auditDetails)
+    {
+        $userId = (int) $user['id'];
+        $now = date('Y-m-d H:i:s');
+        $isFirstLogin = empty($user['first_login_at']);
+
+        $this->session->set([
+            'user_id' => $userId,
+            'user_name' => $user['name'],
+            'user_email' => $user['email'],
+            'role' => $roles[0] ?? 'user',
+            'roles' => $roles,
+            'is_first_login' => $isFirstLogin,
+        ]);
+
+        $updates = ['last_login_at' => $now];
+        if ($isFirstLogin) {
+            $updates['first_login_at'] = $now;
+        }
+
+        $userModel->update($userId, $updates);
+        $this->recordAudit($auditAction, 'user', $userId, $auditDetails);
+
+        $message = $isFirstLogin
+            ? 'Welcome, ' . $user['name'] . '. Your repository account is ready.'
+            : 'Welcome back, ' . $user['name'] . '.';
+
+        return redirect()
+            ->to($this->postLoginDestination($roles))
+            ->with('info', $message);
+    }
+
+    private function googleRedirectUri(GoogleAuth $config): string
+    {
+        return $config->redirectUri !== '' ? $config->redirectUri : site_url('auth/google/callback');
+    }
+
+    /**
+     * @return bool|string
+     */
+    private function googleHttpVerifyOption(GoogleAuth $config)
+    {
+        return $config->caBundle !== '' ? $config->caBundle : true;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function exchangeGoogleCode(GoogleAuth $config, string $code): ?array
+    {
+        try {
+            $response = service('curlrequest')->post($config->tokenEndpoint, [
+                'form_params' => [
+                    'code' => $code,
+                    'client_id' => $config->clientId,
+                    'client_secret' => $config->clientSecret,
+                    'redirect_uri' => $this->googleRedirectUri($config),
+                    'grant_type' => 'authorization_code',
+                ],
+                'http_errors' => false,
+                'timeout' => 15,
+                'verify' => $this->googleHttpVerifyOption($config),
+            ]);
+        } catch (\Throwable $exception) {
+            log_message('error', 'Google token exchange failed: {message}', ['message' => $exception->getMessage()]);
+
+            return null;
+        }
+
+        if ($response->getStatusCode() !== 200) {
+            log_message('error', 'Google token exchange returned HTTP {status}: {body}', [
+                'status' => $response->getStatusCode(),
+                'body' => $response->getBody(),
+            ]);
+
+            return null;
+        }
+
+        $data = json_decode($response->getBody(), true);
+
+        return is_array($data) ? $data : null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function fetchGoogleProfile(GoogleAuth $config, string $accessToken): ?array
+    {
+        try {
+            $response = service('curlrequest')->get($config->userInfoEndpoint, [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                ],
+                'http_errors' => false,
+                'timeout' => 15,
+                'verify' => $this->googleHttpVerifyOption($config),
+            ]);
+        } catch (\Throwable $exception) {
+            log_message('error', 'Google profile request failed: {message}', ['message' => $exception->getMessage()]);
+
+            return null;
+        }
+
+        if ($response->getStatusCode() !== 200) {
+            log_message('error', 'Google profile request returned HTTP {status}: {body}', [
+                'status' => $response->getStatusCode(),
+                'body' => $response->getBody(),
+            ]);
+
+            return null;
+        }
+
+        $data = json_decode($response->getBody(), true);
+
+        return is_array($data) ? $data : null;
+    }
+
+    /**
+     * @param array<string, mixed> $profile
+     */
+    private function isAllowedGoogleProfile(array $profile, GoogleAuth $config): bool
+    {
+        $email = strtolower(trim((string) ($profile['email'] ?? '')));
+        $allowedDomain = strtolower($config->allowedDomain);
+        $emailVerified = $profile['email_verified'] ?? false;
+        $emailVerified = $emailVerified === true || $emailVerified === 1 || $emailVerified === '1' || $emailVerified === 'true';
+
+        return $emailVerified
+            && str_ends_with($email, '@' . $allowedDomain)
+            && trim((string) ($profile['sub'] ?? '')) !== '';
+    }
+
+    /**
+     * @param array<string, mixed> $profile
+     *
+     * @return array<string, mixed>|null
+     */
+    private function findOrCreateGoogleUser(array $profile): ?array
+    {
+        $userModel = new UserModel();
+        $roleModel = new RoleModel();
+        $userRoleModel = new UserRoleModel();
+        $now = date('Y-m-d H:i:s');
+        $googleSub = trim((string) $profile['sub']);
+        $email = strtolower(trim((string) $profile['email']));
+        $name = trim((string) ($profile['name'] ?? ''));
+
+        if ($name === '') {
+            $name = $email;
+        }
+
+        $user = $userModel->where('google_sub', $googleSub)->first();
+        if (is_array($user) && ! $this->isGoogleAccount($user)) {
+            $this->googleAccountFailure = 'This email is already registered as a password account. Sign in with your email and password instead.';
+
+            return null;
+        }
+
+        if (! is_array($user)) {
+            $emailUser = $userModel->where('email', $email)->first();
+            if (is_array($emailUser)) {
+                if (! $this->isGoogleAccount($emailUser)) {
+                    $this->googleAccountFailure = 'This email is already registered as a password account. Sign in with your email and password instead.';
+
+                    return null;
+                }
+
+                $user = $emailUser;
+            }
+        }
+
+        $updates = [
+            'name' => $name,
+            'email' => $email,
+            'google_sub' => $googleSub,
+            'auth_provider' => 'google',
+            'avatar_url' => trim((string) ($profile['picture'] ?? '')) ?: null,
+            'email_verified_at' => $now,
+        ];
+
+        if (is_array($user)) {
+            $userModel->update((int) $user['id'], $updates);
+            $this->ensureDefaultUserRole((int) $user['id'], $roleModel, $userRoleModel);
+
+            return $userModel->find((int) $user['id']);
+        }
+
+        $userId = (int) $userModel->insert($updates + [
+            'password_hash' => password_hash(bin2hex(random_bytes(32)), PASSWORD_DEFAULT),
+            'auth_provider' => 'google',
+            'status' => 'active',
+        ], true);
+
+        if ($userId <= 0) {
+            return null;
+        }
+
+        $this->ensureDefaultUserRole($userId, $roleModel, $userRoleModel);
+        $this->recordAudit('register_google', 'user', $userId, 'New user account created through Google sign-in.');
+
+        return $userModel->find($userId);
+    }
+
+    private function ensureDefaultUserRole(int $userId, ?RoleModel $roleModel = null, ?UserRoleModel $userRoleModel = null): void
+    {
+        $roleModel ??= new RoleModel();
+        $userRoleModel ??= new UserRoleModel();
+
+        $role = $roleModel->where('name', 'user')->first();
+        if (! is_array($role)) {
+            $roleId = (int) $roleModel->insert([
+                'name' => 'user',
+                'description' => 'Authorized dataset user',
+            ], true);
+        } else {
+            $roleId = (int) $role['id'];
+        }
+
+        if ($roleId <= 0) {
+            return;
+        }
+
+        $exists = $userRoleModel
+            ->where('user_id', $userId)
+            ->where('role_id', $roleId)
+            ->first();
+
+        if (! is_array($exists)) {
+            $userRoleModel->insert([
+                'user_id' => $userId,
+                'role_id' => $roleId,
+            ]);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $user
+     */
+    private function isGoogleAccount(array $user): bool
+    {
+        return strtolower(trim((string) ($user['auth_provider'] ?? 'local'))) === 'google';
     }
 
     /**

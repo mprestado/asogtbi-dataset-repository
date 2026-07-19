@@ -6,7 +6,7 @@
     <div class="shell">
         <p class="eyebrow">Account Recovery</p>
         <h1>Forgot Password</h1>
-        <p class="lead">Request a short-lived reset link for an active ASOG TBI Dataset Repository account.</p>
+        <p class="lead">Request a short-lived reset link for an active password account.</p>
     </div>
 </section>
 
@@ -21,13 +21,13 @@
         <form method="post" action="<?= site_url('forgot-password') ?>">
             <?= csrf_field() ?>
             <label for="email">Email</label>
-            <input id="email" type="email" name="email" value="<?= old('email') ?>" autocomplete="email" placeholder="name@cspc.edu.ph">
+            <input id="email" type="email" name="email" value="<?= old('email') ?>" autocomplete="email" placeholder="name@my.cspc.edu.ph">
 
             <div class="actions">
                 <button class="button" type="submit">Prepare Reset Link</button>
             </div>
         </form>
-        <p class="muted auth-link">Remembered it? <a href="<?= site_url('login') ?>">Sign in</a></p>
+        <p class="muted auth-link">Google accounts recover access through my.cspc.edu.ph. Remembered it? <a href="<?= site_url('login') ?>">Sign in</a></p>
     </section>
 
     <aside class="panel">

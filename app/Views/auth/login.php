@@ -20,18 +20,22 @@
             </div>
 
             <div class="auth-policy-copy">
-                <p class="eyebrow">Student Access Only</p>
-                <p>This repository requires a <strong>my.cspc.edu.ph</strong> student account. Don&apos;t have one? <a href="<?= site_url('register') ?>">Register here.</a></p>
+                <p class="eyebrow">Access Options</p>
+                <p>Use your <strong>my.cspc.edu.ph</strong> Google account, or use issued password credentials for approved external access. Need credentials? <a href="<?= site_url('register') ?>">Request access.</a></p>
             </div>
 
-            <div class="auth-brand-row" aria-label="Repository partners">
-                <img src="<?= base_url('assets/img/brand/asogtbi-logo.webp') ?>" alt="DOST Bicol ASOG Technology Business Incubator">
-                <img src="<?= base_url('assets/img/brand/ccs-logo.png') ?>" alt="College of Computer Studies">
-            </div>
         </aside>
 
         <section class="auth-panel" aria-labelledby="login-heading">
             <h2 class="sr-only" id="login-heading">SIGN IN</h2>
+
+            <div class="auth-path-heading">
+                <span class="material-symbols-rounded" aria-hidden="true">password</span>
+                <div>
+                    <p class="tag">Password account</p>
+                    <p class="muted">Use this for repository accounts created with an email and password.</p>
+                </div>
+            </div>
 
             <form class="auth-form" method="post" action="<?= site_url('login') ?>" novalidate>
                 <?= csrf_field() ?>
@@ -73,10 +77,25 @@
 
             <div class="auth-divider"><span>or</span></div>
 
-            <button class="auth-google-button" type="button" disabled aria-disabled="true">
-                <span class="auth-google-mark" aria-hidden="true">G</span>
-                CONTINUE WITH CSPC GOOGLE ACCOUNT
-            </button>
+            <div class="auth-path-heading auth-path-heading--google">
+                <span class="material-symbols-rounded" aria-hidden="true">verified_user</span>
+                <div>
+                    <p class="tag">Google account</p>
+                    <p class="muted">Use this for verified my.cspc.edu.ph Google sign-in.</p>
+                </div>
+            </div>
+
+            <?php if (! empty($googleAuthEnabled)): ?>
+                <a class="auth-google-button" href="<?= site_url('auth/google') ?>">
+                    <span class="auth-google-mark" aria-hidden="true"><img src="<?= base_url('assets/img/brand/google-g.svg') ?>" alt=""></span>
+                    CONTINUE WITH MY.CSPC GOOGLE ACCOUNT
+                </a>
+            <?php else: ?>
+                <button class="auth-google-button" type="button" disabled aria-disabled="true">
+                    <span class="auth-google-mark" aria-hidden="true"><img src="<?= base_url('assets/img/brand/google-g.svg') ?>" alt=""></span>
+                    CONTINUE WITH MY.CSPC GOOGLE ACCOUNT
+                </button>
+            <?php endif; ?>
 
             <div class="auth-footnotes">
                 <p><a href="<?= site_url('forgot-password') ?>">Forgot password?</a></p>
