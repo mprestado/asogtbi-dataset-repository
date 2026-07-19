@@ -264,29 +264,7 @@
         <?php endif; ?>
 
         <?php if (isset($pager) && $pager->getPageCount() > 1): ?>
-            <div class="catalog-pagination">
-                <ul class="pagination">
-                    <?php $prevUrl = $pager->getPreviousPageURI(); ?>
-                    <li class="page-item page-item--nav <?= $prevUrl ? '' : 'disabled' ?>">
-                        <?php if ($prevUrl): ?>
-                            <a class="page-link page-link--nav" href="<?= esc($prevUrl, 'attr') ?>" rel="prev">&laquo; Prev</a>
-                        <?php else: ?>
-                            <span class="page-link page-link--nav">&laquo; Prev</span>
-                        <?php endif; ?>
-                    </li>
-
-                    <?= $pager->links() ?>
-
-                    <?php $nextUrl = $pager->getNextPageURI(); ?>
-                    <li class="page-item page-item--nav <?= $nextUrl ? '' : 'disabled' ?>">
-                        <?php if ($nextUrl): ?>
-                            <a class="page-link page-link--nav" href="<?= esc($nextUrl, 'attr') ?>" rel="next">Next &raquo;</a>
-                        <?php else: ?>
-                            <span class="page-link page-link--nav">Next &raquo;</span>
-                        <?php endif; ?>
-                    </li>
-                </ul>
-            </div>
+            <?= $pager->links('default', 'catalog_full') ?>
         <?php endif; ?>
     </section>
 </section>

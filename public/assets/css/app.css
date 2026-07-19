@@ -4938,6 +4938,12 @@ pre {
     margin-bottom: 16px;
 }
 
+.ft-logo--combined {
+    height: 72px;
+    max-width: min(100%, 320px);
+    object-position: left center;
+}
+
 .ft-tagline,
 .ft-links a,
 .ft-contact-list li,
@@ -7057,19 +7063,21 @@ select:disabled {
 .catalog-pagination {
     display: flex;
     justify-content: center;
-    margin-top: 36px;
+    margin-top: 34px;
 }
 
-.catalog-pagination ul.pagination {
+.catalog-pagination__list {
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 7px;
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-.catalog-pagination ul.pagination > li:not(.page-item--nav) > a {
+.catalog-pagination .page-link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -7086,13 +7094,24 @@ select:disabled {
     transition: background .15s ease, border-color .15s ease, color .15s ease;
 }
 
-.catalog-pagination ul.pagination > li:not(.page-item--nav) > a:hover {
+.catalog-pagination .page-link:hover {
     border-color: var(--gold);
     background: var(--off);
 }
 
+.catalog-pagination .page-item--ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 36px;
+    color: rgba(3, 85, 140, .48);
+    font-size: 13px;
+    font-weight: 900;
+}
+
 /* Current page */
-.catalog-pagination ul.pagination > li.active > a {
+.catalog-pagination .page-item.active .page-link {
     background: var(--navy);
     border-color: var(--navy);
     color: var(--white);
@@ -7101,24 +7120,29 @@ select:disabled {
 
 /* Prev / Next */
 .catalog-pagination .page-link--nav {
-    min-width: 0;
-    height: auto;
-    padding: 0 4px;
-    border: 0;
-    background: transparent;
+    min-width: 88px;
+    gap: 3px;
+    border-color: rgba(248, 175, 33, .55);
+    background: rgba(248, 175, 33, .12);
     color: var(--navy);
-    font-weight: 700;
-    text-decoration: underline;
+    font-weight: 800;
 }
 
-.catalog-pagination .page-link--nav:hover {
-    background: transparent;
-    border-color: transparent;
+.catalog-pagination .page-link--nav .material-symbols-rounded {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.catalog-pagination a.page-link--nav:hover {
+    background: var(--gold);
+    border-color: var(--gold);
     color: var(--gold-dark);
 }
 
 .catalog-pagination .page-item--nav.disabled .page-link--nav {
     color: rgba(3, 85, 140, .35);
-    text-decoration: none;
-    background: transparent;
+    border-color: rgba(3, 85, 140, .1);
+    background: rgba(255, 255, 255, .55);
+    cursor: not-allowed;
+    pointer-events: none;
 }

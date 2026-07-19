@@ -162,8 +162,8 @@
     <div class="wide-shell">
         <div class="ft-grid">
             <section>
-                <img class="ft-logo" src="<?= base_url('assets/img/ASOG-TBI-stacked-v2.png') ?>" alt="ASOG TBI logo">
-                <p class="ft-tagline">A public and user-facing dataset repository for CSPC and ASOG TBI research, thesis, capstone, analytics, AI/ML, and startup development work.</p>
+                <img class="ft-logo ft-logo--combined" src="<?= base_url('assets/img/asog-x-ccs.png') ?>" alt="ASOG TBI and CSPC College of Computer Studies logo">
+                <p class="ft-tagline">A centralized repository supporting CSPC and ASOG TBI research, innovation, analytics, and knowledge sharing.</p>
             </section>
 
             <section>
@@ -191,7 +191,7 @@
                 <ul class="ft-contact-list">
                     <li>Camarines Sur Polytechnic Colleges, Nabua, Camarines Sur</li>
                     <li><a href="mailto:repository@cspc.edu.ph">repository@cspc.edu.ph</a></li>
-                    <li>ASOG Technology Business Incubator</li>
+                    <li><a href="https://asogtbi.com/" target="_blank" rel="noopener noreferrer">ASOG Technology Business Incubator</a></li>
                 </ul>
             </section>
         </div>
