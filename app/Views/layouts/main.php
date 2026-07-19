@@ -225,6 +225,7 @@
         window.setTimeout(close, toast.classList.contains('flash-toast--error') ? 9000 : 5600);
     });
 </script>
+<?= view('components/select_enhancer_script') ?>
 <?php if ($isAuthenticated): ?><?= view('components/notification_script') ?><?php endif; ?>
 </body>
 </html>

@@ -29,7 +29,10 @@
                             <a class="search-clear-btn" href="<?= esc($searchClearUrl, 'attr') ?>" aria-label="Clear search">&times;</a>
                         <?php endif; ?>
                     </div>
-                    <button class="search-submit-btn" type="submit">Search</button>
+                    <button class="button gold search-submit-btn" type="submit">
+                        <span class="material-symbols-rounded" aria-hidden="true">search</span>
+                        <span>Search</span>
+                    </button>
                 </div>
             <input type="hidden" name="data_type" value="<?= esc($selectedDataType ?? '') ?>">
             <input type="hidden" name="category" value="<?= esc($selectedCategory ?? '') ?>">

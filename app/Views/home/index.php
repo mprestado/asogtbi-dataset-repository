@@ -18,11 +18,11 @@
     </div>
 </section>
 
-<section class="content-section white">
-    <div class="shell">
-        <div class="section-intro">
-            <h2 class="section-heading">Repository Features</h2>
-            <p>A focused user-facing repository for finding useful datasets and managing contributor submissions without mixing in Admin Portal review screens.</p>
+<section class="content-section navy feature-showcase-section">
+    <div class="shell feature-showcase">
+        <div class="feature-copy">
+            <h2 class="section-heading"><span>Repository</span><span>Features</span></h2>
+            <p>A centralized platform built to streamline data organization and accelerate your academic research workflow.</p>
         </div>
 
         <div class="feature-grid">
@@ -32,24 +32,24 @@
                 <p>Browse public Published datasets with searchable metadata, categories, data types, file formats, and upload dates.</p>
             </article>
             <article class="feature-card">
-                <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">search</span></span>
-                <h3>Fast Search and Filtering</h3>
-                <p>Find datasets by title, description, tags, category, data type, file format, and date uploaded.</p>
-            </article>
-            <article class="feature-card">
-                <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">format_quote</span></span>
-                <h3>Citation and BibTeX</h3>
-                <p>Generate plain-text citations and BibTeX entries for repository datasets with contributor and year details.</p>
-            </article>
-            <article class="feature-card">
                 <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">upload_file</span></span>
                 <h3>Contributor Uploads</h3>
                 <p>Submit ZIP datasets with research, source, access, category, tags, and anonymization metadata.</p>
             </article>
             <article class="feature-card">
+                <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">search</span></span>
+                <h3>Fast Search and Filtering</h3>
+                <p>Find datasets by title, description, tags, category, data type, file format, and date uploaded.</p>
+            </article>
+            <article class="feature-card">
                 <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">folder_special</span></span>
                 <h3>My Datasets</h3>
                 <p>Track your own Pending Review, Revision Requested, Published, Rejected, or Archived dataset records.</p>
+            </article>
+            <article class="feature-card">
+                <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">format_quote</span></span>
+                <h3>Citation and BibTeX</h3>
+                <p>Generate plain-text citations and BibTeX entries for repository datasets with contributor and year details.</p>
             </article>
             <article class="feature-card">
                 <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">insights</span></span>
@@ -60,21 +60,25 @@
     </div>
 </section>
 
-<section class="content-section navy">
+<section class="content-section navy stats-section">
     <div class="shell stats-grid">
-        <div>
+        <div class="stat-card">
+            <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">database</span></span>
             <span class="stat-number"><?= esc((string) ($publishedCount ?? 0)) ?></span>
             <span class="stat-label">Published datasets</span>
         </div>
-        <div>
+        <div class="stat-card">
+            <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">category</span></span>
             <span class="stat-number">5</span>
             <span class="stat-label">Canonical data types</span>
         </div>
-        <div>
+        <div class="stat-card">
+            <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span></span>
             <span class="stat-number">4</span>
             <span class="stat-label">Access classifications</span>
         </div>
-        <div>
+        <div class="stat-card">
+            <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">folder_zip</span></span>
             <span class="stat-number">ZIP</span>
             <span class="stat-label">Protected dataset uploads</span>
         </div>
@@ -82,7 +86,7 @@
 </section>
 
 <section class="content-section">
-    <div class="shell split-grid">
+    <div class="shell home-recent-shell">
         <article class="panel">
             <p class="tag">Recent Public Datasets</p>
             <?php if (empty($featuredDatasets)): ?>
@@ -105,12 +109,6 @@
                 <a class="button" href="<?= site_url('datasets') ?>">Open Catalog</a>
             </div>
         </article>
-
-        <article class="panel">
-            <p class="tag">Lifecycle Boundary</p>
-            <h2>Public site, not Admin Portal</h2>
-            <p class="muted">Submissions move through assigned Research Ethics and Technical verification before a repository administrator can publish them. Every moderation decision is retained in the audit trail.</p>
-        </article>
     </div>
 </section>
 
@@ -121,10 +119,21 @@
             <p>Supporting research, innovation, and technology business incubation in the CSPC and ASOG TBI ecosystem.</p>
         </div>
         <div class="partner-row">
-            <div class="partner-logo" loading="lazy"><img src="<?= base_url('assets/img/dost-region5.png') ?>" alt="DOST Region 5"></div>
-            <div class="partner-logo" loading="lazy"><img src="<?= base_url('assets/img/pcieerd.png') ?>" alt="DOST PCIEERD"></div>
-            <div class="partner-logo" loading="lazy"><img src="<?= base_url('assets/img/cspc.png') ?>" alt="CSPC"></div>
-            <div class="partner-logo" loading="lazy"><img src="<?= base_url('assets/img/ASOG-TBI-stacked-v2.png') ?>" alt="ASOG TBI"></div>
+            <a class="partner-logo" href="https://region5.dost.gov.ph/" target="_blank" rel="noopener noreferrer" aria-label="Visit DOST Region 5">
+                <img src="<?= base_url('assets/img/dost-region5.png') ?>" alt="DOST Region 5" loading="lazy">
+            </a>
+            <a class="partner-logo" href="https://www.sei.dost.gov.ph/" target="_blank" rel="noopener noreferrer" aria-label="Visit DOST SEI">
+                <img src="<?= base_url('assets/img/pcieerd.png') ?>" alt="DOST SEI" loading="lazy">
+            </a>
+            <a class="partner-logo" href="https://cspc.edu.ph/" target="_blank" rel="noopener noreferrer" aria-label="Visit CSPC">
+                <img src="<?= base_url('assets/img/cspc.png') ?>" alt="CSPC" loading="lazy">
+            </a>
+            <a class="partner-logo" href="https://asogtbi.com/" target="_blank" rel="noopener noreferrer" aria-label="Visit ASOG TBI">
+                <img src="<?= base_url('assets/img/ASOG-TBI-stacked-v2.png') ?>" alt="ASOG TBI" loading="lazy">
+            </a>
+            <a class="partner-logo partner-logo--ccs" href="https://ccs.cspc.edu.ph/" target="_blank" rel="noopener noreferrer" aria-label="Visit CSPC College of Computer Studies">
+                <img src="<?= base_url('assets/img/ccs-landscape-w-text.png') ?>" alt="CSPC College of Computer Studies" loading="lazy">
+            </a>
         </div>
     </div>
 </section>

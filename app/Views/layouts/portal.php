@@ -126,6 +126,7 @@
 
 })();
 </script>
+<?= view('components/select_enhancer_script') ?>
 <?= view('components/notification_script') ?>
 </body>
 </html>
