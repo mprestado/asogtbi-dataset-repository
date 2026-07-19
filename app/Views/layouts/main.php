@@ -36,7 +36,7 @@
 <header class="site-header" id="site-header">
     <div class="wide-shell header-inner">
         <a class="brand" href="<?= site_url('/') ?>" aria-label="ASOG TBI Dataset Repository home">
-            <img class="brand-logo" src="<?= base_url('assets/img/cspc.png') ?>" alt="CSPC logo">
+            <img class="brand-logo" src="<?= base_url('assets/img/asog-data-repo-logo.png') ?>" alt="ASOG TBI Dataset Repository logo">
             <span class="brand-text">
                 <strong>ASOG TBI Dataset Repository</strong>
                 <small>CSPC research and innovation data</small>
