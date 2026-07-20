@@ -5247,7 +5247,7 @@ pre {
 .error-code {
     margin: 0 0 10px;
     color: var(--gold-dark);
-    font-size: 11px;
+    font-size: 25px;
     font-weight: 900;
     letter-spacing: .24em;
     text-transform: uppercase;
