@@ -21,8 +21,9 @@ class Home extends BaseController
 
         return view('home/index', [
             'title' => 'ASOG TBI Dataset Repository',
-            'publishedCount' => model(DatasetModel::class)
+            'publishedCount' => $datasetModel
                 ->where('status', DatasetModel::STATUS_PUBLISHED)
+                ->where('access_type', DatasetModel::ACCESS_PUBLIC)
                 ->where('archived_at', null)
                 ->countAllResults(),
             'featuredDatasets' => $featuredDatasets,

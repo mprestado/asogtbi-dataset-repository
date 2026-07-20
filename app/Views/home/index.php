@@ -18,44 +18,101 @@
     </div>
 </section>
 
-<section class="content-section navy feature-showcase-section">
-    <div class="shell feature-showcase">
-        <div class="feature-copy">
-            <h2 class="section-heading"><span>Repository</span><span>Features</span></h2>
-            <p>A centralized platform built to streamline data organization and accelerate your academic research workflow.</p>
+<section class="content-section white">
+    <div class="shell">
+        
+        <!-- 1. THE FLOATING CARD (Overlaps the Hero) -->
+        <div class="floating-feature-card">
+            <div class="floating-feature-grid">
+                <div class="floating-feature-item">
+                    <span class="floating-feature-icon"><span class="material-symbols-rounded" aria-hidden="true">school</span></span>
+                    <h3>Academic Origins</h3>
+                    <p>Sourced from completed research, theses, and capstone projects.</p>
+                </div>
+                <div class="floating-feature-item">
+                    <span class="floating-feature-icon"><span class="material-symbols-rounded" aria-hidden="true">fact_check</span></span>
+                    <h3>Fully Documented</h3>
+                    <p>Backed by complete metadata and expert validation certificates.</p>
+                </div>
+                <div class="floating-feature-item">
+                    <span class="floating-feature-icon"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span></span>
+                    <h3>Ethically Reviewed</h3>
+                    <p>Cleared by the Research Ethics Board and ASOG TBI before upload.</p>
+                </div>
+            </div>
         </div>
 
-        <div class="feature-grid">
-            <article class="feature-card">
-                <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">database</span></span>
-                <h3>Published Dataset Catalog</h3>
-                <p>Browse public Published datasets with searchable metadata, categories, data types, disclosed contents, and upload dates.</p>
-            </article>
-            <article class="feature-card">
-                <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">upload_file</span></span>
-                <h3>Contributor Uploads</h3>
-                <p>Submit ZIP datasets with research, source, access, category, tags, and anonymization metadata.</p>
-            </article>
-            <article class="feature-card">
-                <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">search</span></span>
-                <h3>Fast Search and Filtering</h3>
-                <p>Find datasets by title, description, tags, category, data type, disclosed content formats, and date uploaded.</p>
-            </article>
-            <article class="feature-card">
-                <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">folder_special</span></span>
-                <h3>My Datasets</h3>
-                <p>Track your own Pending Review, Revision Requested, Published, Rejected, or Archived dataset records.</p>
-            </article>
-            <article class="feature-card">
-                <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">format_quote</span></span>
-                <h3>Citation and BibTeX</h3>
-                <p>Generate plain-text citations and BibTeX entries for repository datasets with contributor and year details.</p>
-            </article>
-            <article class="feature-card">
-                <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">insights</span></span>
-                <h3>Recommendations</h3>
-                <p>See similar Published datasets using simple metadata similarity across category, tags, data type, disclosed formats, and description.</p>
-            </article>
+        <!-- 2. THE NEW MAIN HEADER -->
+        <div class="second-page-header">
+            <h2>A foundation of research integrity</h2>
+            <p>Every dataset in our repository undergoes a strict multi-stage review process to ensure privacy, quality, and academic validity.</p>
+        </div>
+
+        <!-- 3. HARMONIZED DASHBOARD (Stats & Features) -->
+        <div class="repo-overview-grid">
+            
+            <!-- Left Side: Stats -->
+            <div class="repo-overview-copy">
+                <h3 class="dashboard-subtitle">Platform Snapshot</h3>
+                <div class="repo-stat-stack">
+                    <div class="repo-stat-row">
+                        <span class="repo-stat-number"><?= esc((string) ($publishedCount ?? 0)) ?></span>
+                        <span class="repo-stat-label">Published datasets</span>
+                    </div>
+                    <div class="repo-stat-row">
+                        <span class="repo-stat-number">5</span>
+                        <span class="repo-stat-label">Canonical data types</span>
+                    </div>
+                    <div class="repo-stat-row">
+                        <span class="repo-stat-number">ZIP</span>
+                        <span class="repo-stat-label">Protected dataset uploads</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Carousel -->
+            <div class="repo-carousel-wrap">
+                <div class="repo-carousel-head">
+                    <h3 class="dashboard-subtitle">Core Features</h3>
+                    <div class="repo-carousel-nav">
+                        <button type="button" class="repo-carousel-btn" data-carousel-prev aria-label="Previous feature">‹</button>
+                        <button type="button" class="repo-carousel-btn" data-carousel-next aria-label="Next feature">›</button>
+                    </div>
+                </div>
+                <div class="repo-carousel-track" id="repo-carousel-track">
+                    <article class="repo-carousel-card">
+                        <span class="repo-card-index">01</span>
+                        <h3>Published Dataset Catalog</h3>
+                        <p>Browse public Published datasets with searchable metadata, categories, data types, file formats, and upload dates.</p>
+                    </article>
+                    <article class="repo-carousel-card">
+                        <span class="repo-card-index">02</span>
+                        <h3>Contributor Uploads</h3>
+                        <p>Submit ZIP datasets with research, source, access, category, tags, and anonymization metadata.</p>
+                    </article>
+                    <article class="repo-carousel-card">
+                        <span class="repo-card-index">03</span>
+                        <h3>Fast Search and Filtering</h3>
+                        <p>Find datasets by title, description, tags, category, data type, file format, and date uploaded.</p>
+                    </article>
+                    <article class="repo-carousel-card">
+                        <span class="repo-card-index">04</span>
+                        <h3>My Datasets</h3>
+                        <p>Track your own Pending Review, Revision Requested, Published, Rejected, or Archived dataset records.</p>
+                    </article>
+                    <article class="repo-carousel-card">
+                        <span class="repo-card-index">05</span>
+                        <h3>Citation and BibTeX</h3>
+                        <p>Generate plain-text citations and BibTeX entries automatically for repository datasets.</p>
+                    </article>
+                    <article class="repo-carousel-card">
+                        <span class="repo-card-index">06</span>
+                        <h3>Recommendations</h3>
+                        <p>See similar Published datasets using simple metadata similarity across category, tags, data type, disclosed formats, and description.</p>
+                    </article>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
@@ -149,4 +206,26 @@
         </div>
     </div>
 </section>
+
+<!-- Carousel Navigation Script -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const track = document.getElementById('repo-carousel-track');
+    const prevBtn = document.querySelector('[data-carousel-prev]');
+    const nextBtn = document.querySelector('[data-carousel-next]');
+
+    if (!track || !prevBtn || !nextBtn) return;
+
+    const scrollAmount = 300; 
+
+    prevBtn.addEventListener('click', () => {
+        track.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    });
+
+    nextBtn.addEventListener('click', () => {
+        track.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    });
+});
+</script>
+
 <?= $this->endSection() ?>

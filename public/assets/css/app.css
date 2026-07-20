@@ -843,6 +843,7 @@ img {
 }
 
 .landing-hero .collab {
+    margin-top: 100px;
     margin-bottom: 10px;
     color: white;
     font-size: 12px;
@@ -868,14 +869,12 @@ img {
 
 .landing-hero {
     position: relative;
-    min-height: max(660px, 100vh);
-    min-height: max(660px, 100svh);
+    min-height: 70vh;
     display: grid;
     align-items: center;
-    padding: clamp(70px, 8vh, 104px) 0 clamp(108px, 15vh, 152px);
+    padding: clamp(48px, 6vh, 80px) 0 clamp(64px, 8vh, 96px);
     overflow: hidden;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-
 }
 
 .landing-hero::after {
@@ -1033,6 +1032,213 @@ img {
     font-size: clamp(28px, 4vw, 42px);
 }
 
+/* --- THE FLOATING NAVY CARD --- */
+.floating-feature-card {
+    position: relative;
+    z-index: 5;
+    width: min(900px, 100%);
+    margin: -106px auto 0; /* Overlaps hero */
+    border-radius: 24px;
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-dark) 100%);
+    padding: clamp(28px, 4vw, 44px) clamp(24px, 4vw, 40px);
+    color: var(--white);
+}
+
+.floating-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.floating-feature-item {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 8px;
+}
+
+.floating-feature-icon {
+    width: 60px;
+    height: 60px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .16);
+    color: var(--white);
+}
+
+.floating-feature-icon .material-symbols-rounded {
+    font-size: 24px;
+}
+
+.floating-feature-item h3 {
+    margin: 4px 0 0;
+    font-family: "DM Sans", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.floating-feature-item p {
+    margin: 0;
+    color: rgba(255, 255, 255, .60);
+    font-size: 12px;
+}
+
+.domains-caption {
+    max-width: 640px;
+    margin: 20px auto 0;
+    color: var(--muted);
+    font-size: 15px;
+    text-align: center;   /* Centers the text inside */
+}
+
+
+
+
+/* --- THE NEW MAIN HEADER --- */
+.second-page-header {
+    text-align: center;
+    margin: clamp(56px, 6vw, 80px) auto;
+    max-width: 720px;
+}
+
+.second-page-header h2 {
+    margin: -26px 0 16px;
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: clamp(28px, 4vw, 40px);
+    color: var(--navy);
+    line-height: 1.1;
+}
+
+.second-page-header p {
+    margin: 0;
+    color: #475569;
+    font-size: clamp(15px, 2vw, 18px);
+    line-height: 1.6;
+}
+
+/* --- THE HARMONIZED DASHBOARD --- */
+.repo-overview-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, .8fr) minmax(0, 1.6fr);
+    gap: clamp(32px, 5vw, 64px);
+    align-items: stretch;
+}
+
+.dashboard-subtitle {
+    margin: 8px 0 20px;
+    color: var(--gold);
+    font-family: "DM Sans", sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    font-size: 12px;
+    text-transform: uppercase;
+}
+
+/* Stats */
+.repo-stat-stack { display: grid; }
+.repo-stat-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 0;
+    border-top: 1px solid rgba(9, 30, 66, 0.1);
+}
+.repo-stat-number {
+    color: var(--gold);
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: clamp(24px, 2.6vw, 32px);
+    line-height: 1;
+}
+.repo-stat-label {
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: right;
+}
+
+/* Carousel */
+.repo-carousel-wrap { min-width: 0; }
+.repo-carousel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.repo-carousel-head .dashboard-subtitle { margin: 0; }
+
+.repo-carousel-nav {
+    display: flex;
+    gap: 6px;
+}
+.repo-carousel-btn {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(9, 30, 66, 0.15);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--navy);
+    cursor: pointer;
+    font-size: 18px;
+    transition: all .15s ease;
+}
+.repo-carousel-btn:hover {
+    background: rgba(248, 175, 33, .1);
+    border-color: rgba(248, 175, 33, .6);
+}
+
+.repo-carousel-track {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 12px;
+    scrollbar-width: none;
+}
+.repo-carousel-track::-webkit-scrollbar { display: none; }
+
+.repo-carousel-card {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    width: min(280px, 78vw);
+    border: 1px solid rgba(9, 30, 66, 0.05);
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px -8px rgba(9, 30, 66, 0.08);
+    padding: 24px;
+}
+.repo-card-index {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--gold);
+    font-family: "DM Serif Display", Georgia, serif;
+    font-size: 22px;
+}
+.repo-carousel-card h3 {
+    margin: 0 0 8px;
+    color: var(--navy);
+    font-family: "DM Sans", sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+.repo-carousel-card p {
+    margin: 0;
+    color: #475569;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 900px) {
+    .floating-feature-grid { grid-template-columns: 1fr; }
+    .repo-overview-grid { grid-template-columns: 1fr; gap: 48px; }
+}
 
 .tag {
     margin: 0 0 0px;
@@ -5708,13 +5914,12 @@ pre {
     }
 
     .landing-hero {
-        min-height: calc(100vh - var(--header-h));
-        min-height: calc(100svh - var(--header-h));
-        padding: 54px 0 82px;
+    min-height: auto;
+    padding: 56px 0 96px;
     }
 
     .hero-content {
-        transform: translateY(-26px);
+        transform: none;
     }
 
     .hero-search {
