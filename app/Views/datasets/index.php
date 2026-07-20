@@ -170,7 +170,7 @@
                             $previewContributor .= ' - ' . (string) $dataset['author_email'];
                         }
                     ?>
-                    <article class="compact-result-row">
+                    <article class="compact-result-row" tabindex="0" role="link" data-href="<?= site_url('datasets/' . $dataset['id']) ?>" aria-label="Open <?= esc($dataset['title'], 'attr') ?>">
                         <a class="dataset-row-cover" href="<?= site_url('datasets/' . $dataset['id']) ?>" aria-label="Open <?= esc($dataset['title'], 'attr') ?>">
                             <img src="<?= esc(dataset_cover_url($dataset), 'attr') ?>" alt="" loading="lazy">
                         </a>
@@ -178,7 +178,7 @@
                             <div class="row-badge-line">
                                 <span class="row-pill tech-type"><?= esc($dataset['data_type'] ?: 'Dataset') ?></span>
                                 <span class="row-pill tech-outline"><?= esc($dataset['category'] ?: 'Uncategorized') ?></span>
-                                <span class="row-pill tech-format"><?= esc($dataset['content_formats'] ?: 'Contents not disclosed') ?></span>
+                                <span class="row-pill tech-format"><?= esc(($dataset['content_formats'] ?? '') ?: 'Contents not disclosed') ?></span>
                                 <span class="row-pill tech-outline"><?= esc($dataset['file_format'] ?: 'ZIP') ?> package</span>
                             </div>
                             <h3 class="row-title">
@@ -210,7 +210,7 @@
                                 <div class="row-badge-line preview-pill-line" aria-label="Dataset labels">
                                     <span class="row-pill tech-type"><?= esc($dataset['data_type'] ?: 'Dataset') ?></span>
                                     <span class="row-pill tech-outline"><?= esc($dataset['category'] ?: 'Uncategorized') ?></span>
-                                    <span class="row-pill tech-format"><?= esc($dataset['content_formats'] ?: 'Contents not disclosed') ?></span>
+                                    <span class="row-pill tech-format"><?= esc(($dataset['content_formats'] ?? '') ?: 'Contents not disclosed') ?></span>
                                     <span class="row-pill tech-outline"><?= esc($dataset['file_format'] ?: 'ZIP') ?> package</span>
                                 </div>
                             </div>
@@ -267,6 +267,29 @@
                 document.body.classList.add('preview-open');
                 trigger.setAttribute('aria-expanded', 'true');
                 (modal.querySelector('[data-preview-initial]') || modal.querySelector('[data-preview-primary]') || modal.querySelector('.preview-card'))?.focus();
+            }
+        });
+    });
+
+    document.querySelectorAll('.compact-result-row[data-href]').forEach((row) => {
+        const navigate = () => {
+            if (row.dataset.href) {
+                window.location.href = row.dataset.href;
+            }
+        };
+
+        row.addEventListener('click', (event) => {
+            if (event.target.closest('a, button, input, select, textarea, [role="button"]')) {
+                return;
+            }
+            navigate();
+        });
+
+        row.addEventListener('keydown', (event) => {
+            if (event.target !== row) return;
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                navigate();
             }
         });
     });
