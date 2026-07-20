@@ -26,6 +26,7 @@
             'category' => trim((string) ($recommended['category'] ?? 'Uncategorized')) ?: 'Uncategorized',
             'data_type' => trim((string) ($recommended['data_type'] ?? 'Dataset')) ?: 'Dataset',
             'file_format' => trim((string) ($recommended['file_format'] ?? 'ZIP')) ?: 'ZIP',
+            'content_formats' => trim((string) ($recommended['content_formats'] ?? '')) ?: 'Contents not disclosed',
             'author_name' => trim((string) ($recommended['author_name'] ?? 'Unknown contributor')) ?: 'Unknown contributor',
             'research_title' => trim((string) ($recommended['research_title'] ?? '')) ?: 'Not set',
             'members' => trim((string) ($recommended['members'] ?? '')) ?: 'Not listed',
@@ -119,6 +120,14 @@
                     <div>
                         <dt>Data Type</dt>
                         <dd><?= esc($dataset['data_type'] ?: 'Dataset') ?></dd>
+                    </div>
+                    <div>
+                        <dt>Formats Inside ZIP</dt>
+                        <dd><?= esc($dataset['content_formats'] ?: 'Not disclosed') ?></dd>
+                    </div>
+                    <div>
+                        <dt>Package</dt>
+                        <dd><?= esc($dataset['file_format'] ?: 'ZIP') ?></dd>
                     </div>
                     <div>
                         <dt>Access</dt>
@@ -220,7 +229,8 @@
                                         <div class="row-badge-line preview-pill-line" aria-label="Dataset labels">
                                             <span class="row-pill tech-type"><?= esc($recommended['data_type']) ?></span>
                                             <span class="row-pill tech-outline"><?= esc($recommended['category']) ?></span>
-                                            <span class="row-pill tech-format"><?= esc($recommended['file_format']) ?></span>
+                                            <span class="row-pill tech-format"><?= esc($recommended['content_formats']) ?></span>
+                                            <span class="row-pill tech-outline"><?= esc($recommended['file_format']) ?> package</span>
                                         </div>
                                     </div>
 

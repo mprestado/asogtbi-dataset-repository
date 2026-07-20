@@ -21,7 +21,6 @@
                                 $searchClearParams = array_filter([
                                     'data_type'     => $selectedDataType ?? '',
                                     'category'      => $selectedCategory ?? '',
-                                    'file_format'   => $selectedFileFormat ?? '',
                                     'date_uploaded' => $selectedDateUploaded ?? '',
                                 ], static fn($v) => $v !== '');
                                 $searchClearUrl = site_url('datasets') . (! empty($searchClearParams) ? '?' . http_build_query($searchClearParams) : '');
@@ -36,7 +35,6 @@
                 </div>
             <input type="hidden" name="data_type" value="<?= esc($selectedDataType ?? '') ?>">
             <input type="hidden" name="category" value="<?= esc($selectedCategory ?? '') ?>">
-            <input type="hidden" name="file_format" value="<?= esc($selectedFileFormat ?? '') ?>">
             <input type="hidden" name="date_uploaded" value="<?= esc($selectedDateUploaded ?? '') ?>">
         </form>
     </div>
@@ -78,18 +76,6 @@
             </div>
 
             <div class="filter-group">
-                <label for="file_format">File Format</label>
-                <select id="file_format" name="file_format">
-                    <option value="">All formats</option>
-                    <?php foreach (($formats ?? []) as $format): ?>
-                        <option value="<?= esc($format) ?>" <?= ($selectedFileFormat ?? '') === $format ? 'selected' : '' ?>>
-                            <?= esc($format) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="filter-group">
                 <label for="date_uploaded">Date Uploaded</label>
                 <select id="date_uploaded" name="date_uploaded">
                     <option value="">Any time</option>
@@ -109,7 +95,7 @@
 
     <section class="results-engine">
         <?php 
-            $hasActiveFilters = !empty($selectedDataType) || !empty($selectedCategory) || !empty($selectedFileFormat) || !empty($selectedDateUploaded);
+            $hasActiveFilters = !empty($selectedDataType) || !empty($selectedCategory) || !empty($selectedDateUploaded);
         ?>
         
         <div class="panel-head catalog-results-header">
@@ -130,7 +116,6 @@
                 $activeFilterValues = [
                     'data_type'     => $selectedDataType ?? '',
                     'category'      => $selectedCategory ?? '',
-                    'file_format'   => $selectedFileFormat ?? '',
                     'date_uploaded' => $selectedDateUploaded ?? '',
                 ];
                 $activeFilterValues = array_filter($activeFilterValues, static fn($v) => $v !== '');
@@ -147,7 +132,6 @@
                 $chipLabels = [
                     'data_type'     => 'Type',
                     'category'      => 'Category',
-                    'file_format'   => 'Format',
                     'date_uploaded' => 'Uploaded',
                 ];
             ?>
@@ -194,7 +178,8 @@
                             <div class="row-badge-line">
                                 <span class="row-pill tech-type"><?= esc($dataset['data_type'] ?: 'Dataset') ?></span>
                                 <span class="row-pill tech-outline"><?= esc($dataset['category'] ?: 'Uncategorized') ?></span>
-                                <span class="row-pill tech-format"><?= esc($dataset['file_format'] ?: 'ZIP') ?></span>
+                                <span class="row-pill tech-format"><?= esc($dataset['content_formats'] ?: 'Contents not disclosed') ?></span>
+                                <span class="row-pill tech-outline"><?= esc($dataset['file_format'] ?: 'ZIP') ?> package</span>
                             </div>
                             <h3 class="row-title">
                                 <a href="<?= site_url('datasets/' . $dataset['id']) ?>"><?= esc($dataset['title']) ?></a>
@@ -225,7 +210,8 @@
                                 <div class="row-badge-line preview-pill-line" aria-label="Dataset labels">
                                     <span class="row-pill tech-type"><?= esc($dataset['data_type'] ?: 'Dataset') ?></span>
                                     <span class="row-pill tech-outline"><?= esc($dataset['category'] ?: 'Uncategorized') ?></span>
-                                    <span class="row-pill tech-format"><?= esc($dataset['file_format'] ?: 'ZIP') ?></span>
+                                    <span class="row-pill tech-format"><?= esc($dataset['content_formats'] ?: 'Contents not disclosed') ?></span>
+                                    <span class="row-pill tech-outline"><?= esc($dataset['file_format'] ?: 'ZIP') ?> package</span>
                                 </div>
                             </div>
 

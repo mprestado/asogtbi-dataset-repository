@@ -17,7 +17,6 @@ class Datasets extends BaseController
         $search = trim((string) ($this->request->getGet('q') ?? ''));
         $dataType = trim((string) ($this->request->getGet('data_type') ?? ''));
         $category = trim((string) ($this->request->getGet('category') ?? ''));
-        $fileFormat = trim((string) ($this->request->getGet('file_format') ?? ''));
         $dateUploaded = trim((string) ($this->request->getGet('date_uploaded') ?? ''));
 
         $query = $datasetModel
@@ -33,6 +32,7 @@ class Datasets extends BaseController
                 ->orLike('datasets.description', $search)
                 ->orLike('datasets.tags', $search)
                 ->orLike('datasets.category', $search)
+                ->orLike('datasets.content_formats', $search)
                 ->groupEnd();
         }
 
@@ -42,10 +42,6 @@ class Datasets extends BaseController
 
         if ($category !== '') {
             $query->where('datasets.category', $category);
-        }
-
-        if ($fileFormat !== '') {
-            $query->where('datasets.file_format', $fileFormat);
         }
 
         $dateCutoff = $this->dateFilterCutoff($dateUploaded);
@@ -76,17 +72,6 @@ class Datasets extends BaseController
             ->orderBy('category', 'ASC')
             ->findColumn('category');
 
-        $formatQuery = model(DatasetModel::class)
-            ->select('file_format')
-            ->where('status', DatasetModel::STATUS_PUBLISHED)
-            ->where('archived_at', null)
-            ->where('file_format !=', '');
-        $this->applyPublishedAccessScope($formatQuery);
-        $formats = $formatQuery
-            ->groupBy('file_format')
-            ->orderBy('file_format', 'ASC')
-            ->findColumn('file_format');
-
         return view('datasets/index', [
             'title' => 'Dataset Catalog',
             'datasets' => $datasets,
@@ -99,10 +84,8 @@ class Datasets extends BaseController
             'search' => $search,
             'selectedDataType' => $dataType,
             'selectedCategory' => $category,
-            'selectedFileFormat' => $fileFormat,
             'selectedDateUploaded' => $dateUploaded,
             'categories' => $categories ?: [],
-            'formats' => $formats ?: [],
             'dateOptions' => $this->dateFilterOptions(),
             'statusLabels' => DatasetModel::statusLabels(),
             'accessOptions' => DatasetModel::accessOptions(),
@@ -292,7 +275,7 @@ class Datasets extends BaseController
             'category' => 'required|max_length[120]',
             'tags' => 'required|max_length[255]',
             'data_type' => 'required|max_length[80]',
-            'file_format' => 'required|max_length[30]',
+            'content_formats' => 'required|max_length[255]',
             'research_title' => 'required',
             'project_head' => 'required|max_length[150]',
             'source_type' => 'required|max_length[80]',
@@ -345,7 +328,8 @@ class Datasets extends BaseController
             'category' => trim((string) $this->request->getPost('category')),
             'tags' => trim((string) $this->request->getPost('tags')),
             'data_type' => trim((string) $this->request->getPost('data_type')),
-            'file_format' => trim((string) $this->request->getPost('file_format')),
+            'file_format' => 'ZIP',
+            'content_formats' => trim((string) $this->request->getPost('content_formats')),
             'access_type' => trim((string) $this->request->getPost('access_type')),
             'research_title' => trim((string) $this->request->getPost('research_title')),
             'project_head' => trim((string) $this->request->getPost('project_head')),

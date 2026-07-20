@@ -34,6 +34,7 @@ class DatasetModel extends Model
         'tags',
         'data_type',
         'file_format',
+        'content_formats',
         'source_type',
         'source_link',
         'form',

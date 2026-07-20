@@ -72,10 +72,10 @@
                     <?php if (!empty($errors['data_type'])): ?><span class="field-error"><?= esc($errors['data_type']) ?></span><?php endif; ?>
                 </div>
                 <div>
-                    <label for="file_format">File Format<span class="required-asterisk">*</span></label>
-                    <span class="help-text">The format of the files inside your ZIP package</span>
-                    <input id="file_format" name="file_format" value="<?= old('file_format') ?>" placeholder="e.g., CSV, PDF, or JSON" class="<?= !empty($errors['file_format']) ? 'field-error__input' : '' ?>">
-                    <?php if (!empty($errors['file_format'])): ?><span class="field-error"><?= esc($errors['file_format']) ?></span><?php endif; ?>
+                    <label for="content_formats">Formats Inside ZIP<span class="required-asterisk">*</span></label>
+                    <span class="help-text">Disclose the specific file types included in the protected ZIP package</span>
+                    <input id="content_formats" name="content_formats" value="<?= old('content_formats') ?>" placeholder="e.g., .csv, .pdf, .png, .svg" class="<?= !empty($errors['content_formats']) ? 'field-error__input' : '' ?>">
+                    <?php if (!empty($errors['content_formats'])): ?><span class="field-error"><?= esc($errors['content_formats']) ?></span><?php endif; ?>
                 </div>
                 <div>
                     <label for="access_type">Access Type<span class="required-asterisk">*</span></label>
@@ -315,8 +315,8 @@
                         <strong id="upload-preview-modal-source-link-value">Not provided</strong>
                     </div>
                     <div class="upload-preview-field">
-                        <span class="upload-preview-label">File format</span>
-                        <strong id="upload-preview-modal-file-format-value">Not entered yet</strong>
+                        <span class="upload-preview-label">Formats inside ZIP</span>
+                        <strong id="upload-preview-modal-content-formats-value">Not entered yet</strong>
                     </div>
                     <div class="upload-preview-field">
                         <span class="upload-preview-label">Tags</span>
@@ -341,7 +341,7 @@
     var fieldMessages = {
         'title':          'Please enter the dataset title.',
         'category':       'Please enter a category.',
-        'file_format':    'Please enter the file format.',
+        'content_formats': 'Please disclose the file formats inside the ZIP package.',
         'description':    'Please describe what the dataset contains.',
         'tags':           'Please enter at least one tag.',
         'research_title': 'Please enter the research title.',
@@ -407,7 +407,7 @@
         var members = getInputValue('members', 'Not listed');
         var sourceType = getDropdownValue('source_type', 'Not selected');
         var sourceLink = getInputValue('source_link', 'Not provided');
-        var fileFormat = getInputValue('file_format', 'Not entered yet');
+        var contentFormats = getInputValue('content_formats', 'Not entered yet');
         var tags = getInputValue('tags', 'Not entered yet');
         var anonymized = document.getElementById('anonymized');
         var file = getFileSummary();
@@ -419,7 +419,6 @@
         setPreviewText('upload-preview-research-title-value', researchTitle);
         setPreviewText('upload-preview-project-head-value', projectHead);
         setPreviewText('upload-preview-source-type-value', sourceType);
-        setPreviewText('upload-preview-file-format-value', fileFormat);
         setPreviewText('upload-preview-tags-value', tags);
         setPreviewText('upload-preview-file-value', file.name + (file.size ? ' ' + file.size : ''));
 
@@ -434,7 +433,7 @@
         setPreviewText('upload-preview-modal-members-value', members);
         setPreviewText('upload-preview-modal-source-type-value', sourceType);
         setPreviewText('upload-preview-modal-source-link-value', sourceLink);
-        setPreviewText('upload-preview-modal-file-format-value', fileFormat);
+        setPreviewText('upload-preview-modal-content-formats-value', contentFormats);
         setPreviewText('upload-preview-modal-tags-value', tags);
         setPreviewText('upload-preview-modal-file-value', file.name + (file.size ? ' ' + file.size : ''));
     }
@@ -556,7 +555,7 @@
 
     var formEl = document.getElementById('upload-form');
     if (formEl) {
-        var requiredFields = ['title','category','file_format','description','tags','research_title','project_head'];
+        var requiredFields = ['title','category','content_formats','description','tags','research_title','project_head'];
 
         formEl.addEventListener('submit', function(e) {
             var firstInvalid = null;

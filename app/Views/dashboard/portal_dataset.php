@@ -15,7 +15,9 @@
             <div><dt>Research title</dt><dd><?= esc($dataset['research_title'] ?: 'Not set') ?></dd></div>
             <div><dt>Project head</dt><dd><?= esc($dataset['project_head'] ?: 'Not set') ?></dd></div>
             <div><dt>Authors</dt><dd><?= esc($dataset['members'] ?: 'Not listed') ?></dd></div>
-            <div><dt>Category and type</dt><dd><?= esc($dataset['category'] ?: 'Uncategorized') ?> &middot; <?= esc($dataset['data_type'] ?: 'Dataset') ?> &middot; <?= esc($dataset['file_format'] ?: 'ZIP') ?></dd></div>
+            <div><dt>Category and type</dt><dd><?= esc($dataset['category'] ?: 'Uncategorized') ?> &middot; <?= esc($dataset['data_type'] ?: 'Dataset') ?></dd></div>
+            <div><dt>Formats inside ZIP</dt><dd><?= esc($dataset['content_formats'] ?: 'Not disclosed') ?></dd></div>
+            <div><dt>Package</dt><dd><?= esc($dataset['file_format'] ?: 'ZIP') ?></dd></div>
             <div><dt>Source</dt><dd><?= esc($dataset['source_type'] ?: 'Not set') ?><?= ! empty($dataset['source_link']) ? ' &middot; ' . esc($dataset['source_link']) : '' ?></dd></div>
             <div><dt>Tags</dt><dd><?= esc($dataset['tags'] ?: 'No tags') ?></dd></div>
         </dl>

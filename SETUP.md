@@ -64,7 +64,7 @@ Optional large dummy catalog seed:
 php spark db:seed DummyPublishedUploadsSeeder
 ```
 
-This imports `dummydata/dataset1.csv` as published public uploads owned by user `1`. Run `MvpSeeder` first so the demo contributor and administrator accounts exist.
+This uses `dummydata/dataset1.csv` as the metadata source, but seeds each record as a published public ZIP upload owned by user `1` and discloses `.csv` as the format inside the ZIP. Run `php spark migrate` first so the `2026-07-20` migrations can clear older CSV-based dummy file rows and add the `content_formats` disclosure field, then run `MvpSeeder` so the demo contributor and administrator accounts exist.
 
 ## Demo Accounts
 

@@ -39,8 +39,11 @@
 <div class="portal-frame">
     <aside class="portal-sidebar">
         <a class="portal-brand" href="<?= $portalHome ?>">
-            <img src="<?= base_url('assets/img/ASOG-TBI-stacked-v2.png') ?>" alt="ASOG TBI">
-            <span>Repository Governance</span>
+            <img src="<?= base_url('assets/img/asog-data-repo-logo.png') ?>" alt="ASOG TBI Dataset Repository logo">
+            <span class="portal-brand-text">
+                <strong>ASOG TBI Dataset</strong>
+                <small>Repository Governance</small>
+            </span>
         </a>
         <nav class="portal-nav" aria-label="Portal navigation">
             <?php if (in_array('technical_reviewer', $roles, true)): ?><a href="<?= site_url('review/technical') ?>"><span class="material-symbols-rounded" aria-hidden="true">sdk</span> Technical reviews</a><?php endif; ?>

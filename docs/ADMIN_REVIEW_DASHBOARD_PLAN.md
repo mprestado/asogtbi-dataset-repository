@@ -87,7 +87,7 @@ The queue opens on `Needs action` and includes:
 
 - Summary cards for assigned, aging, completed this week, and returned for revision.
 - Search by dataset title, contributor, category, file name, or version.
-- Filters for assignment status, age, requested access, data type, and file format.
+- Filters for assignment status, age, requested access, and data type; package format is always ZIP.
 - Sort by oldest assignment, newest assignment, contributor, or dataset title.
 - Queue rows with cover thumbnail, dataset title, contributor, version, ZIP name and size, assignment age, access request, and checklist progress.
 - Primary action `Continue review`; completed rows use `View decision`.

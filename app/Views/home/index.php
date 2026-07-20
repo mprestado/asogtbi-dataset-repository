@@ -29,7 +29,7 @@
             <article class="feature-card">
                 <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">database</span></span>
                 <h3>Published Dataset Catalog</h3>
-                <p>Browse public Published datasets with searchable metadata, categories, data types, file formats, and upload dates.</p>
+                <p>Browse public Published datasets with searchable metadata, categories, data types, disclosed contents, and upload dates.</p>
             </article>
             <article class="feature-card">
                 <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">upload_file</span></span>
@@ -39,7 +39,7 @@
             <article class="feature-card">
                 <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">search</span></span>
                 <h3>Fast Search and Filtering</h3>
-                <p>Find datasets by title, description, tags, category, data type, file format, and date uploaded.</p>
+                <p>Find datasets by title, description, tags, category, data type, disclosed content formats, and date uploaded.</p>
             </article>
             <article class="feature-card">
                 <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">folder_special</span></span>
@@ -54,41 +54,42 @@
             <article class="feature-card">
                 <span class="feature-icon"><span class="material-symbols-rounded" aria-hidden="true">insights</span></span>
                 <h3>Recommendations</h3>
-                <p>See similar Published datasets using simple metadata similarity across category, tags, type, format, and description.</p>
+                <p>See similar Published datasets using simple metadata similarity across category, tags, data type, disclosed formats, and description.</p>
             </article>
         </div>
     </div>
 </section>
 
-<section class="content-section navy stats-section">
-    <div class="shell stats-grid">
-        <div class="stat-card">
-            <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">database</span></span>
-            <span class="stat-number"><?= esc((string) ($publishedCount ?? 0)) ?></span>
-            <span class="stat-label">Published datasets</span>
+<section class="content-section home-insights-section">
+    <div class="shell home-insights-grid">
+        <div class="home-stat-grid" aria-label="Repository summary">
+            <div class="stat-card">
+                <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">database</span></span>
+                <span class="stat-number"><?= esc((string) ($publishedCount ?? 0)) ?></span>
+                <span class="stat-label">Published datasets</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">category</span></span>
+                <span class="stat-number">5</span>
+                <span class="stat-label">Canonical data types</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span></span>
+                <span class="stat-number">4</span>
+                <span class="stat-label">Access classifications</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">folder_zip</span></span>
+                <span class="stat-number">ZIP</span>
+                <span class="stat-label">Secure upload format</span>
+            </div>
         </div>
-        <div class="stat-card">
-            <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">category</span></span>
-            <span class="stat-number">5</span>
-            <span class="stat-label">Canonical data types</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span></span>
-            <span class="stat-number">4</span>
-            <span class="stat-label">Access classifications</span>
-        </div>
-        <div class="stat-card">
-            <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">folder_zip</span></span>
-            <span class="stat-number">ZIP</span>
-            <span class="stat-label">Protected dataset uploads</span>
-        </div>
-    </div>
-</section>
 
-<section class="content-section">
-    <div class="shell home-recent-shell">
-        <article class="panel">
-            <p class="tag">Recent Public Datasets</p>
+        <article class="panel home-recent-panel">
+            <div class="home-recent-head">
+                <p class="tag">Recent Public Datasets</p>
+                <h2>Fresh from the catalog</h2>
+            </div>
             <?php if (empty($featuredDatasets)): ?>
                 <h2>No Published datasets yet</h2>
                 <p class="muted">Run migrations and seeders to load sample records, or log in and submit the first dataset for review.</p>

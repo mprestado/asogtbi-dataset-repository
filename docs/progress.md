@@ -195,6 +195,16 @@ This file is append-only. Every material implementation milestone must add a dat
 - Blockers: The source CSV must be present at `dummydata/dataset1.csv`; run `MvpSeeder` first if user `1` does not exist.
 - Next step: Run `php spark db:seed DummyPublishedUploadsSeeder` after migrations and `MvpSeeder` when a large published dummy catalog is needed.
 
+## 2026-07-20 - ZIP-normalized dummy published uploads
+
+- Branch/commit: `rapid-mvp`, local uncommitted implementation after the Google-auth/account-lock pass.
+- Completed behavior: Updated the metadata flow so every uploaded package is treated as a protected ZIP while contributors separately disclose the formats inside the archive through `content_formats`. The upload/edit forms, catalog cards, detail pages, portal views, admin/review evidence, search text, and demo seeders now use that split instead of exposing a package-format dropdown.
+- Schema changes: Added migration `2026-07-20-000019_NormalizeDummyPublishedUploadsToZip` to delete previously seeded CSV dummy file/version records, remove old stored CSV files, and normalize dummy package metadata before reseeding. Added migration `2026-07-20-000020_AddContentFormatsToDatasets` to add `datasets.content_formats`, migrate non-ZIP legacy `file_format` values into it, and normalize `datasets.file_format` to `ZIP`.
+- Important files: `app/Database/Seeds/DummyPublishedUploadsSeeder.php`, `app/Database/Seeds/MvpSeeder.php`, `app/Database/Migrations/2026-07-20-000019_NormalizeDummyPublishedUploadsToZip.php`, `app/Database/Migrations/2026-07-20-000020_AddContentFormatsToDatasets.php`, upload/catalog/detail/review/admin views, `SETUP.md`, and `docs/progress.md`.
+- Verification: Not run against the database in this shell yet. Recommended checks are PHP syntax checks on changed PHP files, then `php spark migrate`, `php spark db:seed MvpSeeder`, and `php spark db:seed DummyPublishedUploadsSeeder` to confirm old CSV file rows are gone, package metadata is `ZIP`, and `content_formats` is populated.
+- Blockers: `dummydata/dataset1.csv` remains the bulk metadata source, and ZIP creation prefers the PHP `ZipArchive` extension; without it, the seeder falls back to a minimal empty ZIP container.
+- Next step: Run migrations, reseed demo data, and spot-check the catalog sidebar and several dataset cards to confirm the old file-format filter is gone and cards show disclosed formats inside ZIP.
+
 ## 2026-07-15 - Polished auth entry flow
 
 - Branch/commit: `rapid-mvp`, local uncommitted implementation after `474055d`.

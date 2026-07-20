@@ -34,7 +34,8 @@
                 <p><?= esc($dataset['description'] ?: 'No description provided.') ?></p>
                 <div class="evidence-chip-row">
                     <span><?= esc($dataset['data_type']) ?></span>
-                    <span><?= esc($dataset['file_format']) ?></span>
+                    <span><?= esc($dataset['content_formats'] ?: 'Contents not disclosed') ?></span>
+                    <span><?= esc($dataset['file_format'] ?: 'ZIP') ?> package</span>
                     <span><?= esc($dataset['category']) ?></span>
                     <span><?= esc(\App\Models\DatasetModel::accessLabel($dataset['access_type'])) ?> access</span>
                 </div>

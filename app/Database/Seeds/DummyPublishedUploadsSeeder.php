@@ -4,11 +4,14 @@ namespace App\Database\Seeds;
 
 use App\Models\DatasetModel;
 use CodeIgniter\Database\Seeder;
+use ZipArchive;
 
 class DummyPublishedUploadsSeeder extends Seeder
 {
     private const CONTRIBUTOR_ID = 1;
     private const SOURCE_FILE = 'dummydata/dataset1.csv';
+    private const LEGACY_CHANGE_SUMMARY = 'Imported from dummydata/dataset1.csv as a published demo upload.';
+    private const ZIP_CHANGE_SUMMARY = 'Imported from dummydata/dataset1.csv as a ZIP demo upload.';
 
     public function run(): void
     {
@@ -42,7 +45,8 @@ class DummyPublishedUploadsSeeder extends Seeder
             }
 
             $datasetId = $this->upsertDataset($title, $description, $sourceId, (string) $user['name'], $adminId, $now);
-            $fileId = $this->upsertFile($datasetId, $source, $sourceSize, $now);
+            $this->removeLegacyCsvArtifacts($datasetId);
+            $fileId = $this->upsertFile($datasetId, $title, $sourceId, $description, $now);
             $this->upsertVersion($datasetId, $fileId, $now);
         }
 
@@ -69,10 +73,11 @@ class DummyPublishedUploadsSeeder extends Seeder
             'category' => 'Dummy Data',
             'tags' => $this->deriveTags($title),
             'data_type' => 'Tabular',
-            'file_format' => 'CSV',
+            'file_format' => 'ZIP',
+            'content_formats' => '.csv',
             'source_type' => 'Secondary',
             'source_link' => null,
-            'form' => 'CSV',
+            'form' => 'upload',
             'research_title' => 'Dummydata Import: ' . substr($title, 0, 230),
             'project_head' => $contributorName,
             'members' => 'Imported dummydata row ' . ($sourceId !== '' ? $sourceId : 'n/a'),
@@ -106,30 +111,73 @@ class DummyPublishedUploadsSeeder extends Seeder
         return (int) $this->db->insertID();
     }
 
-    private function upsertFile(int $datasetId, string $source, int $sourceSize, string $now): int
+    private function removeLegacyCsvArtifacts(int $datasetId): void
+    {
+        $legacyFiles = $this->db->table('dataset_files')
+            ->where('dataset_id', $datasetId)
+            ->groupStart()
+            ->where('original_name', 'dataset1.csv')
+            ->orLike('stored_name', 'dummydata-dataset1-', 'after')
+            ->orWhere('file_type', 'text/csv')
+            ->groupEnd()
+            ->get()
+            ->getResultArray();
+
+        foreach ($legacyFiles as $legacyFile) {
+            $fileId = (int) ($legacyFile['id'] ?? 0);
+            if ($fileId > 0) {
+                $this->db->table('dataset_versions')->where('dataset_file_id', $fileId)->delete();
+            }
+
+            $filePath = trim((string) ($legacyFile['file_path'] ?? ''));
+            if ($filePath !== '') {
+                $absolutePath = WRITEPATH . str_replace('/', DIRECTORY_SEPARATOR, $filePath);
+                if (is_file($absolutePath)) {
+                    @unlink($absolutePath);
+                }
+            }
+        }
+
+        if ($legacyFiles !== []) {
+            $this->db->table('dataset_files')->where('dataset_id', $datasetId)
+                ->groupStart()
+                ->where('original_name', 'dataset1.csv')
+                ->orLike('stored_name', 'dummydata-dataset1-', 'after')
+                ->orWhere('file_type', 'text/csv')
+                ->groupEnd()
+                ->delete();
+        }
+
+        $this->db->table('dataset_versions')
+            ->where('dataset_id', $datasetId)
+            ->where('change_summary', self::LEGACY_CHANGE_SUMMARY)
+            ->delete();
+    }
+
+    private function upsertFile(int $datasetId, string $title, string $sourceId, string $description, string $now): int
     {
         $datasetDir = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . 'datasets' . DIRECTORY_SEPARATOR . $datasetId;
         if (! is_dir($datasetDir)) {
             mkdir($datasetDir, 0777, true);
         }
 
-        $storedName = 'dummydata-dataset1-' . $datasetId . '.csv';
-        copy($source, $datasetDir . DIRECTORY_SEPARATOR . $storedName);
+        $storedName = $this->buildArchiveName($title, $datasetId);
+        $absolutePath = $datasetDir . DIRECTORY_SEPARATOR . $storedName;
+        $this->writeZipPayload($absolutePath, $sourceId, $title, $description);
 
         $record = [
             'dataset_id' => $datasetId,
             'stored_name' => $storedName,
-            'original_name' => 'dataset1.csv',
+            'original_name' => $storedName,
             'file_path' => 'uploads/datasets/' . $datasetId . '/' . $storedName,
-            'file_size' => $sourceSize,
-            'file_type' => 'text/csv',
+            'file_size' => is_file($absolutePath) ? ((int) filesize($absolutePath) ?: 0) : 0,
+            'file_type' => 'application/zip',
             'uploaded_by' => self::CONTRIBUTOR_ID,
             'updated_at' => $now,
         ];
 
         $existing = $this->db->table('dataset_files')
             ->where('dataset_id', $datasetId)
-            ->where('original_name', 'dataset1.csv')
             ->get()
             ->getRowArray();
 
@@ -151,7 +199,7 @@ class DummyPublishedUploadsSeeder extends Seeder
         $record = [
             'dataset_id' => $datasetId,
             'version' => '1.0',
-            'change_summary' => 'Imported from dummydata/dataset1.csv as a published demo upload.',
+            'change_summary' => self::ZIP_CHANGE_SUMMARY,
             'dataset_file_id' => $fileId,
             'created_by' => self::CONTRIBUTOR_ID,
             'updated_at' => $now,
@@ -178,5 +226,58 @@ class DummyPublishedUploadsSeeder extends Seeder
         $tags = strtolower((string) preg_replace('/[^a-z0-9]+/i', ',', $title));
 
         return trim((string) preg_replace('/,+/', ',', $tags), ',');
+    }
+
+    private function buildArchiveName(string $title, int $datasetId): string
+    {
+        $slug = strtolower(trim((string) preg_replace('/[^a-z0-9]+/i', '-', $title), '-'));
+        if ($slug === '') {
+            $slug = 'dummy-published-upload-' . $datasetId;
+        }
+
+        return $slug . '.zip';
+    }
+
+    private function writeZipPayload(string $absolutePath, string $sourceId, string $title, string $description): void
+    {
+        if (class_exists(ZipArchive::class)) {
+            $archive = new ZipArchive();
+            $result = $archive->open($absolutePath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+            if ($result !== true) {
+                throw new \RuntimeException('Unable to create dummy ZIP archive: ' . $absolutePath);
+            }
+
+            $archive->addFromString('dataset.csv', $this->buildCsvPayload($sourceId, $title, $description));
+            $archive->addFromString(
+                'README.txt',
+                "Seeded demo upload\n"
+                . 'Source row: ' . ($sourceId !== '' ? $sourceId : 'n/a') . "\n"
+                . 'Title: ' . $title . "\n"
+            );
+            $archive->close();
+
+            return;
+        }
+
+        $emptyZip = base64_decode('UEsFBgAAAAAAAAAAAAAAAAAAAAAAAA==');
+        if (! is_string($emptyZip) || file_put_contents($absolutePath, $emptyZip) === false) {
+            throw new \RuntimeException('Unable to write fallback dummy ZIP archive: ' . $absolutePath);
+        }
+    }
+
+    private function buildCsvPayload(string $sourceId, string $title, string $description): string
+    {
+        $handle = fopen('php://temp', 'r+');
+        if ($handle === false) {
+            throw new \RuntimeException('Unable to build dummy CSV payload.');
+        }
+
+        fputcsv($handle, ['source_id', 'title', 'description']);
+        fputcsv($handle, [$sourceId, $title, $description]);
+        rewind($handle);
+        $payload = stream_get_contents($handle);
+        fclose($handle);
+
+        return is_string($payload) ? $payload : '';
     }
 }

@@ -27,7 +27,7 @@ class Reviews extends BaseController
 
         $reviewModel = model(ReviewModel::class);
         $query = $reviewModel
-            ->select('reviews.*, datasets.title, datasets.description, datasets.status AS dataset_status, datasets.version AS dataset_version, datasets.access_type, datasets.data_type, datasets.file_format, datasets.category, datasets.cover_image, datasets.anonymized, datasets.source_type, users.name AS contributor_name')
+            ->select('reviews.*, datasets.title, datasets.description, datasets.status AS dataset_status, datasets.version AS dataset_version, datasets.access_type, datasets.data_type, datasets.file_format, datasets.content_formats, datasets.category, datasets.cover_image, datasets.anonymized, datasets.source_type, users.name AS contributor_name')
             ->join('datasets', 'datasets.id = reviews.dataset_id')
             ->join('users', 'users.id = datasets.contributor_id', 'left')
             ->where(['reviews.stage' => $stage, 'reviews.reviewer_id' => (int) $this->currentUserId()])
@@ -43,7 +43,7 @@ class Reviews extends BaseController
                 ->like('datasets.title', $search)
                 ->orLike('users.name', $search)
                 ->orLike('datasets.category', $search)
-                ->orLike('datasets.file_format', $search)
+                ->orLike('datasets.content_formats', $search)
                 ->groupEnd();
         }
         if ($access !== '' && array_key_exists($access, DatasetModel::accessOptions())) {

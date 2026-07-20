@@ -60,6 +60,7 @@ class Admin extends BaseController
                 ->like('datasets.title', $search)
                 ->orLike('contributors.name', $search)
                 ->orLike('datasets.category', $search)
+                ->orLike('datasets.content_formats', $search)
                 ->orLike('datasets.tags', $search)
                 ->groupEnd();
         }

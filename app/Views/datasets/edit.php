@@ -39,8 +39,8 @@
                     </select>
                 </div>
                 <div>
-                    <label for="file_format">File Format</label>
-                    <input id="file_format" name="file_format" value="<?= old('file_format', $dataset['file_format'] ?? 'ZIP') ?>">
+                    <label for="content_formats">Formats Inside ZIP</label>
+                    <input id="content_formats" name="content_formats" value="<?= old('content_formats', $dataset['content_formats'] ?? '') ?>" placeholder="e.g., .csv, .pdf, .png, .svg">
                 </div>
                 <div>
                     <label for="access_type">Access Type</label>
@@ -117,7 +117,8 @@
         <ul class="record-list">
             <li><strong>Status</strong><span class="muted"><?= esc($statusLabel ?? 'Unknown') ?></span></li>
             <li><strong>Version</strong><span class="muted"><?= esc($dataset['version'] ?? '1.0') ?></span></li>
-            <li><strong>File format</strong><span class="muted"><?= esc($dataset['file_format'] ?? 'ZIP') ?></span></li>
+            <li><strong>Package</strong><span class="muted"><?= esc($dataset['file_format'] ?? 'ZIP') ?></span></li>
+            <li><strong>Formats inside ZIP</strong><span class="muted"><?= esc($dataset['content_formats'] ?? 'Not disclosed') ?></span></li>
         </ul>
         <form method="post" action="<?= site_url('datasets/' . $datasetId . '/archive') ?>">
             <?= csrf_field() ?>
