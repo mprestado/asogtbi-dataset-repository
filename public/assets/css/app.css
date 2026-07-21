@@ -185,6 +185,12 @@ img {
     position: relative;
 }
 
+.account-menu[open] .account-trigger {
+    border-color: rgba(248, 175, 33, .72);
+    background: rgba(248, 175, 33, .14);
+    color: var(--gold);
+}
+
 .notification-menu {
     position: relative;
 }

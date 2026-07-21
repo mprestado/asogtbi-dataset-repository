@@ -1,8 +1,25 @@
 <script>
 (() => {
     const menus = Array.from(document.querySelectorAll('[data-notification-menu]'));
+    const dropdowns = Array.from(document.querySelectorAll('details.account-menu, details.portal-account-menu, details[data-notification-menu]'));
     const toast = document.querySelector('[data-live-toast]');
     if (menus.length === 0) return;
+
+    const closeOtherDropdowns = (active) => {
+        dropdowns.forEach((dropdown) => {
+            if (dropdown !== active) dropdown.open = false;
+        });
+    };
+
+    dropdowns.forEach((dropdown) => {
+        dropdown.querySelector(':scope > summary')?.addEventListener('click', () => {
+            if (!dropdown.open) closeOtherDropdowns(dropdown);
+        });
+
+        dropdown.addEventListener('toggle', () => {
+            if (dropdown.open) closeOtherDropdowns(dropdown);
+        });
+    });
 
     let latestId = Math.max(...menus.map((menu) => Number(menu.dataset.latestId || 0)));
     let audioContext = null;
