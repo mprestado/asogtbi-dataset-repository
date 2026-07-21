@@ -776,19 +776,9 @@ img {
 
 .home-list-head {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: 14px;
-    align-items: baseline;
     border-bottom: 1px solid rgba(9, 30, 66, .1);
     background: #fbf8f1;
     padding: 20px 22px 18px;
-}
-
-.home-list-head > span {
-    color: var(--gold);
-    font-family: "DM Serif Display", Georgia, serif;
-    font-size: clamp(24px, 2.7vw, 34px);
-    line-height: 1;
 }
 
 .home-list-head p {
@@ -834,7 +824,7 @@ img {
 
 .home-row-kicker {
     color: #667085;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: .04em;
     text-transform: uppercase;
@@ -843,15 +833,15 @@ img {
 .home-dataset-row strong {
     color: var(--navy);
     font-family: "DM Sans", sans-serif;
-    font-size: clamp(15px, 1.6vw, 18px);
-    font-weight: 900;
-    line-height: 1.25;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.35;
 }
 
 .home-dataset-row small {
-    color: #667085;
+    color: #475569;
     font-size: 13px;
-    line-height: 1.35;
+    line-height: 1.5;
 }
 
 .home-empty-line {
@@ -2810,7 +2800,7 @@ a.result-card:hover {
     color: var(--navy);
     font-family: "DM Sans", sans-serif;
     font-size: 16px;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.35;
 }
 
@@ -2833,8 +2823,8 @@ a.result-card:hover {
 }
 
 .dataset-rec-score {
-    color: var(--muted);
-    font-size: 12px;
+    color: #475569;
+    font-size: 13px;
 }
 
 .dataset-preview-trigger {

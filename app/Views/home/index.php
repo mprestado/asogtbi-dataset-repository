@@ -128,7 +128,6 @@
         <div class="home-dataset-grid">
             <article class="home-dataset-panel">
                 <div class="home-list-head">
-                    <span>01</span>
                     <div>
                         <p>Recent Public Datasets</p>
                         <h3>Fresh from the catalog</h3>
@@ -154,7 +153,6 @@
 
             <article class="home-dataset-panel">
                 <div class="home-list-head">
-                    <span>02</span>
                     <div>
                         <p>Popular Datasets</p>
                         <h3>Most viewed records</h3>
