@@ -78,7 +78,6 @@
     </aside>
     <main class="portal-main">
         <header class="portal-topbar">
-            <div><small>Repository governance</small><strong><?= esc((string) ($title ?? 'Workspace')) ?></strong></div>
             <?= view('components/notification_menu', [
                 'headerNotifications' => $headerNotifications,
                 'unreadNotificationCount' => $unreadNotificationCount,
