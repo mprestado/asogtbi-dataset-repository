@@ -124,7 +124,7 @@
             window.setTimeout(() => toast.remove(), 220);
         };
         toast.querySelector('[data-flash-dismiss]')?.addEventListener('click', close);
-        window.setTimeout(close, toast.classList.contains('flash-toast--error') ? 9000 : 5600);
+        window.setTimeout(close, 5000);
     });
 
 })();

@@ -151,7 +151,7 @@ class Datasets extends BaseController
 
             return redirect()
                 ->to('/login')
-                ->with('error', 'Please sign in to download dataset files.');
+                ->with('error', 'Sign in required. Please sign in to download this dataset.');
         }
 
         if (! $this->canDownloadDataset($dataset)) {
