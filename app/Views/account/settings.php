@@ -97,7 +97,7 @@
                 <?= $isGoogleAccount ? 'readonly' : '' ?>
                 <?= isset($errors['email']) ? 'aria-invalid="true"' : '' ?>
             >
-            <p class="field-help" id="email-help"><?= $isGoogleAccount ? 'This verified Google email is managed by your my.cspc.edu.ph sign-in.' : 'Use your official my.cspc.edu.ph student email.' ?></p>
+            <p class="field-help" id="email-help"><?= $isGoogleAccount ? 'This verified Google email is managed by your my.cspc.edu.ph sign-in.' : 'Use the email assigned to your repository password credentials.' ?></p>
             <?php if (isset($errors['email'])): ?><p class="field-error" id="email-error"><?= esc($errors['email']) ?></p><?php endif; ?>
 
             <?php if ($isGoogleAccount): ?>

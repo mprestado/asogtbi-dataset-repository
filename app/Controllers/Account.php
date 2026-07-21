@@ -52,9 +52,8 @@ class Account extends BaseController
             ],
             'email' => [
                 'label' => 'Email address',
-                'rules' => 'required|valid_email|max_length[190]|regex_match[/^[^@\s]+@my\.cspc\.edu\.ph$/i]|is_unique[users.email,id,' . $userId . ']',
+                'rules' => 'required|valid_email|max_length[190]|is_unique[users.email,id,' . $userId . ']',
                 'errors' => [
-                    'regex_match' => 'Use your official CSPC student email address ending in @my.cspc.edu.ph.',
                     'is_unique' => 'That email address is already used by another account.',
                 ],
             ],

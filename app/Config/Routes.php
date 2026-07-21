@@ -59,6 +59,7 @@ $routes->group('admin', ['filter' => 'role:repository_administrator'], static fu
     $routes->post('datasets/(:num)/archive', 'Admin::archive/$1');
     $routes->post('datasets/(:num)/restore', 'Admin::restore/$1');
     $routes->get('users', 'Admin::users');
+    $routes->post('users', 'Admin::createUser');
     $routes->post('users/(:num)', 'Admin::updateUser/$1');
     $routes->get('audit-logs', 'Admin::auditLogs');
 });

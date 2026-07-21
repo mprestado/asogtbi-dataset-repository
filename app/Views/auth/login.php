@@ -52,7 +52,7 @@
                         value="<?= old('email') ?>"
                         autocomplete="email"
                         inputmode="email"
-                        placeholder="name@my.cspc.edu.ph"
+                        placeholder="name@example.edu"
                         aria-describedby="email-help <?= isset($errors['email']) ? 'email-error' : '' ?>"
                         <?= isset($errors['email']) ? 'aria-invalid="true"' : '' ?>
                     >

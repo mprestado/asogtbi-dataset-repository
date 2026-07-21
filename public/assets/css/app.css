@@ -6268,8 +6268,8 @@ pre {
 
 /* Integrated governance portal */
 .portal-body { margin: 0; overflow: hidden; background: #f3efe6; color: var(--navy, #03558c); font-family: "DM Sans", sans-serif; }
-.portal-frame { height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); overflow: hidden; }
-.portal-sidebar { height: 100vh; overflow-y: auto; padding: 22px 18px; display: flex; flex-direction: column; background: var(--navy); color: #fff; box-sizing: border-box; }
+.portal-frame { height: calc(100vh / var(--site-scale)); display: grid; grid-template-columns: 248px minmax(0, 1fr); overflow: hidden; }
+.portal-sidebar { height: calc(100vh / var(--site-scale)); overflow-y: auto; padding: 22px 18px; display: flex; flex-direction: column; background: var(--navy); color: #fff; box-sizing: border-box; }
 .portal-main,
 .review-decision-panel,
 .portal-tabs--scroll,
@@ -6430,6 +6430,18 @@ pre {
 .access-safeguard-card h2 { margin: 4px 0 5px; font-size: 1.04rem; }
 .access-control-list { display: grid; gap: 14px; }
 .access-directory-shell { padding: 0; overflow: visible; background: #fffefa; }
+.access-credential-panel { gap: 16px; margin-bottom: 18px; padding: 16px; background: #fffefa; }
+.access-credential-panel .panel-head { align-items: flex-start; }
+.access-credential-panel h2 { margin: 3px 0 5px; color: var(--navy); font-family: "DM Sans", sans-serif; font-size: 1.05rem; }
+.credential-create-form { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 12px; align-items: start; }
+.credential-create-form label, .credential-role-fieldset { display: grid; gap: 5px; min-width: 0; color: #687786; font-size: .72rem; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+.credential-create-form input, .credential-create-form select { width: 100%; min-height: 36px; border: 1px solid #c9bdab; border-radius: 8px; background: #fff; color: var(--navy); padding: 7px 10px; font-size: .78rem; text-transform: none; }
+.credential-role-fieldset { grid-column: 1 / -1; border: 1px solid #e1d7c8; border-radius: 10px; background: #fbf8f1; padding: 10px 12px 12px; }
+.credential-role-fieldset legend { padding: 0 4px; color: #687786; }
+.credential-role-fieldset label { display: inline-flex; align-items: center; gap: 7px; margin: 4px 12px 4px 0; color: var(--navy); font-size: .76rem; font-weight: 800; letter-spacing: 0; text-transform: capitalize; }
+.credential-role-fieldset input { width: auto; min-height: 0; }
+.credential-create-actions { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid #e4dccf; padding-top: 12px; }
+.credential-create-actions .muted { max-width: 640px; margin: 0; font-size: .76rem; }
 .access-directory-toolbar { display: grid; grid-template-columns: auto minmax(320px, 1fr); gap: 14px; align-items: center; padding: 13px 14px; border-bottom: 1px solid #e6ddce; background: #fbf8f1; }
 .access-directory-metrics { display: flex; flex-wrap: wrap; gap: 8px; }
 .access-directory-metrics span { display: inline-flex; align-items: baseline; gap: 5px; border: 1px solid #d8cebd; border-radius: 999px; background: #fff; color: #445363; padding: 4px 9px; font-size: .75rem; font-weight: 800; }
@@ -6505,6 +6517,8 @@ pre {
     .portal-account { margin-top: 0; }
     .review-layout, .user-access-row, .user-access-card, .access-summary-grid { grid-template-columns: 1fr; }
     .access-directory-toolbar { grid-template-columns: 1fr; }
+    .credential-create-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .credential-create-actions { align-items: stretch; flex-direction: column; }
     .access-directory-head { display: none; }
     .user-access-directory-row { grid-template-columns: minmax(0, 1fr) auto; align-items: start; }
     .user-access-directory-row > div:nth-of-type(2),
@@ -6525,6 +6539,7 @@ pre {
     .portal-row-actions { justify-content: stretch; }
     .portal-row-actions .button { width: 100%; }
     .access-directory-filters { grid-template-columns: 1fr; }
+    .credential-create-form { grid-template-columns: 1fr; }
     .access-role-grid { grid-template-columns: 1fr; }
     .access-user-profile { display: grid; }
     .access-card-actions .button { width: 100%; }

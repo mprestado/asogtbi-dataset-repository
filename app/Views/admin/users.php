@@ -10,6 +10,7 @@
     ];
     $activeCount = count(array_filter($users, static fn (array $user): bool => ($user['status'] ?? '') === 'active'));
     $googleCount = count(array_filter($users, static fn (array $user): bool => strtolower(trim((string) ($user['auth_provider'] ?? 'local'))) === 'google'));
+    $errors = (array) (session()->getFlashdata('validation') ?? []);
 ?>
 
 <header class="portal-heading access-heading">
@@ -17,6 +18,51 @@
     <h1>Users and roles</h1>
     <p>Manage maintainer access at directory scale while preserving the final active administrator.</p>
 </header>
+
+<section class="panel access-credential-panel">
+    <div class="panel-head">
+        <div>
+            <p class="tag">Issued Credentials</p>
+            <h2>Create password account</h2>
+            <p class="muted">Use this for approved collaborators who cannot use the CSPC Google sign-in path. The email becomes their username.</p>
+        </div>
+    </div>
+    <form class="credential-create-form" method="post" action="<?= site_url('admin/users') ?>" novalidate>
+        <?= csrf_field() ?>
+        <label>Name
+            <input type="text" name="name" value="<?= old('name') ?>" placeholder="Full name" class="<?= isset($errors['name']) ? 'field-error__input' : '' ?>">
+            <?php if (isset($errors['name'])): ?><span class="field-error"><?= esc($errors['name']) ?></span><?php endif; ?>
+        </label>
+        <label>Email / username
+            <input type="email" name="email" value="<?= old('email') ?>" placeholder="name@example.edu" class="<?= isset($errors['email']) ? 'field-error__input' : '' ?>">
+            <?php if (isset($errors['email'])): ?><span class="field-error"><?= esc($errors['email']) ?></span><?php endif; ?>
+        </label>
+        <label>Temporary password
+            <input type="text" name="password" value="<?= old('password') ?>" placeholder="At least 8 characters" class="<?= isset($errors['password']) ? 'field-error__input' : '' ?>">
+            <?php if (isset($errors['password'])): ?><span class="field-error"><?= esc($errors['password']) ?></span><?php endif; ?>
+        </label>
+        <label>Status
+            <select name="status">
+                <option value="active" <?= old('status', 'active') === 'active' ? 'selected' : '' ?>>Active</option>
+                <option value="inactive" <?= old('status') === 'inactive' ? 'selected' : '' ?>>Inactive</option>
+            </select>
+        </label>
+        <fieldset class="credential-role-fieldset">
+            <legend>Roles</legend>
+            <?php foreach ($roles as $role): ?>
+                <?php $roleName = (string) $role['name']; ?>
+                <label>
+                    <input type="checkbox" name="roles[]" value="<?= esc($roleName) ?>" <?= in_array($roleName, (array) old('roles', ['user']), true) ? 'checked' : '' ?>>
+                    <span><?= esc(str_replace('_', ' ', $roleName)) ?></span>
+                </label>
+            <?php endforeach; ?>
+        </fieldset>
+        <div class="credential-create-actions">
+            <p class="muted">After creating the account, share the email and temporary password through a secure channel.</p>
+            <button class="button" type="submit">Create credentials</button>
+        </div>
+    </form>
+</section>
 
 <section class="access-directory-shell panel">
     <div class="access-directory-toolbar">

@@ -266,6 +266,64 @@ class Admin extends BaseController
         return redirect()->back()->with('info', 'User access updated.');
     }
 
+    public function createUser()
+    {
+        $allowed = [ModerationWorkflow::ROLE_USER, ModerationWorkflow::ROLE_ETHICS, ModerationWorkflow::ROLE_TECHNICAL, ModerationWorkflow::ROLE_ADMIN];
+        $roles = array_values(array_unique(array_intersect((array) $this->request->getPost('roles'), $allowed)));
+
+        if ($roles === []) {
+            $roles = [ModerationWorkflow::ROLE_USER];
+        }
+
+        $rules = [
+            'name' => 'required|min_length[2]|max_length[150]',
+            'email' => 'required|valid_email|max_length[190]|is_unique[users.email]',
+            'password' => 'required|min_length[8]',
+            'status' => 'permit_empty|in_list[active,inactive]',
+        ];
+
+        if (! $this->validate($rules)) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('validation', $this->validator->getErrors())
+                ->with('error', implode(' ', $this->validator->getErrors()));
+        }
+
+        $db = db_connect();
+        $now = date('Y-m-d H:i:s');
+        $status = $this->request->getPost('status') === 'inactive' ? 'inactive' : 'active';
+        $email = strtolower(trim((string) $this->request->getPost('email')));
+
+        $db->transStart();
+        $db->table('users')->insert([
+            'name' => trim((string) $this->request->getPost('name')),
+            'email' => $email,
+            'password_hash' => password_hash((string) $this->request->getPost('password'), PASSWORD_DEFAULT),
+            'auth_provider' => 'local',
+            'status' => $status,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $userId = (int) $db->insertID();
+
+        $roleRows = $db->table('roles')->whereIn('name', $roles)->get()->getResultArray();
+        foreach ($roleRows as $role) {
+            $db->table('user_roles')->insert(['user_id' => $userId, 'role_id' => (int) $role['id']]);
+        }
+        $db->transComplete();
+
+        if (! $db->transStatus() || $userId <= 0) {
+            return redirect()->back()->withInput()->with('error', 'Password account could not be created.');
+        }
+
+        $this->recordAudit('password_account_created', 'user', $userId, 'Repository administrator issued password login credentials.');
+
+        return redirect()
+            ->to('/admin/users')
+            ->with('info', 'Password account created. Share the issued email and temporary password securely.');
+    }
+
     public function auditLogs(): string
     {
         $search = trim((string) $this->request->getGet('q'));
