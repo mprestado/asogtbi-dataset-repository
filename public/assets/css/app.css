@@ -1039,6 +1039,15 @@ img {
     background: rgba(6, 49, 79, .08);
 }
 
+.hero-search button:disabled {
+    cursor: not-allowed;
+    opacity: .38;
+}
+
+.hero-search button:disabled:hover {
+    background: transparent;
+}
+
 .hero-search button .material-symbols-rounded {
     font-size: 24px;
 }

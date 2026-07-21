@@ -8,10 +8,10 @@
         <h1 class="sub"><em>Dataset Repository</em></h1>
         <p>Discover, cite, download, and contribute institutional datasets for thesis, capstone, research, AI/ML, analytics, and startup development.</p>
 
-        <form class="hero-search" method="get" action="<?= site_url('datasets') ?>">
+        <form class="hero-search" method="get" action="<?= site_url('datasets') ?>" data-home-search-form>
             <label class="sr-only" for="home-search">Search datasets</label>
-            <input type="search" id="home-search" name="q" placeholder="Search dataset">
-            <button type="submit" aria-label="Search">
+            <input type="search" id="home-search" name="q" placeholder="Search dataset" data-home-search-input>
+            <button type="submit" aria-label="Search" disabled data-home-search-submit>
                 <span class="material-symbols-rounded" aria-hidden="true">search</span>
             </button>
         </form>
@@ -220,6 +220,22 @@
 <!-- Carousel Navigation Script -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const searchForm = document.querySelector('[data-home-search-form]');
+    const searchInput = document.querySelector('[data-home-search-input]');
+    const searchSubmit = document.querySelector('[data-home-search-submit]');
+
+    if (searchForm && searchInput && searchSubmit) {
+        const syncSearchState = () => {
+            searchSubmit.disabled = searchInput.value.trim() === '';
+        };
+
+        searchInput.addEventListener('input', syncSearchState);
+        searchForm.addEventListener('submit', (event) => {
+            if (searchInput.value.trim() === '') event.preventDefault();
+        });
+        syncSearchState();
+    }
+
     const track = document.getElementById('repo-carousel-track');
     const prevBtn = document.querySelector('[data-carousel-prev]');
     const nextBtn = document.querySelector('[data-carousel-next]');
