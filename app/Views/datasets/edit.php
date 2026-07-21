@@ -19,7 +19,7 @@
             </div>
         </div>
 
-        <form method="post" action="<?= site_url('datasets/' . $datasetId . '/update') ?>" enctype="multipart/form-data">
+        <form method="post" action="<?= site_url('datasets/' . $datasetId . '/update') ?>" enctype="multipart/form-data" id="edit-dataset-form">
             <?= csrf_field() ?>
             <div class="grid">
                 <div>
@@ -105,7 +105,7 @@
             </div>
 
             <div class="actions">
-                <button class="button" type="submit">Update Dataset</button>
+                <button class="button" type="submit" id="edit-dataset-submit">Review and Submit</button>
                 <a class="button secondary" href="<?= site_url('dashboard') ?>">Back to My Datasets</a>
             </div>
         </form>
@@ -128,12 +128,253 @@
         </form>
     </aside>
 </section>
+
+<div class="preview-modal upload-preview-modal edit-preview-modal" id="edit-preview-modal" role="dialog" aria-modal="true" aria-labelledby="edit-preview-title" aria-describedby="edit-preview-summary" hidden>
+    <div class="preview-backdrop" data-preview-close></div>
+    <article class="preview-card upload-preview-card" tabindex="-1">
+        <button class="preview-close" type="button" aria-label="Close preview" data-preview-close>&times;</button>
+        <div class="preview-title-row">
+            <div>
+                <p class="tag">Revision Preview</p>
+                <h2 id="edit-preview-title" tabindex="-1">Review your changes</h2>
+                <p class="preview-kicker" id="edit-preview-summary">Check the edited metadata below before saving this revision.</p>
+                <div class="row-badge-line preview-pill-line" aria-label="Preview state">
+                    <span class="row-pill tech-type">Draft</span>
+                    <span class="row-pill tech-outline">Not saved yet</span>
+                </div>
+            </div>
+        </div>
+        <div class="upload-preview-body">
+            <section class="upload-preview-section">
+                <div class="upload-preview-section-head">
+                    <span class="upload-preview-accent"></span>
+                    <h3>Dataset details</h3>
+                </div>
+                <div class="upload-preview-grid upload-preview-grid--three">
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Title</span>
+                        <strong id="edit-preview-title-value"><?= esc(old('title', $dataset['title'] ?? '')) ?></strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Category</span>
+                        <strong id="edit-preview-category-value"><?= esc(old('category', $dataset['category'] ?? '')) ?></strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Access type</span>
+                        <strong id="edit-preview-access-value"><?= esc($accessLabel ?? 'Public') ?></strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Data type</span>
+                        <strong id="edit-preview-data-type-value"><?= esc(old('data_type', $dataset['data_type'] ?? '')) ?></strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Formats inside ZIP</span>
+                        <strong id="edit-preview-content-formats-value"><?= esc(old('content_formats', $dataset['content_formats'] ?? '')) ?></strong>
+                    </div>
+                    <div class="upload-preview-field upload-preview-field--full">
+                        <span class="upload-preview-label">Description</span>
+                        <strong id="edit-preview-description-value"><?= esc(old('description', $dataset['description'] ?? '')) ?></strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="upload-preview-section">
+                <div class="upload-preview-section-head">
+                    <span class="upload-preview-accent"></span>
+                    <h3>Research details</h3>
+                </div>
+                <div class="upload-preview-grid upload-preview-grid--two">
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Research title</span>
+                        <strong id="edit-preview-research-title-value"><?= esc(old('research_title', $dataset['research_title'] ?? '')) ?></strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Project head</span>
+                        <strong id="edit-preview-project-head-value"><?= esc(old('project_head', $dataset['project_head'] ?? '')) ?></strong>
+                    </div>
+                    <div class="upload-preview-field upload-preview-field--full">
+                        <span class="upload-preview-label">Members</span>
+                        <strong id="edit-preview-members-value"><?= esc(old('members', $dataset['members'] ?? 'Not listed')) ?></strong>
+                    </div>
+                </div>
+            </section>
+
+            <section class="upload-preview-section">
+                <div class="upload-preview-section-head">
+                    <span class="upload-preview-accent"></span>
+                    <h3>Source, cover, and revision</h3>
+                </div>
+                <div class="upload-preview-grid upload-preview-grid--two">
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Source type</span>
+                        <strong id="edit-preview-source-type-value"><?= esc(old('source_type', $dataset['source_type'] ?? '')) ?></strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Source link</span>
+                        <strong id="edit-preview-source-link-value"><?= esc(old('source_link', $dataset['source_link'] ?? 'Not provided')) ?></strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">Tags</span>
+                        <strong id="edit-preview-tags-value"><?= esc(old('tags', $dataset['tags'] ?? '')) ?></strong>
+                    </div>
+                    <div class="upload-preview-field">
+                        <span class="upload-preview-label">New cover image</span>
+                        <strong id="edit-preview-cover-value">Keeping current cover</strong>
+                    </div>
+                    <div class="upload-preview-field upload-preview-field--full">
+                        <span class="upload-preview-label">New ZIP version</span>
+                        <strong id="edit-preview-file-value">No new file selected</strong>
+                    </div>
+                    <div class="upload-preview-field upload-preview-field--full">
+                        <span class="upload-preview-label">Change summary</span>
+                        <strong id="edit-preview-change-summary-value"><?= esc(old('change_summary', '')) ?: 'No summary entered yet' ?></strong>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="preview-actions">
+            <button type="button" class="button secondary" data-preview-close>Back to edit</button>
+            <button type="button" class="button" id="confirm-edit-submit">Confirm &amp; Save</button>
+        </div>
+    </article>
+</div>
+
 <script>
 (() => {
+    const form = document.getElementById('edit-dataset-form');
+    const submitButton = document.getElementById('edit-dataset-submit');
+    const previewModal = document.getElementById('edit-preview-modal');
+    const confirmButton = document.getElementById('confirm-edit-submit');
+    const fieldMap = [
+        ['title', 'edit-preview-title-value'],
+        ['category', 'edit-preview-category-value'],
+        ['description', 'edit-preview-description-value'],
+        ['data_type', 'edit-preview-data-type-value', true],
+        ['content_formats', 'edit-preview-content-formats-value'],
+        ['access_type', 'edit-preview-access-value', true],
+        ['research_title', 'edit-preview-research-title-value'],
+        ['project_head', 'edit-preview-project-head-value'],
+        ['members', 'edit-preview-members-value'],
+        ['source_type', 'edit-preview-source-type-value', true],
+        ['source_link', 'edit-preview-source-link-value'],
+        ['tags', 'edit-preview-tags-value'],
+        ['change_summary', 'edit-preview-change-summary-value']
+    ];
+    let previewConfirmed = false;
+
+    const textOrFallback = (value, fallback) => {
+        const trimmed = (value ?? '').toString().trim();
+        return trimmed ? trimmed : fallback;
+    };
+
+    const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+    };
+
+    const getSelectedLabel = (select) => {
+        if (!select) return '';
+        const option = select.options[select.selectedIndex];
+        return option ? option.textContent.trim() : '';
+    };
+
+    const renderPreview = () => {
+        fieldMap.forEach(([fieldId, previewId, isSelect]) => {
+            const input = document.getElementById(fieldId);
+            if (!input) return;
+            const value = isSelect ? getSelectedLabel(input) : input.value;
+            const fallback = fieldId === 'change_summary'
+                ? 'No summary entered yet'
+                : fieldId === 'members'
+                    ? 'Not listed'
+                    : fieldId === 'source_link'
+                        ? 'Not provided'
+                        : 'Not entered yet';
+            setText(previewId, textOrFallback(value, fallback));
+        });
+
+        const coverInput = document.getElementById('cover_image');
+        const coverValue = coverInput && coverInput.files && coverInput.files.length > 0
+            ? coverInput.files[0].name
+            : 'Keeping current cover';
+        setText('edit-preview-cover-value', coverValue);
+
+        const fileInput = document.getElementById('dataset_file');
+        const fileValue = fileInput && fileInput.files && fileInput.files.length > 0
+            ? fileInput.files[0].name
+            : 'No new file selected';
+        setText('edit-preview-file-value', fileValue);
+    };
+
+    const openPreview = () => {
+        if (!previewModal) return;
+        renderPreview();
+        previewModal.hidden = false;
+        document.documentElement.classList.add('preview-open');
+        previewModal.querySelector('.preview-card')?.focus();
+    };
+
+    const closePreview = () => {
+        if (!previewModal) return;
+        previewModal.hidden = true;
+        document.documentElement.classList.remove('preview-open');
+        previewConfirmed = false;
+    };
+
+    if (form) {
+        form.addEventListener('submit', (e) => {
+            if (previewConfirmed) return;
+            e.preventDefault();
+            openPreview();
+        });
+    }
+
+    if (submitButton) {
+        submitButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            openPreview();
+        });
+    }
+
+    document.querySelectorAll('#edit-dataset-form input, #edit-dataset-form textarea, #edit-dataset-form select').forEach((el) => {
+        el.addEventListener('input', renderPreview);
+        el.addEventListener('change', renderPreview);
+    });
+
+    if (confirmButton) {
+        confirmButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            previewConfirmed = true;
+            if (form && typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+            } else if (form) {
+                form.submit();
+            }
+        });
+    }
+
+    if (previewModal) {
+        previewModal.querySelectorAll('[data-preview-close]').forEach((btn) => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                closePreview();
+            });
+        });
+
+        previewModal.addEventListener('click', (e) => {
+            if (e.target === previewModal) {
+                closePreview();
+            }
+        });
+    }
+
     const input = document.getElementById('cover_image');
     const preview = document.getElementById('cover-preview');
     const clear = document.getElementById('cover-clear');
-    if (!input || !preview || !clear) return;
+    if (!input || !preview || !clear) {
+        renderPreview();
+        return;
+    }
 
     const currentCover = preview.src;
     let objectUrl = null;
@@ -143,12 +384,14 @@
         if (input.files.length === 0) {
             preview.src = currentCover;
             clear.hidden = true;
+            renderPreview();
             return;
         }
 
         objectUrl = URL.createObjectURL(input.files[0]);
         preview.src = objectUrl;
         clear.hidden = false;
+        renderPreview();
     });
 
     clear.addEventListener('click', () => {
@@ -157,7 +400,10 @@
         input.value = '';
         preview.src = currentCover;
         clear.hidden = true;
+        renderPreview();
     });
+
+    renderPreview();
 })();
 </script>
 <?= $this->endSection() ?>

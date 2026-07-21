@@ -247,6 +247,7 @@ class Datasets extends BaseController
             'sourceTypes' => ['Primary', 'Secondary'],
             'accessTypes' => DatasetModel::accessOptions(),
             'statusLabel' => DatasetModel::statusLabel((string) ($dataset['status'] ?? '')),
+            'accessLabel' => DatasetModel::accessLabel((string) old('access_type', $dataset['access_type'] ?? 'public')),
         ]);
     }
 
