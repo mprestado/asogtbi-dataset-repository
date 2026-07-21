@@ -150,7 +150,7 @@ class Datasets extends BaseController
             $this->recordDeniedDownload($id, 'Guest attempted to download a dataset file without an account session.');
 
             return redirect()
-                ->to('/login')
+                ->to('/login?return_to=' . rawurlencode('/datasets/' . $id))
                 ->with('error', 'Sign in required. Please sign in to download this dataset.');
         }
 

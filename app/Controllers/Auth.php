@@ -14,9 +14,12 @@ class Auth extends BaseController
 
     public function login(): string
     {
+        $returnTo = $this->storeIntendedDestination((string) $this->request->getGet('return_to'));
+
         return view('auth/login', [
             'title' => 'Sign in',
             'validation' => session()->getFlashdata('validation'),
+            'returnTo' => $returnTo,
             'demoAccounts' => [
                 ['role' => 'User', 'email' => 'user@example.test', 'password' => 'change-me'],
                 ['role' => 'Repository Administrator', 'email' => 'admin@example.test', 'password' => 'change-me'],
@@ -591,6 +594,11 @@ class Auth extends BaseController
      */
     private function postLoginDestination(array $roles): string
     {
+        $intended = $this->consumeIntendedDestination();
+        if ($intended !== null) {
+            return $intended;
+        }
+
         if (in_array('repository_administrator', $roles, true)) {
             return '/admin';
         }
@@ -602,6 +610,41 @@ class Auth extends BaseController
         }
 
         return '/dashboard';
+    }
+
+    private function storeIntendedDestination(string $returnTo): string
+    {
+        $safeReturnTo = $this->sanitizeInternalReturnTo($returnTo);
+        if ($safeReturnTo !== null) {
+            $this->session->setTempdata('auth_return_to', $safeReturnTo, 900);
+        }
+
+        $storedReturnTo = $this->session->getTempdata('auth_return_to');
+
+        return is_string($storedReturnTo) ? $storedReturnTo : '';
+    }
+
+    private function consumeIntendedDestination(): ?string
+    {
+        $returnTo = $this->session->getTempdata('auth_return_to');
+        $this->session->removeTempdata('auth_return_to');
+
+        return is_string($returnTo) ? $this->sanitizeInternalReturnTo($returnTo) : null;
+    }
+
+    private function sanitizeInternalReturnTo(string $returnTo): ?string
+    {
+        $returnTo = trim($returnTo);
+
+        if ($returnTo === '' || ! str_starts_with($returnTo, '/') || str_starts_with($returnTo, '//')) {
+            return null;
+        }
+
+        if (str_contains($returnTo, '://') || str_contains($returnTo, "\0")) {
+            return null;
+        }
+
+        return $returnTo;
     }
 
     private function isValidPasswordResetToken(string $email, string $token): bool
