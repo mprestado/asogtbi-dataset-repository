@@ -8,6 +8,7 @@ $error = array_merge([
     'message' => '',
     'actions' => [],
     'illustration' => null,
+    'illustrationClass' => '',
 ], $error ?? []);
 
 $actionClassMap = [
@@ -33,7 +34,7 @@ $actionClassMap = [
     <div class="shell">
         <section class="error-card" aria-labelledby="error-title">
             <?php if (! empty($error['illustration'])) : ?>
-                <div class="error-visual" aria-hidden="true">
+                <div class="error-visual<?= $error['illustrationClass'] ? ' ' . esc($error['illustrationClass'], 'attr') : '' ?>" aria-hidden="true">
                     <?= $error['illustration'] ?>
                 </div>
             <?php endif; ?>

@@ -18,7 +18,8 @@ $error = [
             'variant' => 'secondary',
         ],
     ],
-    'illustration' => '<img src="' . esc(base_url('assets/img/error_500.png'), 'attr') . '" alt="" width="110" height="110" loading="eager" decoding="async">',
+    'illustrationClass' => 'error-visual--plain',
+    'illustration' => '<img class="error-visual__image" src="' . esc(base_url('assets/img/error_500.png'), 'attr') . '" alt="" loading="eager" decoding="async">',
 ];
 
 include __DIR__ . DIRECTORY_SEPARATOR . '_error_layout.php';
