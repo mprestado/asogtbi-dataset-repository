@@ -118,55 +118,67 @@
 </section>
 
 <section class="content-section home-insights-section">
-    <div class="shell home-insights-grid">
-        <div class="home-stat-grid" aria-label="Repository summary">
-            <div class="stat-card">
-                <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">database</span></span>
-                <span class="stat-number"><?= esc((string) ($publishedCount ?? 0)) ?></span>
-                <span class="stat-label">Published datasets</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">category</span></span>
-                <span class="stat-number">5</span>
-                <span class="stat-label">Canonical data types</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">verified_user</span></span>
-                <span class="stat-number">4</span>
-                <span class="stat-label">Access classifications</span>
-            </div>
-            <div class="stat-card">
-                <span class="stat-icon"><span class="material-symbols-rounded" aria-hidden="true">folder_zip</span></span>
-                <span class="stat-number">ZIP</span>
-                <span class="stat-label">Secure upload format</span>
-            </div>
+    <div class="shell">
+        <div class="home-dataset-head">
+            <p class="dashboard-subtitle">Public Dataset Activity</p>
+            <h2>Explore what is new and what researchers revisit most.</h2>
+            <p>Recent releases and view-ranked records share one clean space, keeping the home screen focused on catalog discovery.</p>
         </div>
 
-        <article class="panel home-recent-panel">
-            <div class="home-recent-head">
-                <p class="tag">Recent Public Datasets</p>
-                <h2>Fresh from the catalog</h2>
-            </div>
-            <?php if (empty($featuredDatasets)): ?>
-                <h2>No Published datasets yet</h2>
-                <p class="muted">Run migrations and seeders to load sample records, or log in and submit the first dataset for review.</p>
-            <?php else: ?>
-                <div class="home-recent-stack">
-                    <?php foreach ($featuredDatasets as $dataset): ?>
-                        <a class="home-recent-row" href="<?= site_url('datasets/' . $dataset['id']) ?>">
-                            <div class="row-badge-line">
-                                <span class="row-pill tech-type"><?= esc($dataset['data_type'] ?: 'Dataset') ?></span>
-                                <span class="row-pill tech-outline"><?= esc($dataset['category'] ?: 'Uncategorized') ?></span>
-                            </div>
-                            <strong class="home-recent-title"><?= esc($dataset['title']) ?></strong>
-                        </a>
-                    <?php endforeach; ?>
+        <div class="home-dataset-grid">
+            <article class="home-dataset-panel">
+                <div class="home-list-head">
+                    <span>01</span>
+                    <div>
+                        <p>Recent Public Datasets</p>
+                        <h3>Fresh from the catalog</h3>
+                    </div>
                 </div>
-            <?php endif; ?>
-            <div class="actions">
-                <a class="button" href="<?= site_url('datasets') ?>">Open Catalog</a>
-            </div>
-        </article>
+                <?php if (empty($featuredDatasets)): ?>
+                    <div class="home-empty-line">
+                        <strong>No published datasets yet</strong>
+                        <p>Run migrations and seeders, or submit the first public dataset for review.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="home-dataset-list">
+                        <?php foreach ($featuredDatasets as $dataset): ?>
+                            <a class="home-dataset-row" href="<?= site_url('datasets/' . $dataset['id']) ?>">
+                                <span class="home-row-kicker"><?= esc($dataset['data_type'] ?: 'Dataset') ?> / <?= esc($dataset['category'] ?: 'Uncategorized') ?></span>
+                                <strong><?= esc($dataset['title']) ?></strong>
+                                <small><?= esc($dataset['author_name'] ?? 'Repository contributor') ?></small>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </article>
+
+            <article class="home-dataset-panel">
+                <div class="home-list-head">
+                    <span>02</span>
+                    <div>
+                        <p>Popular Datasets</p>
+                        <h3>Most viewed records</h3>
+                    </div>
+                </div>
+                <?php if (empty($popularDatasets)): ?>
+                    <div class="home-empty-line">
+                        <strong>No view activity yet</strong>
+                        <p>Dataset views will appear here once public records are opened.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="home-dataset-list">
+                        <?php foreach ($popularDatasets as $dataset): ?>
+                            <a class="home-dataset-row" href="<?= site_url('datasets/' . $dataset['id']) ?>">
+                                <span class="home-row-kicker"><?= esc((string) ((int) ($dataset['view_count'] ?? 0))) ?> <?= ((int) ($dataset['view_count'] ?? 0)) === 1 ? 'view' : 'views' ?> / <?= esc($dataset['data_type'] ?: 'Dataset') ?></span>
+                                <strong><?= esc($dataset['title']) ?></strong>
+                                <small><?= esc($dataset['category'] ?: 'Uncategorized') ?></small>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </article>
+        </div>
+
     </div>
 </section>
 

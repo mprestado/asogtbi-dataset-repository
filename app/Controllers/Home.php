@@ -9,6 +9,7 @@ class Home extends BaseController
     public function index(): string
     {
         $datasetModel = new DatasetModel();
+        $db = db_connect();
 
         $featuredDatasets = $datasetModel
             ->select('datasets.*, users.name AS author_name')
@@ -17,7 +18,26 @@ class Home extends BaseController
             ->where('datasets.access_type', DatasetModel::ACCESS_PUBLIC)
             ->where('datasets.archived_at', null)
             ->orderBy('datasets.created_at', 'DESC')
-            ->findAll(3);
+            ->findAll(5);
+
+        $viewCountSubquery = $db->table('dataset_views')
+            ->select('dataset_id, COUNT(*) AS view_count')
+            ->groupBy('dataset_id')
+            ->getCompiledSelect();
+
+        $popularDatasets = $db->table('datasets')
+            ->select('datasets.*, users.name AS author_name, COALESCE(view_counts.view_count, 0) AS view_count')
+            ->join('users', 'users.id = datasets.contributor_id', 'left')
+            ->join('(' . $viewCountSubquery . ') view_counts', 'view_counts.dataset_id = datasets.id', 'left')
+            ->where('datasets.status', DatasetModel::STATUS_PUBLISHED)
+            ->where('datasets.access_type', DatasetModel::ACCESS_PUBLIC)
+            ->where('datasets.archived_at', null)
+            ->where('view_counts.view_count IS NOT NULL', null, false)
+            ->orderBy('view_count', 'DESC')
+            ->orderBy('datasets.created_at', 'DESC')
+            ->limit(5)
+            ->get()
+            ->getResultArray();
 
         return view('home/index', [
             'title' => 'ASOG TBI Dataset Repository',
@@ -27,6 +47,7 @@ class Home extends BaseController
                 ->where('archived_at', null)
                 ->countAllResults(),
             'featuredDatasets' => $featuredDatasets,
+            'popularDatasets' => $popularDatasets,
         ]);
     }
 }
