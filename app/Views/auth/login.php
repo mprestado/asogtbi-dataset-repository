@@ -39,6 +39,9 @@
 
             <form class="auth-form" method="post" action="<?= site_url('login') ?>" novalidate>
                 <?= csrf_field() ?>
+                <?php if (! empty($returnTo)): ?>
+                    <input type="hidden" name="return_to" value="<?= esc($returnTo, 'attr') ?>">
+                <?php endif; ?>
 
                 <div class="auth-field">
                     <label for="email">Email</label>
