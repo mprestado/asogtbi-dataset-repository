@@ -351,6 +351,7 @@ img {
     line-height: 1.35;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
 }
 
 .notification-popover > form {
@@ -2597,6 +2598,7 @@ a.result-card:hover {
     overflow: hidden;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
 }
 
 .dataset-hero-toggle {
@@ -3716,6 +3718,7 @@ a.result-card:hover {
     line-height: 1.45;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
 }
 
 .contributor-workflow-state {
@@ -3853,6 +3856,7 @@ a.result-card:hover {
     line-height: 1.4;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
 }
 
 .contributor-record__aside {
@@ -6609,7 +6613,7 @@ pre {
 .review-age-chip, .review-draft-chip { display: inline-flex; align-items: center; min-height: 22px; border-radius: 999px; background: #ece6dc; color: #526271; padding: 2px 8px; font-size: .68rem; font-weight: 900; }
 .review-draft-chip { background: #e4f2f8; color: #03558c; }
 .review-queue-card h2, .moderation-board-card h2 { margin: 7px 0 3px; font-family: "DM Sans", sans-serif; font-size: 1rem; }
-.review-queue-copy > p, .moderation-main > p { display: -webkit-box; margin: 0 0 8px; color: #687786; font-size: .78rem; line-height: 1.42; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.review-queue-copy > p, .moderation-main > p { display: -webkit-box; margin: 0 0 8px; color: #687786; font-size: .78rem; line-height: 1.42; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
 .review-queue-meta, .moderation-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; }
 .review-queue-meta span, .moderation-meta span { color: #546474; font-size: .7rem; }
 .review-queue-meta strong, .moderation-meta strong { margin-right: 4px; color: var(--navy); }
