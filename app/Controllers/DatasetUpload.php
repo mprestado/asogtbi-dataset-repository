@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\DatasetFileModel;
 use App\Models\DatasetModel;
 use App\Models\DatasetVersionModel;
+use App\Models\NotificationModel;
 
 class DatasetUpload extends BaseController
 {
@@ -137,6 +138,32 @@ class DatasetUpload extends BaseController
         ]);
 
         $this->recordAudit('dataset_upload', 'dataset', $datasetId, 'Dataset submitted for technical verification.');
+
+        $title = trim((string) $this->request->getPost('title'));
+        model(NotificationModel::class)->insert([
+            'user_id' => $this->currentUserId(),
+            'type' => 'submission_confirmation',
+            'title' => 'Dataset submitted',
+            'message' => 'Your dataset "' . $title . '" has been submitted and is pending technical review.',
+            'link' => '/datasets/' . $datasetId . '/edit',
+        ]);
+        $admins = \Config\Database::connect()->table('users')
+            ->select('users.id')
+            ->join('user_roles', 'user_roles.user_id = users.id')
+            ->join('roles', 'roles.id = user_roles.role_id')
+            ->where('roles.name', 'repository_administrator')
+            ->where('users.status', 'active')
+            ->get()
+            ->getResultArray();
+        foreach ($admins as $admin) {
+            model(NotificationModel::class)->insert([
+                'user_id' => (int) $admin['id'],
+                'type' => 'workflow_attention',
+                'title' => 'New dataset submitted',
+                'message' => 'A new dataset "' . $title . '" has been submitted and needs technical reviewer assignment.',
+                'link' => '/admin/datasets/' . $datasetId,
+            ]);
+        }
 
         return redirect()
             ->to('/datasets/' . $datasetId . '/edit')
