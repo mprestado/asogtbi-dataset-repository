@@ -8,6 +8,7 @@ use App\Models\DatasetFileModel;
 use App\Models\DatasetModel;
 use App\Models\DatasetVersionModel;
 use App\Models\DatasetViewModel;
+use App\Models\NotificationModel;
 
 class Datasets extends BaseController
 {
@@ -351,6 +352,27 @@ class Datasets extends BaseController
             'created_by' => (int) $this->currentUserId(),
         ]);
         $this->recordAudit('dataset_update', 'dataset', $id, 'Dataset metadata was updated.');
+
+        if ($newStatus !== (string) ($dataset['status'] ?? '')) {
+            $title = trim((string) $this->request->getPost('title'));
+            $admins = \Config\Database::connect()->table('users')
+                ->select('users.id')
+                ->join('user_roles', 'user_roles.user_id = users.id')
+                ->join('roles', 'roles.id = user_roles.role_id')
+                ->where('roles.name', 'repository_administrator')
+                ->where('users.status', 'active')
+                ->get()
+                ->getResultArray();
+            foreach ($admins as $admin) {
+                model(NotificationModel::class)->insert([
+                    'user_id' => (int) $admin['id'],
+                    'type' => 'workflow_attention',
+                    'title' => 'Dataset updated',
+                    'message' => 'Dataset "' . $title . '" has been updated and needs attention.',
+                    'link' => '/admin/datasets/' . $id,
+                ]);
+            }
+        }
 
         return redirect()
             ->to('/datasets/' . $id . '/edit')
