@@ -298,7 +298,10 @@
             <?php if (empty($latestFile)): ?>
                 <span class="button is-disabled" aria-disabled="true">Download unavailable</span>
             <?php elseif (! empty($downloadRequiresLogin)): ?>
-                <a class="button" href="<?= site_url('login') ?>">Sign in to download</a>
+                <a class="button" href="<?= site_url('datasets/' . $datasetId . '/download') ?>">
+                    <span class="material-symbols-rounded" aria-hidden="true">lock</span>
+                    Download
+                </a>
             <?php elseif (! empty($canDownload)): ?>
                 <a class="button" href="<?= site_url('datasets/' . $datasetId . '/download') ?>">Download</a>
             <?php else: ?>
