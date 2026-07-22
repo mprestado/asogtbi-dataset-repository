@@ -189,6 +189,8 @@ class Auth extends BaseController
 
     public function forgotPassword(): string
     {
+        $this->clearStaleAuthenticationPrompt();
+
         return view('auth/forgot_password', [
             'title' => 'Forgot Password',
         ]);
@@ -201,30 +203,35 @@ class Auth extends BaseController
         ];
 
         if (! $this->validate($rules)) {
-            $token = rawurlencode((string) $this->request->getPost('token'));
-            $email = rawurlencode((string) $this->request->getPost('email'));
-
             return redirect()
-                ->to('/reset-password?token=' . $token . '&email=' . $email)
+                ->to('/forgot-password')
                 ->withInput()
+                ->with('validation', $this->validator->getErrors())
                 ->with('error', implode(' ', $this->validator->getErrors()));
         }
 
-        $email = trim((string) $this->request->getPost('email'));
-        $user = model(UserModel::class)->where('email', $email)->first();
+        $email = strtolower(trim((string) $this->request->getPost('email')));
+        $user = $this->findPasswordResetEligibleUser($email);
 
-        if (is_array($user) && ($user['status'] ?? 'inactive') === 'active' && ! $this->isGoogleAccount($user)) {
+        if (is_array($user)) {
+            $accountEmail = strtolower(trim((string) $user['email']));
             $token = bin2hex(random_bytes(32));
             $tokenHash = hash('sha256', $token);
+            $resetModel = model(PasswordResetModel::class);
 
-            model(PasswordResetModel::class)->insert([
-                'email' => $email,
+            $resetId = (int) $resetModel->insert([
+                'email' => $accountEmail,
                 'token_hash' => $tokenHash,
                 'expires_at' => date('Y-m-d H:i:s', strtotime('+30 minutes')),
-            ]);
+            ], true);
 
-            if (ENVIRONMENT === 'development') {
-                $this->session->setFlashdata('reset_link', site_url('reset-password?token=' . $token . '&email=' . rawurlencode($email)));
+            if ($resetId > 0) {
+                $resetUrl = site_url('reset-password?token=' . $token . '&email=' . rawurlencode($accountEmail));
+                $this->sendPasswordResetEmail($accountEmail, $resetUrl);
+
+                if (ENVIRONMENT === 'development') {
+                    $this->session->setFlashdata('reset_link', $resetUrl);
+                }
             }
         }
 
@@ -235,6 +242,8 @@ class Auth extends BaseController
 
     public function resetPassword(): string
     {
+        $this->clearStaleAuthenticationPrompt();
+
         $token = trim((string) $this->request->getGet('token'));
         $email = trim((string) $this->request->getGet('email'));
 
@@ -271,7 +280,7 @@ class Auth extends BaseController
                 ->with('error', implode(' ', $this->validator->getErrors()));
         }
 
-        $email = trim((string) $this->request->getPost('email'));
+        $email = strtolower(trim((string) $this->request->getPost('email')));
         $token = trim((string) $this->request->getPost('token'));
         $reset = $this->findValidPasswordReset($email, $token);
 
@@ -281,17 +290,11 @@ class Auth extends BaseController
                 ->with('error', 'That password reset link is invalid or expired.');
         }
 
-        $user = model(UserModel::class)->where('email', $email)->first();
+        $user = $this->findPasswordResetEligibleUser($email);
         if (! is_array($user)) {
             return redirect()
                 ->to('/forgot-password')
                 ->with('error', 'That password reset link is invalid or expired.');
-        }
-
-        if ($this->isGoogleAccount($user)) {
-            return redirect()
-                ->to('/login')
-                ->with('error', 'This account uses Google sign-in and does not have a repository password to reset.');
         }
 
         model(UserModel::class)->update((int) $user['id'], [
@@ -587,6 +590,55 @@ class Auth extends BaseController
         return strtolower(trim((string) ($user['auth_provider'] ?? 'local'))) === 'google';
     }
 
+    private function clearStaleAuthenticationPrompt(): void
+    {
+        if ($this->session->getFlashdata('error') === 'Please log in to continue.') {
+            $this->session->remove('error');
+        }
+    }
+
+    /**
+     * Only active, administrator-issued password accounts outside the CSPC
+     * Google domain may enter the password-reset flow.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function findPasswordResetEligibleUser(string $email): ?array
+    {
+        $email = strtolower(trim($email));
+        if ($email === '') {
+            return null;
+        }
+
+        $user = model(UserModel::class)->where('email', $email)->first();
+
+        return is_array($user) && $this->isPasswordResetEligibleAccount($user) ? $user : null;
+    }
+
+    /**
+     * @param array<string, mixed> $user
+     */
+    private function isPasswordResetEligibleAccount(array $user): bool
+    {
+        if (strtolower(trim((string) ($user['status'] ?? ''))) !== 'active') {
+            return false;
+        }
+
+        if (strtolower(trim((string) ($user['auth_provider'] ?? ''))) !== 'local') {
+            return false;
+        }
+
+        $email = strtolower(trim((string) ($user['email'] ?? '')));
+        $passwordInfo = password_get_info((string) ($user['password_hash'] ?? ''));
+        if ($email === '' || ($passwordInfo['algoName'] ?? 'unknown') === 'unknown') {
+            return false;
+        }
+
+        $googleDomain = strtolower(trim((string) config(GoogleAuth::class)->allowedDomain));
+
+        return $googleDomain === '' || ! str_ends_with($email, '@' . $googleDomain);
+    }
+
     /**
      * Maintainer accounts should land in their work queue instead of the public contributor dashboard.
      *
@@ -657,6 +709,11 @@ class Auth extends BaseController
      */
     private function findValidPasswordReset(string $email, string $token): ?array
     {
+        $email = strtolower(trim($email));
+        if (! is_array($this->findPasswordResetEligibleUser($email))) {
+            return null;
+        }
+
         $tokenHash = hash('sha256', $token);
         $reset = model(PasswordResetModel::class)
             ->where('email', $email)
@@ -667,5 +724,32 @@ class Auth extends BaseController
             ->first();
 
         return is_array($reset) ? $reset : null;
+    }
+
+    private function sendPasswordResetEmail(string $recipient, string $resetUrl): bool
+    {
+        $emailConfig = config('Email');
+        if (trim((string) $emailConfig->fromEmail) === '') {
+            log_message('error', 'Password reset email was not sent because email.fromEmail is not configured.');
+            return false;
+        }
+
+        $mailer = service('email');
+        $mailer->setFrom($emailConfig->fromEmail, $emailConfig->fromName ?: 'ASOG TBI Dataset Repository');
+        $mailer->setTo($recipient);
+        $mailer->setSubject('Reset your ASOG TBI Dataset Repository password');
+        $mailer->setMailType('html');
+        $mailer->setMessage(view('emails/password_reset', [
+            'resetUrl' => $resetUrl,
+            'expiresInMinutes' => 30,
+        ]));
+        $mailer->setAltMessage("Reset your ASOG TBI Dataset Repository password:\n\n{$resetUrl}\n\nThis link expires in 30 minutes and can only be used once.");
+
+        if (! $mailer->send()) {
+            log_message('error', 'Password reset email could not be sent to the requested account.');
+            return false;
+        }
+
+        return true;
     }
 }
