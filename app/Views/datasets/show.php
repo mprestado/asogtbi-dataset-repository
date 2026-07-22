@@ -181,97 +181,10 @@
             </div>
         </details>
 
-        <details class="panel dataset-accordion dataset-recommendations-accordion" open>
-            <summary class="dataset-accordion-summary">
-                <span>
-                    <small>Recommended Datasets</small>
-                    <strong>Similar datasets and preview shortcuts</strong>
-                </span>
-                <span class="dataset-accordion-icon material-symbols-rounded" aria-hidden="true">expand_more</span>
-            </summary>
-            <div class="dataset-accordion-body">
-                <?php if (empty($recommendationPreviewData)): ?>
-                    <p class="muted">No metadata-based recommendations are available yet.</p>
-                <?php else: ?>
-                    <div class="dataset-rec-list">
-                        <?php foreach ($recommendationPreviewData as $recommended): ?>
-                            <article class="dataset-rec-row">
-                                <div class="dataset-rec-copy">
-                                    <h3>
-                                        <a href="<?= site_url('datasets/' . $recommended['id']) ?>"><?= esc($recommended['title']) ?></a>
-                                    </h3>
-                                    <div class="dataset-rec-meta">
-                                        <span class="dataset-chip dataset-chip--accent"><?= esc($recommended['category']) ?></span>
-                                        <span class="dataset-rec-score">score <?= esc((string) $recommended['score']) ?></span>
-                                    </div>
-                                </div>
-                                <button
-                                    class="button secondary dataset-preview-trigger"
-                                    type="button"
-                                    data-preview-target="dataset-preview-<?= esc((string) $recommended['id']) ?>"
-                                    aria-controls="dataset-preview-<?= esc((string) $recommended['id']) ?>"
-                                    aria-expanded="false"
-                                >
-                                    Preview
-                                </button>
-                            </article>
-
-                            <div class="preview-modal" id="dataset-preview-<?= esc((string) $recommended['id']) ?>" role="dialog" aria-modal="true" aria-labelledby="dataset-preview-title-<?= esc((string) $recommended['id']) ?>" aria-describedby="dataset-preview-summary-<?= esc((string) $recommended['id']) ?>" hidden>
-                                <div class="preview-backdrop" data-preview-close></div>
-                                <article class="preview-card dataset-preview-card" tabindex="-1">
-                                    <button class="preview-close" type="button" data-preview-close aria-label="Close preview">&times;</button>
-
-                                    <div class="preview-title-row">
-                                        <div>
-                                            <p class="tag">Recommendation Preview</p>
-                                            <h2 id="dataset-preview-title-<?= esc((string) $recommended['id']) ?>" tabindex="-1" data-preview-initial><?= esc($recommended['title']) ?></h2>
-                                        </div>
-                                        <div class="row-badge-line preview-pill-line" aria-label="Dataset labels">
-                                            <span class="row-pill tech-type"><?= esc($recommended['data_type']) ?></span>
-                                            <span class="row-pill tech-outline"><?= esc($recommended['category']) ?></span>
-                                            <span class="row-pill tech-format"><?= esc($recommended['content_formats']) ?></span>
-                                            <span class="row-pill tech-outline"><?= esc($recommended['file_format']) ?> package</span>
-                                        </div>
-                                    </div>
-
-                                    <p class="preview-description" id="dataset-preview-summary-<?= esc((string) $recommended['id']) ?>"><?= esc($recommended['description'] ?: 'No description provided yet.') ?></p>
-
-                                    <dl class="preview-fact-sheet">
-                                        <div>
-                                            <dt>Contributor:</dt>
-                                            <dd><?= esc($recommended['author_name']) ?></dd>
-                                        </div>
-                                        <div>
-                                            <dt>Research Title:</dt>
-                                            <dd><?= esc($recommended['research_title']) ?></dd>
-                                        </div>
-                                        <div>
-                                            <dt>Authors:</dt>
-                                            <dd><?= esc($recommended['members']) ?></dd>
-                                        </div>
-                                        <div>
-                                            <dt>Date Uploaded:</dt>
-                                            <dd><?= esc($recommended['created_at']) ?></dd>
-                                        </div>
-                                        <div>
-                                            <dt>Tags:</dt>
-                                            <dd><?= esc($recommended['tags'] === [] ? 'No tags' : implode(', ', array_slice($recommended['tags'], 0, 8))) ?></dd>
-                                        </div>
-                                    </dl>
-
-                                    <div class="preview-actions">
-                                        <a class="button gold preview-explore-btn" href="<?= site_url('datasets/' . $recommended['id']) ?>" data-preview-primary>Explore</a>
-                                    </div>
-                                </article>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-        </details>
     </div>
 
-    <aside class="panel dataset-sidebar">
+    <div class="dataset-sidebar">
+        <aside class="panel">
         <p class="tag">Dataset File</p>
         <h2>Download and Cite</h2>
 
@@ -320,7 +233,67 @@
                 <a class="button secondary dataset-sidebar-edit" href="<?= site_url('datasets/' . $datasetId . '/edit') ?>">Edit dataset</a>
             <?php endif; ?>
         </div>
-    </aside>
+        </aside>
+
+        <section class="panel dataset-accordion dataset-recommendations-accordion">
+            <div class="dataset-accordion-summary">
+                <span>
+                    <small>Recommended Datasets</small>
+                    <strong>Similar datasets and preview shortcuts</strong>
+                </span>
+            </div>
+            <div class="dataset-accordion-body">
+                <?php if (empty($recommendationPreviewData)): ?>
+                    <p class="muted">No metadata-based recommendations are available yet.</p>
+                <?php else: ?>
+                    <div class="dataset-rec-list">
+                        <?php foreach ($recommendationPreviewData as $recommended): ?>
+                            <article class="dataset-rec-row">
+                                <div class="dataset-rec-copy">
+                                    <h3><a href="<?= site_url('datasets/' . $recommended['id']) ?>"><?= esc($recommended['title']) ?></a></h3>
+                                    <div class="dataset-rec-meta">
+                                        <span class="dataset-chip dataset-chip--accent"><?= esc($recommended['category']) ?></span>
+                                        <span class="dataset-rec-score">score <?= esc((string) $recommended['score']) ?></span>
+                                    </div>
+                                </div>
+                                <button class="button secondary dataset-preview-trigger" type="button" data-preview-target="dataset-preview-<?= esc((string) $recommended['id']) ?>" aria-controls="dataset-preview-<?= esc((string) $recommended['id']) ?>" aria-expanded="false">Preview</button>
+                            </article>
+
+                            <div class="preview-modal" id="dataset-preview-<?= esc((string) $recommended['id']) ?>" role="dialog" aria-modal="true" aria-labelledby="dataset-preview-title-<?= esc((string) $recommended['id']) ?>" aria-describedby="dataset-preview-summary-<?= esc((string) $recommended['id']) ?>" hidden>
+                                <div class="preview-backdrop" data-preview-close></div>
+                                <article class="preview-card dataset-preview-card" tabindex="-1">
+                                    <button class="preview-close" type="button" data-preview-close aria-label="Close preview">&times;</button>
+                                    <div class="preview-title-row">
+                                        <div>
+                                            <p class="tag">Recommendation Preview</p>
+                                            <h2 id="dataset-preview-title-<?= esc((string) $recommended['id']) ?>" tabindex="-1" data-preview-initial><?= esc($recommended['title']) ?></h2>
+                                        </div>
+                                        <div class="row-badge-line preview-pill-line" aria-label="Dataset labels">
+                                            <span class="row-pill tech-type"><?= esc($recommended['data_type']) ?></span>
+                                            <span class="row-pill tech-outline"><?= esc($recommended['category']) ?></span>
+                                            <span class="row-pill tech-format"><?= esc($recommended['content_formats']) ?></span>
+                                            <span class="row-pill tech-outline"><?= esc($recommended['file_format']) ?> package</span>
+                                        </div>
+                                    </div>
+                                    <p class="preview-description" id="dataset-preview-summary-<?= esc((string) $recommended['id']) ?>"><?= esc($recommended['description'] ?: 'No description provided yet.') ?></p>
+                                    <dl class="preview-fact-sheet">
+                                        <div><dt>Contributor:</dt><dd><?= esc($recommended['author_name']) ?></dd></div>
+                                        <div><dt>Research Title:</dt><dd><?= esc($recommended['research_title']) ?></dd></div>
+                                        <div><dt>Authors:</dt><dd><?= esc($recommended['members']) ?></dd></div>
+                                        <div><dt>Date Uploaded:</dt><dd><?= esc($recommended['created_at']) ?></dd></div>
+                                        <div><dt>Tags:</dt><dd><?= esc($recommended['tags'] === [] ? 'No tags' : implode(', ', array_slice($recommended['tags'], 0, 8))) ?></dd></div>
+                                    </dl>
+                                    <div class="preview-actions">
+                                        <a class="button gold preview-explore-btn" href="<?= site_url('datasets/' . $recommended['id']) ?>" data-preview-primary>Explore</a>
+                                    </div>
+                                </article>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </section>
+    </div>
 </section>
 
 <div class="preview-modal citation-modal" id="dataset-citation-<?= esc((string) $datasetId) ?>" role="dialog" aria-modal="true" aria-labelledby="citation-modal-title-<?= esc((string) $datasetId) ?>" hidden>
