@@ -1287,7 +1287,8 @@ a.result-card:hover {
     gap: 0;
 }
 
-.dataset-accordion summary {
+.dataset-accordion summary,
+.dataset-accordion > .dataset-accordion-summary {
     display: flex;
     align-items: center;
     justify-content: space-between;
