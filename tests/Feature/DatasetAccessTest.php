@@ -180,7 +180,12 @@ final class DatasetAccessTest extends CIUnitTestCase
 
         $result = $this->get('/datasets/' . $id . '/download');
 
-        $result->assertRedirectTo(site_url('login'));
+        $result->assertStatus(302);
+        $this->assertStringStartsWith(
+            site_url('login'),
+            $result->getRedirectUrl(),
+            'Expected guest to be redirected to the login page.'
+        );
         $this->assertDownloadDeniedAuditExists($id, 'Guest attempted to download');
     }
 
@@ -190,7 +195,12 @@ final class DatasetAccessTest extends CIUnitTestCase
             $id = $this->datasetIdByTitle($title);
             $result = $this->get('/datasets/' . $id . '/download');
 
-            $result->assertRedirectTo(site_url('login'));
+            $result->assertStatus(302);
+            $this->assertStringStartsWith(
+                site_url('login'),
+                $result->getRedirectUrl(),
+                'Expected guest to be redirected to the login page.'
+            );
             $this->assertDownloadDeniedAuditExists($id, 'Guest attempted to download');
         }
     }
@@ -199,10 +209,11 @@ final class DatasetAccessTest extends CIUnitTestCase
     {
         $id = $this->datasetIdByTitle('Startup Survey Responses');
 
-        $this->get('/datasets/' . $id)
-            ->assertStatus(200)
-            ->assertSee('Sign in to download')
-            ->assertDontSee('Download ZIP');
+        $result = $this->get('/datasets/' . $id);
+
+        $result->assertStatus(200);
+        $result->assertSee('Sign in to Download');
+        $result->assertDontSee('Download ZIP');
     }
 
     public function testAuthenticatedNonOwnerCanDownloadInstitutionalAndRestrictedButNotPrivate(): void

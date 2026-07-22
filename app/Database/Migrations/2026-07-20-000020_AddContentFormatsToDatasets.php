@@ -19,18 +19,21 @@ class AddContentFormatsToDatasets extends Migration
             ]);
         }
 
-        $this->db->query("
-            UPDATE datasets
-            SET content_formats = CASE
-                WHEN content_formats IS NULL OR content_formats = '' THEN
-                    CASE
-                        WHEN file_format IS NULL OR file_format = '' OR UPPER(file_format) = 'ZIP' THEN NULL
-                        ELSE file_format
-                    END
-                ELSE content_formats
-            END,
-            file_format = 'ZIP'
-        ");
+        $this->db->table('datasets')
+            ->set(
+                'content_formats',
+                "CASE
+                    WHEN content_formats IS NULL OR content_formats = '' THEN
+                        CASE
+                            WHEN file_format IS NULL OR file_format = '' OR UPPER(file_format) = 'ZIP' THEN NULL
+                            ELSE file_format
+                        END
+                    ELSE content_formats
+                END",
+                false
+            )
+            ->set('file_format', 'ZIP')
+            ->update();
     }
 
     public function down(): void
