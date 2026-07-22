@@ -73,7 +73,7 @@
                     <form method="post" action="<?= site_url('logout') ?>"><?= csrf_field() ?><button class="button secondary" type="submit"><span class="material-symbols-rounded" aria-hidden="true">logout</span> Logout</button></form>
                 </div>
             </details>
-            <a class="button portal-return" href="<?= site_url('/') ?>"><span class="material-symbols-rounded" aria-hidden="true">open_in_new</span> Return to website</a>
+            <a class="button portal-return" href="<?= site_url('/') ?>" target="_blank" rel="noopener noreferrer"><span class="material-symbols-rounded" aria-hidden="true">open_in_new</span> Go to Website</a>
         </div>
     </aside>
     <main class="portal-main">

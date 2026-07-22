@@ -20,14 +20,18 @@
 </header>
 
 <section class="panel access-credential-panel">
-    <div class="panel-head">
-        <div>
-            <p class="tag">Issued Credentials</p>
-            <h2>Create password account</h2>
-            <p class="muted">Use this for approved collaborators who cannot use the CSPC Google sign-in path. The email becomes their username.</p>
-        </div>
-    </div>
-    <form class="credential-create-form" method="post" action="<?= site_url('admin/users') ?>" novalidate>
+    <details class="access-credential-disclosure" <?= $errors !== [] ? 'open' : '' ?>>
+        <summary>
+            <span class="access-credential-summary-copy">
+                <span class="tag">Issued Credentials</span>
+                <strong>Create password account</strong>
+                <small>Open only when issuing approved collaborator credentials.</small>
+            </span>
+            <span class="material-symbols-rounded access-credential-chevron" aria-hidden="true">expand_more</span>
+        </summary>
+        <div class="access-credential-content">
+            <p class="muted access-credential-intro">Use this for approved collaborators who cannot use the CSPC Google sign-in path. The email becomes their username.</p>
+            <form class="credential-create-form" method="post" action="<?= site_url('admin/users') ?>" novalidate>
         <?= csrf_field() ?>
         <label>Name
             <input type="text" name="name" value="<?= old('name') ?>" placeholder="Full name" class="<?= isset($errors['name']) ? 'field-error__input' : '' ?>">
@@ -57,11 +61,13 @@
                 </label>
             <?php endforeach; ?>
         </fieldset>
-        <div class="credential-create-actions">
-            <p class="muted">After creating the account, share the email and temporary password through a secure channel.</p>
-            <button class="button" type="submit">Create credentials</button>
+                <div class="credential-create-actions">
+                    <p class="muted">After creating the account, share the email and temporary password through a secure channel.</p>
+                    <button class="button" type="submit">Create credentials</button>
+                </div>
+            </form>
         </div>
-    </form>
+    </details>
 </section>
 
 <section class="access-directory-shell panel">

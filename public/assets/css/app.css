@@ -24,6 +24,32 @@
     box-sizing: border-box;
 }
 
+details > summary {
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.disclosure-animating > :not(summary) {
+    animation: disclosureExpand .2s ease both;
+}
+
+@keyframes disclosureExpand {
+    from {
+        opacity: 0;
+        transform: none;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    details > summary,
+    .disclosure-animating > :not(summary) {
+        animation: none;
+        transition: none;
+    }
+}
+
 html {
     min-width: 320px;
 }
@@ -2047,6 +2073,15 @@ a.result-card:hover {
     padding: 18px;
 }
 
+.preview-modal:not([hidden]) {
+    animation: previewFadeIn .2s ease both;
+}
+
+@keyframes previewFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 .preview-backdrop {
     position: absolute;
     inset: 0;
@@ -2819,6 +2854,12 @@ a.result-card:hover {
     font-size: 16px;
     font-weight: 700;
     line-height: 1.35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .preview-modal:not([hidden]) {
+        animation: none;
+    }
 }
 
 .dataset-rec-copy a {
@@ -6451,7 +6492,16 @@ pre {
 .access-control-list { display: grid; gap: 14px; }
 .access-directory-shell { padding: 0; overflow: visible; background: #fffefa; }
 .access-credential-panel { gap: 16px; margin-bottom: 18px; padding: 16px; background: #fffefa; }
-.access-credential-panel .panel-head { align-items: flex-start; }
+.access-credential-disclosure > summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; list-style: none; }
+.access-credential-disclosure > summary::-webkit-details-marker { display: none; }
+.access-credential-summary-copy { display: grid; gap: 4px; min-width: 0; }
+.access-credential-summary-copy .tag { margin: 0; }
+.access-credential-summary-copy strong { color: var(--navy); font-size: 1.05rem; }
+.access-credential-summary-copy small { color: #687786; font-size: .76rem; }
+.access-credential-chevron { color: var(--navy); transition: transform .18s ease; }
+.access-credential-disclosure[open] .access-credential-chevron { transform: rotate(180deg); }
+.access-credential-content { margin-top: 16px; border-top: 1px solid #e4dccf; padding-top: 14px; }
+.access-credential-intro { margin: 0 0 14px; }
 .access-credential-panel h2 { margin: 3px 0 5px; color: var(--navy); font-family: "DM Sans", sans-serif; font-size: 1.05rem; }
 .credential-create-form { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 12px; align-items: start; }
 .credential-create-form label, .credential-role-fieldset { display: grid; gap: 5px; min-width: 0; color: #687786; font-size: .72rem; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }

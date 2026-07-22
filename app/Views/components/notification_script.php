@@ -2,8 +2,22 @@
 (() => {
     const menus = Array.from(document.querySelectorAll('[data-notification-menu]'));
     const dropdowns = Array.from(document.querySelectorAll('details.account-menu, details.portal-account-menu, details[data-notification-menu]'));
+    const expandables = Array.from(document.querySelectorAll('details'));
     const toast = document.querySelector('[data-live-toast]');
     if (menus.length === 0) return;
+
+    const replayDisclosureAnimation = (disclosure) => {
+        disclosure.classList.remove('disclosure-animating');
+        void disclosure.offsetWidth;
+        disclosure.classList.add('disclosure-animating');
+        window.setTimeout(() => disclosure.classList.remove('disclosure-animating'), 220);
+    };
+
+    expandables.forEach((disclosure) => {
+        disclosure.querySelector(':scope > summary')?.addEventListener('click', () => {
+            if (!disclosure.open) replayDisclosureAnimation(disclosure);
+        });
+    });
 
     const closeOtherDropdowns = (active) => {
         dropdowns.forEach((dropdown) => {
@@ -17,7 +31,8 @@
         });
 
         dropdown.addEventListener('toggle', () => {
-            if (dropdown.open) closeOtherDropdowns(dropdown);
+            if (!dropdown.open) return;
+            closeOtherDropdowns(dropdown);
         });
     });
 
