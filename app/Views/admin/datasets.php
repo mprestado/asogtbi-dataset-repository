@@ -3,9 +3,9 @@
 <?= $this->section('content') ?>
 <?php
     $stageLabels = [
-        'technical_assignment' => 'Technical assignment',
+        'technical_assignment' => 'Technical unassigned',
         'technical_review' => 'Technical review',
-        'ethics_assignment' => 'Ethics assignment',
+        'ethics_assignment' => 'Ethics unassigned',
         'ethics_review' => 'Ethics review',
         'publication' => 'Ready to publish',
         'revision' => 'Revision and rejected',
@@ -70,11 +70,11 @@
                     <a class="button secondary" href="<?= site_url('admin/datasets/' . $dataset['id']) ?>">Inspect record</a>
                     <?php if (($isTechnical || $isEthics) && $activeReviewId === 0): ?>
                         <details class="governance-action-menu">
-                            <summary class="button">Assign reviewer</summary>
+                            <summary class="button">Assign manually</summary>
                             <form method="post" action="<?= site_url('admin/datasets/' . $dataset['id'] . '/assign') ?>">
                                 <?= csrf_field() ?><input type="hidden" name="stage" value="<?= esc($assignmentStage) ?>">
                                 <h3>Assign <?= esc($assignmentStage) ?> review</h3>
-                                <p>Select an active reviewer. Workload details help distribute assignments.</p>
+                                <p>Automatic distribution could not complete. Select an active reviewer as a fallback.</p>
                                 <label>Reviewer<select name="reviewer_id" required><option value="">Select reviewer</option><?php foreach ($reviewerOptions as $reviewer): ?><option value="<?= esc((string) $reviewer['id']) ?>"><?= esc($reviewer['name']) ?> · <?= esc((string) $reviewer['active_count']) ?> active · <?= esc($reviewer['oldest_assignment']) ?></option><?php endforeach; ?></select></label>
                                 <button class="button" type="submit">Confirm assignment</button>
                             </form>

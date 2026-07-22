@@ -10,9 +10,9 @@
 <section class="governance-metric-grid">
     <?php
         $metricCards = [
-            ['technical_unassigned', 'Technical assignment', 'Unassigned packages', 'inventory_2', 'technical_assignment'],
+            ['technical_unassigned', 'Technical unassigned', 'No eligible reviewer', 'inventory_2', 'technical_assignment'],
             ['technical_active', 'Technical review', 'Active verification', 'sdk', 'technical_review'],
-            ['ethics_unassigned', 'Ethics assignment', 'Cleared technical gate', 'assignment_ind', 'ethics_assignment'],
+            ['ethics_unassigned', 'Ethics unassigned', 'No eligible reviewer', 'assignment_ind', 'ethics_assignment'],
             ['ethics_active', 'Ethics review', 'Active ethics checks', 'verified_user', 'ethics_review'],
             ['awaiting_publication', 'Ready to publish', 'Both stages approved', 'publish', 'publication'],
             ['aging', 'Aging assignments', 'Older than 3 days', 'schedule', 'technical_review'],

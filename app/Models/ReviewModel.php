@@ -13,6 +13,8 @@ class ReviewModel extends Model
     public const STATUS_APPROVED = 'approved';
     public const STATUS_REJECTED = 'rejected';
     public const STATUS_REVISION = 'revision_requested';
+    public const ASSIGNMENT_AUTOMATIC = 'automatic';
+    public const ASSIGNMENT_MANUAL = 'manual';
 
     protected $table = 'reviews';
     protected $primaryKey = 'id';
@@ -25,6 +27,7 @@ class ReviewModel extends Model
         'review_round',
         'reviewer_id',
         'assigned_by',
+        'assignment_method',
         'status',
         'checklist',
         'comments',

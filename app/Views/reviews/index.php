@@ -99,7 +99,7 @@
     <article class="panel governance-empty-state">
         <span class="material-symbols-rounded" aria-hidden="true"><?= ($tab ?? 'action') === 'action' ? 'inbox' : 'search_off' ?></span>
         <h2><?= ($tab ?? 'action') === 'action' ? 'No reviews need action' : 'No matching review records' ?></h2>
-        <p><?= ($tab ?? 'action') === 'action' ? 'Your active queue is clear. New administrator assignments will appear here and trigger an activity notification.' : 'Try removing a filter or searching with a broader term.' ?></p>
+        <p><?= ($tab ?? 'action') === 'action' ? 'Your active queue is clear. Automatically distributed reviews and administrator reassignments will appear here and trigger an activity notification.' : 'Try removing a filter or searching with a broader term.' ?></p>
     </article>
 <?php else: ?>
     <div class="review-queue-list">

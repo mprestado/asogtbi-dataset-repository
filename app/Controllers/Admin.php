@@ -18,9 +18,9 @@ class Admin extends BaseController
         $db = db_connect();
         $activeReviews = $db->table('reviews')->where('status', ReviewModel::STATUS_ASSIGNED);
         $metrics = [
-            'technical_unassigned' => $this->unassignedCount(ReviewModel::STAGE_TECHNICAL, DatasetModel::STATUS_PENDING_TECHNICAL),
+            'technical_unassigned' => $this->unassignedCount(DatasetModel::STATUS_PENDING_TECHNICAL),
             'technical_active' => (clone $activeReviews)->where('stage', ReviewModel::STAGE_TECHNICAL)->countAllResults(),
-            'ethics_unassigned' => $this->unassignedCount(ReviewModel::STAGE_ETHICS, DatasetModel::STATUS_PENDING_ETHICS),
+            'ethics_unassigned' => $this->unassignedCount(DatasetModel::STATUS_PENDING_ETHICS),
             'ethics_active' => (clone $activeReviews)->where('stage', ReviewModel::STAGE_ETHICS)->countAllResults(),
             'awaiting_publication' => model(DatasetModel::class)->where('status', DatasetModel::STATUS_AWAITING_PUBLICATION)->countAllResults(),
             'aging' => model(ReviewModel::class)->where('status', ReviewModel::STATUS_ASSIGNED)->where('assigned_at <=', date('Y-m-d H:i:s', strtotime('-3 days')))->countAllResults(),
@@ -36,10 +36,10 @@ class Admin extends BaseController
 
     public function datasets(): string
     {
-        $stage = trim((string) ($this->request->getGet('stage') ?? 'technical_assignment'));
+        $stage = trim((string) ($this->request->getGet('stage') ?? 'technical_review'));
         $validStages = ['technical_assignment', 'technical_review', 'ethics_assignment', 'ethics_review', 'publication', 'revision', 'published'];
         if (! in_array($stage, $validStages, true)) {
-            $stage = 'technical_assignment';
+            $stage = 'technical_review';
         }
         $search = trim((string) ($this->request->getGet('q') ?? ''));
         $reviewerId = (int) ($this->request->getGet('reviewer_id') ?? 0);
@@ -249,6 +249,17 @@ class Admin extends BaseController
         if ($removesAdmin && $this->isLastActiveAdministrator($userId)) {
             return redirect()->back()->with('error', 'The final active administrator cannot be removed.');
         }
+        $activeAssignments = model(ReviewModel::class)
+            ->where(['reviewer_id' => $userId, 'status' => ReviewModel::STATUS_ASSIGNED])
+            ->findAll();
+        foreach ($activeAssignments as $assignment) {
+            $requiredRole = $assignment['stage'] === ReviewModel::STAGE_ETHICS
+                ? ModerationWorkflow::ROLE_ETHICS
+                : ModerationWorkflow::ROLE_TECHNICAL;
+            if ($status !== 'active' || ! in_array($requiredRole, $roles, true)) {
+                return redirect()->back()->with('error', 'Reassign this reviewer\'s active work before deactivating the account or removing its reviewer role.');
+            }
+        }
 
         $db = db_connect();
         $db->transStart();
@@ -262,8 +273,14 @@ class Admin extends BaseController
             return redirect()->back()->with('error', 'User access could not be updated.');
         }
         $this->recordAudit('user_roles_updated', 'user', $userId, 'Account status and roles updated by repository administrator.');
+        $distributed = $status === 'active' ? $this->distributePendingReviews($roles) : 0;
 
-        return redirect()->back()->with('info', 'User access updated.');
+        $message = 'User access updated.';
+        if ($distributed > 0) {
+            $message .= ' ' . $distributed . ' waiting review' . ($distributed === 1 ? ' was' : 's were') . ' automatically distributed.';
+        }
+
+        return redirect()->back()->with('info', $message);
     }
 
     public function createUser()
@@ -318,10 +335,15 @@ class Admin extends BaseController
         }
 
         $this->recordAudit('password_account_created', 'user', $userId, 'Repository administrator issued password login credentials.');
+        $distributed = $status === 'active' ? $this->distributePendingReviews($roles) : 0;
+        $message = 'Password account created. Share the issued email and temporary password securely.';
+        if ($distributed > 0) {
+            $message .= ' ' . $distributed . ' waiting review' . ($distributed === 1 ? ' was' : 's were') . ' automatically distributed.';
+        }
 
         return redirect()
             ->to('/admin/users')
-            ->with('info', 'Password account created. Share the issued email and temporary password securely.');
+            ->with('info', $message);
     }
 
     public function auditLogs(): string
@@ -367,6 +389,26 @@ class Admin extends BaseController
         return $users;
     }
 
+    /**
+     * @param array<int, string> $roles
+     */
+    private function distributePendingReviews(array $roles): int
+    {
+        $workflow = new ModerationWorkflow();
+        $distributed = 0;
+        $actorId = (int) $this->currentUserId();
+        $ip = $this->request->getIPAddress();
+
+        if (in_array(ModerationWorkflow::ROLE_TECHNICAL, $roles, true)) {
+            $distributed += $workflow->autoAssignPending($actorId, $ip, ReviewModel::STAGE_TECHNICAL);
+        }
+        if (in_array(ModerationWorkflow::ROLE_ETHICS, $roles, true)) {
+            $distributed += $workflow->autoAssignPending($actorId, $ip, ReviewModel::STAGE_ETHICS);
+        }
+
+        return $distributed;
+    }
+
     private function isLastActiveAdministrator(int $userId): bool
     {
         $hasRole = db_connect()->table('user_roles')->join('roles', 'roles.id = user_roles.role_id')->where(['user_roles.user_id' => $userId, 'roles.name' => ModerationWorkflow::ROLE_ADMIN])->countAllResults() > 0;
@@ -375,11 +417,11 @@ class Admin extends BaseController
         return $hasRole && $count <= 1;
     }
 
-    private function unassignedCount(string $stage, string $datasetStatus): int
+    private function unassignedCount(string $datasetStatus): int
     {
         return (int) db_connect()->table('datasets')
             ->where('datasets.status', $datasetStatus)
-            ->where("NOT EXISTS (SELECT 1 FROM reviews WHERE reviews.dataset_id = datasets.id AND reviews.stage = " . db_connect()->escape($stage) . " AND reviews.status = " . db_connect()->escape(ReviewModel::STATUS_ASSIGNED) . ")", null, false)
+            ->where("NOT EXISTS (SELECT 1 FROM reviews WHERE reviews.dataset_id = datasets.id AND reviews.status = " . db_connect()->escape(ReviewModel::STATUS_ASSIGNED) . ")", null, false)
             ->countAllResults();
     }
 
@@ -416,9 +458,9 @@ class Admin extends BaseController
     private function moderationStageCounts(): array
     {
         return [
-            'technical_assignment' => $this->unassignedCount(ReviewModel::STAGE_TECHNICAL, DatasetModel::STATUS_PENDING_TECHNICAL),
+            'technical_assignment' => $this->unassignedCount(DatasetModel::STATUS_PENDING_TECHNICAL),
             'technical_review' => model(ReviewModel::class)->where(['stage' => ReviewModel::STAGE_TECHNICAL, 'status' => ReviewModel::STATUS_ASSIGNED])->countAllResults(),
-            'ethics_assignment' => $this->unassignedCount(ReviewModel::STAGE_ETHICS, DatasetModel::STATUS_PENDING_ETHICS),
+            'ethics_assignment' => $this->unassignedCount(DatasetModel::STATUS_PENDING_ETHICS),
             'ethics_review' => model(ReviewModel::class)->where(['stage' => ReviewModel::STAGE_ETHICS, 'status' => ReviewModel::STATUS_ASSIGNED])->countAllResults(),
             'publication' => model(DatasetModel::class)->where('status', DatasetModel::STATUS_AWAITING_PUBLICATION)->countAllResults(),
             'revision' => model(DatasetModel::class)->whereIn('status', [DatasetModel::STATUS_TECHNICAL_REVISION, DatasetModel::STATUS_ETHICS_REVISION, DatasetModel::STATUS_REJECTED])->countAllResults(),

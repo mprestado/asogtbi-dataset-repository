@@ -9,6 +9,8 @@ use App\Models\DatasetModel;
 use App\Models\DatasetVersionModel;
 use App\Models\DatasetViewModel;
 use App\Models\NotificationModel;
+use App\Models\ReviewModel;
+use App\Services\ModerationWorkflow;
 
 class Datasets extends BaseController
 {
@@ -355,6 +357,15 @@ class Datasets extends BaseController
 
         if ($newStatus !== (string) ($dataset['status'] ?? '')) {
             $title = trim((string) $this->request->getPost('title'));
+            $reviewStage = $newStatus === DatasetModel::STATUS_PENDING_ETHICS
+                ? ReviewModel::STAGE_ETHICS
+                : ReviewModel::STAGE_TECHNICAL;
+            $assignment = (new ModerationWorkflow())->autoAssign(
+                $id,
+                $reviewStage,
+                (int) $this->currentUserId(),
+                $this->request->getIPAddress()
+            );
             $admins = \Config\Database::connect()->table('users')
                 ->select('users.id')
                 ->join('user_roles', 'user_roles.user_id = users.id')
@@ -368,7 +379,9 @@ class Datasets extends BaseController
                     'user_id' => (int) $admin['id'],
                     'type' => 'workflow_attention',
                     'title' => 'Dataset updated',
-                    'message' => 'Dataset "' . $title . '" has been updated and needs attention.',
+                    'message' => $assignment !== null
+                        ? 'Dataset "' . $title . '" was updated and automatically assigned to ' . $assignment['reviewer_name'] . ' for ' . $reviewStage . ' review.'
+                        : 'Dataset "' . $title . '" was updated but no active ' . $reviewStage . ' reviewer is available.',
                     'link' => '/admin/datasets/' . $id,
                 ]);
             }

@@ -109,6 +109,78 @@ class ModerationWorkflow
         return ['reviewed' => $reviewed, 'confirmed' => $confirmed, 'issues' => $issues, 'total' => count($checklist)];
     }
 
+    /**
+     * Rank eligible reviewers by current workload, then by how long they have
+     * gone without an assignment. The account ID makes final ties deterministic.
+     *
+     * @param array<int, array<string, mixed>> $reviewers
+     * @return array<int, array<string, mixed>>
+     */
+    public static function rankReviewerWorkloads(array $reviewers): array
+    {
+        usort($reviewers, static function (array $left, array $right): int {
+            $loadComparison = ((int) ($left['active_count'] ?? 0)) <=> ((int) ($right['active_count'] ?? 0));
+            if ($loadComparison !== 0) {
+                return $loadComparison;
+            }
+
+            $leftLastAssigned = trim((string) ($left['last_assigned_at'] ?? ''));
+            $rightLastAssigned = trim((string) ($right['last_assigned_at'] ?? ''));
+            if ($leftLastAssigned !== $rightLastAssigned) {
+                if ($leftLastAssigned === '') {
+                    return -1;
+                }
+                if ($rightLastAssigned === '') {
+                    return 1;
+                }
+
+                return strcmp($leftLastAssigned, $rightLastAssigned);
+            }
+
+            return ((int) ($left['id'] ?? 0)) <=> ((int) ($right['id'] ?? 0));
+        });
+
+        return $reviewers;
+    }
+
+    /**
+     * @return array{review_id: int, reviewer_id: int, reviewer_name: string}|null
+     */
+    public function autoAssign(int $datasetId, string $stage, int $actorId, string $ip): ?array
+    {
+        $this->assertReviewStage($stage);
+
+        return $this->transaction(fn (): ?array => $this->autoAssignWithinTransaction($datasetId, $stage, $actorId, $ip));
+    }
+
+    public function autoAssignPending(int $actorId, string $ip, ?string $stage = null): int
+    {
+        $stages = $stage === null
+            ? [ReviewModel::STAGE_TECHNICAL, ReviewModel::STAGE_ETHICS]
+            : [$stage];
+        $assigned = 0;
+
+        foreach ($stages as $reviewStage) {
+            $this->assertReviewStage($reviewStage);
+            $expectedStatus = $this->expectedStatusForStage($reviewStage);
+            $datasets = $this->db->table('datasets')
+                ->select('id')
+                ->where('status', $expectedStatus)
+                ->orderBy('updated_at', 'ASC')
+                ->orderBy('id', 'ASC')
+                ->get()
+                ->getResultArray();
+
+            foreach ($datasets as $dataset) {
+                if ($this->autoAssign((int) $dataset['id'], $reviewStage, $actorId, $ip) !== null) {
+                    $assigned++;
+                }
+            }
+        }
+
+        return $assigned;
+    }
+
     public function assign(int $datasetId, string $stage, int $reviewerId, int $adminId, string $ip): int
     {
         if (! in_array($stage, [ReviewModel::STAGE_ETHICS, ReviewModel::STAGE_TECHNICAL], true)) {
@@ -124,16 +196,16 @@ class ModerationWorkflow
             }
             $this->requireRole($adminId, self::ROLE_ADMIN);
             $this->requireRole($reviewerId, $role);
-            $active = $this->db->table('reviews')->where(['dataset_id' => $datasetId, 'stage' => $stage, 'status' => ReviewModel::STATUS_ASSIGNED])->orderBy('id', 'DESC')->get()->getRowArray();
+            $active = $this->db->table('reviews')->where(['dataset_id' => $datasetId, 'status' => ReviewModel::STATUS_ASSIGNED])->orderBy('id', 'DESC')->get()->getRowArray();
             if (is_array($active)) {
-                throw new RuntimeException('This stage already has an active reviewer. Use reassignment instead.');
+                throw new RuntimeException('This dataset already has an active review. Resolve or reassign it before creating another assignment.');
             } else {
                 $last = $this->db->table('reviews')->selectMax('review_round')->where(['dataset_id' => $datasetId, 'stage' => $stage])->get()->getRowArray();
                 $round = max(1, ((int) ($last['review_round'] ?? 0)) + 1);
             }
             $version = $this->db->table('dataset_versions')->where('dataset_id', $datasetId)->orderBy('id', 'DESC')->get()->getRowArray();
             $now = date('Y-m-d H:i:s');
-            $this->db->table('reviews')->insert(['dataset_id' => $datasetId, 'dataset_version_id' => $version['id'] ?? null, 'stage' => $stage, 'review_round' => $round, 'reviewer_id' => $reviewerId, 'assigned_by' => $adminId, 'status' => ReviewModel::STATUS_ASSIGNED, 'assigned_at' => $now, 'created_at' => $now, 'updated_at' => $now]);
+            $this->db->table('reviews')->insert(['dataset_id' => $datasetId, 'dataset_version_id' => $version['id'] ?? null, 'stage' => $stage, 'review_round' => $round, 'reviewer_id' => $reviewerId, 'assigned_by' => $adminId, 'assignment_method' => ReviewModel::ASSIGNMENT_MANUAL, 'status' => ReviewModel::STATUS_ASSIGNED, 'assigned_at' => $now, 'created_at' => $now, 'updated_at' => $now]);
             $id = (int) $this->db->insertID();
             $this->notify($reviewerId, 'review_assigned', 'Review assigned', 'A dataset has been assigned to your ' . $stage . ' review queue.', '/review/' . $stage . '/' . $id);
             $this->audit($adminId, 'review_assigned', 'review', $id, 'Assigned ' . $stage . ' review for dataset #' . $datasetId . '.', $ip);
@@ -188,6 +260,7 @@ class ModerationWorkflow
                 'review_round' => (int) $active['review_round'],
                 'reviewer_id' => $reviewerId,
                 'assigned_by' => $adminId,
+                'assignment_method' => ReviewModel::ASSIGNMENT_MANUAL,
                 'status' => ReviewModel::STATUS_ASSIGNED,
                 'assigned_at' => $now,
                 'created_at' => $now,
@@ -260,17 +333,24 @@ class ModerationWorkflow
             $now = date('Y-m-d H:i:s');
             $this->db->table('reviews')->where('id', $reviewId)->update(['status' => $decision, 'checklist' => json_encode($answers), 'comments' => trim($comments), 'draft_saved_at' => null, 'decided_at' => $now, 'updated_at' => $now]);
             $this->db->table('datasets')->where('id', $dataset['id'])->update(['status' => $next, 'approved_by' => null, 'approved_at' => null, 'updated_at' => $now]);
+            $automaticAssignment = $stage === ReviewModel::STAGE_TECHNICAL && $decision === ReviewModel::STATUS_APPROVED
+                ? $this->autoAssignWithinTransaction((int) $dataset['id'], ReviewModel::STAGE_ETHICS, $reviewerId, $ip)
+                : null;
             $message = 'Your dataset "' . $dataset['title'] . '" is now ' . DatasetModel::statusLabel($next) . '.' . (trim($comments) ? ' Reviewer comments: ' . trim($comments) : '');
             $contributorLink = in_array($next, [DatasetModel::STATUS_TECHNICAL_REVISION, DatasetModel::STATUS_ETHICS_REVISION], true)
                 ? '/datasets/' . $dataset['id'] . '/edit'
                 : '/datasets/' . $dataset['id'];
             $this->notify((int) $dataset['contributor_id'], 'review_result', ucfirst($stage) . ' review completed', $message, $contributorLink);
             $administratorMessage = $decision === ReviewModel::STATUS_APPROVED
-                ? 'The dataset "' . $dataset['title'] . '" is ready for ' . ($stage === ReviewModel::STAGE_TECHNICAL ? 'ethics assignment.' : 'final publication.')
+                ? ($stage === ReviewModel::STAGE_TECHNICAL
+                    ? ($automaticAssignment !== null
+                        ? 'The dataset "' . $dataset['title'] . '" was automatically assigned to ' . $automaticAssignment['reviewer_name'] . ' for ethics review.'
+                        : 'The dataset "' . $dataset['title'] . '" passed technical review, but no active ethics reviewer is available.')
+                    : 'The dataset "' . $dataset['title'] . '" is ready for final publication.')
                 : ucfirst($stage) . ' review for "' . $dataset['title'] . '" ended with ' . str_replace('_', ' ', $decision) . '.';
             $this->notifyAdministrators(
                 $stage === ReviewModel::STAGE_TECHNICAL && $decision === ReviewModel::STATUS_APPROVED
-                    ? 'Technical review approved'
+                    ? ($automaticAssignment !== null ? 'Ethics review assigned' : 'Ethics reviewer unavailable')
                     : ($stage === ReviewModel::STAGE_ETHICS && $decision === ReviewModel::STATUS_APPROVED ? 'Dataset ready to publish' : ucfirst($stage) . ' review completed'),
                 $administratorMessage,
                 '/admin/datasets/' . $dataset['id']
@@ -323,11 +403,146 @@ class ModerationWorkflow
                 : ['status' => DatasetModel::STATUS_ARCHIVED, 'archived_at' => date('Y-m-d H:i:s'), 'archived_from_status' => $dataset['status']];
             $data['updated_at'] = date('Y-m-d H:i:s');
             $this->db->table('datasets')->where('id', $datasetId)->update($data);
+            if ($restore && in_array($data['status'], [DatasetModel::STATUS_PENDING_TECHNICAL, DatasetModel::STATUS_PENDING_ETHICS], true)) {
+                $stage = $data['status'] === DatasetModel::STATUS_PENDING_ETHICS
+                    ? ReviewModel::STAGE_ETHICS
+                    : ReviewModel::STAGE_TECHNICAL;
+                $this->autoAssignWithinTransaction($datasetId, $stage, $adminId, $ip);
+            }
             $details = $restore
                 ? 'Dataset restored to its previous lifecycle state.'
                 : 'Dataset archived. Reason: ' . trim($reason);
             $this->audit($adminId, $restore ? 'dataset_restore' : 'dataset_archive', 'dataset', $datasetId, $details, $ip);
         });
+    }
+
+    /**
+     * @return array{review_id: int, reviewer_id: int, reviewer_name: string}|null
+     */
+    private function autoAssignWithinTransaction(int $datasetId, string $stage, int $actorId, string $ip): ?array
+    {
+        $dataset = $this->dataset($datasetId);
+        if ($dataset['status'] !== $this->expectedStatusForStage($stage)) {
+            return null;
+        }
+
+        $active = $this->db->table('reviews')
+            ->where([
+                'dataset_id' => $datasetId,
+                'status' => ReviewModel::STATUS_ASSIGNED,
+            ])
+            ->get()
+            ->getRowArray();
+        if (is_array($active)) {
+            return null;
+        }
+
+        $reviewers = $this->eligibleReviewerWorkloads($this->requiredRoleForStage($stage));
+        if ($reviewers === []) {
+            return null;
+        }
+
+        $reviewer = $reviewers[0];
+        $last = $this->db->table('reviews')
+            ->selectMax('review_round')
+            ->where(['dataset_id' => $datasetId, 'stage' => $stage])
+            ->get()
+            ->getRowArray();
+        $version = $this->db->table('dataset_versions')
+            ->where('dataset_id', $datasetId)
+            ->orderBy('id', 'DESC')
+            ->get()
+            ->getRowArray();
+        $now = date('Y-m-d H:i:s');
+        $this->db->table('reviews')->insert([
+            'dataset_id' => $datasetId,
+            'dataset_version_id' => $version['id'] ?? null,
+            'stage' => $stage,
+            'review_round' => max(1, ((int) ($last['review_round'] ?? 0)) + 1),
+            'reviewer_id' => (int) $reviewer['id'],
+            'assigned_by' => $actorId,
+            'assignment_method' => ReviewModel::ASSIGNMENT_AUTOMATIC,
+            'status' => ReviewModel::STATUS_ASSIGNED,
+            'assigned_at' => $now,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]);
+        $reviewId = (int) $this->db->insertID();
+        $this->notify(
+            (int) $reviewer['id'],
+            'review_assigned',
+            'Review automatically assigned',
+            'The dataset "' . $dataset['title'] . '" was added to your ' . $stage . ' review queue through balanced distribution.',
+            '/review/' . $stage . '/' . $reviewId
+        );
+        $this->audit(
+            $actorId,
+            'review_auto_assigned',
+            'review',
+            $reviewId,
+            'Automatically assigned ' . $stage . ' review for dataset #' . $datasetId . ' to user #' . $reviewer['id'] . ' using least-active-load distribution.',
+            $ip
+        );
+
+        return [
+            'review_id' => $reviewId,
+            'reviewer_id' => (int) $reviewer['id'],
+            'reviewer_name' => (string) $reviewer['name'],
+        ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function eligibleReviewerWorkloads(string $role): array
+    {
+        $reviewers = $this->db->table('users')
+            ->select('users.id, users.name, users.email')
+            ->join('user_roles', 'user_roles.user_id = users.id')
+            ->join('roles', 'roles.id = user_roles.role_id')
+            ->where(['roles.name' => $role, 'users.status' => 'active'])
+            ->orderBy('users.id', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        foreach ($reviewers as &$reviewer) {
+            $reviewer['active_count'] = $this->db->table('reviews')
+                ->where([
+                    'reviewer_id' => (int) $reviewer['id'],
+                    'status' => ReviewModel::STATUS_ASSIGNED,
+                ])
+                ->countAllResults();
+            $lastAssignment = $this->db->table('reviews')
+                ->selectMax('assigned_at')
+                ->where('reviewer_id', (int) $reviewer['id'])
+                ->get()
+                ->getRowArray();
+            $reviewer['last_assigned_at'] = $lastAssignment['assigned_at'] ?? null;
+        }
+        unset($reviewer);
+
+        return self::rankReviewerWorkloads($reviewers);
+    }
+
+    private function assertReviewStage(string $stage): void
+    {
+        if (! in_array($stage, [ReviewModel::STAGE_ETHICS, ReviewModel::STAGE_TECHNICAL], true)) {
+            throw new RuntimeException('Invalid review stage.');
+        }
+    }
+
+    private function expectedStatusForStage(string $stage): string
+    {
+        return $stage === ReviewModel::STAGE_ETHICS
+            ? DatasetModel::STATUS_PENDING_ETHICS
+            : DatasetModel::STATUS_PENDING_TECHNICAL;
+    }
+
+    private function requiredRoleForStage(string $stage): string
+    {
+        return $stage === ReviewModel::STAGE_ETHICS
+            ? self::ROLE_ETHICS
+            : self::ROLE_TECHNICAL;
     }
 
     private function transaction(callable $operation): mixed

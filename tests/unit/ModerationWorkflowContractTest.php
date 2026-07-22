@@ -50,6 +50,45 @@ final class ModerationWorkflowContractTest extends CIUnitTestCase
         ], ModerationWorkflow::checklistProgress($answers));
     }
 
+    public function testReviewerRankingPrioritizesLeastLoadedThenLongestIdle(): void
+    {
+        $ranked = ModerationWorkflow::rankReviewerWorkloads([
+            ['id' => 7, 'active_count' => 2, 'last_assigned_at' => '2026-07-20 10:00:00'],
+            ['id' => 3, 'active_count' => 1, 'last_assigned_at' => '2026-07-21 10:00:00'],
+            ['id' => 5, 'active_count' => 1, 'last_assigned_at' => '2026-07-19 10:00:00'],
+            ['id' => 9, 'active_count' => 1, 'last_assigned_at' => null],
+        ]);
+
+        $this->assertSame([9, 5, 3, 7], array_column($ranked, 'id'));
+    }
+
+    public function testReviewerRankingKeepsSequentialDistributionBalanced(): void
+    {
+        $reviewers = [
+            ['id' => 1, 'active_count' => 0, 'last_assigned_at' => null],
+            ['id' => 2, 'active_count' => 0, 'last_assigned_at' => null],
+            ['id' => 3, 'active_count' => 0, 'last_assigned_at' => null],
+        ];
+        $sequence = [];
+
+        for ($assignment = 1; $assignment <= 7; $assignment++) {
+            $reviewers = ModerationWorkflow::rankReviewerWorkloads($reviewers);
+            $sequence[] = $reviewers[0]['id'];
+            $reviewers[0]['active_count']++;
+            $reviewers[0]['last_assigned_at'] = sprintf('2026-07-22 10:00:%02d', $assignment);
+        }
+
+        $loads = array_column($reviewers, 'active_count');
+        $this->assertSame([1, 2, 3, 1, 2, 3, 1], $sequence);
+        $this->assertLessThanOrEqual(1, max($loads) - min($loads));
+    }
+
+    public function testAssignmentMethodsRemainExplicit(): void
+    {
+        $this->assertSame('automatic', ReviewModel::ASSIGNMENT_AUTOMATIC);
+        $this->assertSame('manual', ReviewModel::ASSIGNMENT_MANUAL);
+    }
+
     public function testContributorRevisionStatesAreExplicit(): void
     {
         $this->assertTrue(DatasetModel::isRevisionStatus(DatasetModel::STATUS_ETHICS_REVISION));

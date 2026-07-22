@@ -6,6 +6,8 @@ use App\Models\DatasetFileModel;
 use App\Models\DatasetModel;
 use App\Models\DatasetVersionModel;
 use App\Models\NotificationModel;
+use App\Models\ReviewModel;
+use App\Services\ModerationWorkflow;
 
 class DatasetUpload extends BaseController
 {
@@ -138,6 +140,12 @@ class DatasetUpload extends BaseController
         ]);
 
         $this->recordAudit('dataset_upload', 'dataset', $datasetId, 'Dataset submitted for technical verification.');
+        $assignment = (new ModerationWorkflow())->autoAssign(
+            $datasetId,
+            ReviewModel::STAGE_TECHNICAL,
+            (int) $this->currentUserId(),
+            $this->request->getIPAddress()
+        );
 
         $title = trim((string) $this->request->getPost('title'));
         model(NotificationModel::class)->insert([
@@ -159,8 +167,10 @@ class DatasetUpload extends BaseController
             model(NotificationModel::class)->insert([
                 'user_id' => (int) $admin['id'],
                 'type' => 'workflow_attention',
-                'title' => 'New dataset submitted',
-                'message' => 'A new dataset "' . $title . '" has been submitted and needs technical reviewer assignment.',
+                'title' => $assignment !== null ? 'Technical review assigned' : 'Technical reviewer unavailable',
+                'message' => $assignment !== null
+                    ? 'The new dataset "' . $title . '" was automatically assigned to ' . $assignment['reviewer_name'] . ' for technical review.'
+                    : 'The new dataset "' . $title . '" is waiting because no active technical reviewer is available.',
                 'link' => '/admin/datasets/' . $datasetId,
             ]);
         }

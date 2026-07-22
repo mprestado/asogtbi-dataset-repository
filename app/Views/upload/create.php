@@ -21,7 +21,7 @@
             <li>Anonymization confirmation</li>
         </ul>
         <h3>What Happens Next?</h3>
-        <p class="muted">Your dataset is created as Pending Review. A repository administrator assigns a technical reviewer, then an ethics reviewer. You will be notified at each stage.</p>
+        <p class="muted">Your dataset is created as Pending Review. The system distributes it to the least-loaded technical reviewer, then does the same for ethics review after technical approval. You will be notified at each stage.</p>
     </aside>
 
     <section class="form-card">
