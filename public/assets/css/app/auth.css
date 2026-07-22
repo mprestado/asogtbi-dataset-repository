@@ -815,23 +815,28 @@ pre {
     margin-bottom: 10px;
 }
 
-.ft-links a {
+.ft-links a,
+.ft-contact-list li {
     font-size: 14px;
     transition: color .18s ease, padding-left .18s ease;
 }
 
 .ft-links a:hover,
-.ft-contact-list a:hover {
+.ft-links a:focus-visible,
+.ft-contact-list li:hover,
+.ft-contact-list li:focus-within {
     color: var(--gold);
-}
-
-.ft-links a:hover {
     padding-left: 5px;
 }
 
 .ft-contact-list li {
     font-size: 14px;
     line-height: 1.7;
+}
+
+.ft-contact-list li:hover a,
+.ft-contact-list li:focus-within a {
+    color: inherit;
 }
 
 .ft-bottom {
