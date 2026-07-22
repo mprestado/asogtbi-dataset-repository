@@ -300,7 +300,7 @@
             <?php elseif (! empty($downloadRequiresLogin)): ?>
                 <a class="button" href="<?= site_url('datasets/' . $datasetId . '/download') ?>">
                     <span class="material-symbols-rounded" aria-hidden="true">lock</span>
-                    Download
+                    Sign in to Download
                 </a>
             <?php elseif (! empty($canDownload)): ?>
                 <a class="button" href="<?= site_url('datasets/' . $datasetId . '/download') ?>">Download</a>
