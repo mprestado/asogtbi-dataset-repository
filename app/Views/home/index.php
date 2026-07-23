@@ -57,7 +57,7 @@
                 <div class="repo-stat-stack">
                     <div class="repo-stat-row">
                         <span class="repo-stat-number"><?= esc((string) ($publishedCount ?? 0)) ?></span>
-                        <span class="repo-stat-label">Published datasets</span>
+                        <span class="repo-stat-label">Public datasets</span>
                     </div>
                     <div class="repo-stat-row">
                         <span class="repo-stat-number">5</span>
