@@ -164,6 +164,59 @@ final class AutomaticReviewAssignmentTest extends CIUnitTestCase
         );
     }
 
+    public function testUndistributedTaskNotifiesEveryActiveAdministrator(): void
+    {
+        $workflow = new ModerationWorkflow($this->connection);
+        $this->connection->table('users')->whereIn('id', [2, 3])->update(['status' => 'inactive']);
+        $this->insertDataset(61);
+
+        $this->assertNull($workflow->autoAssign(61, ReviewModel::STAGE_TECHNICAL, 1, '127.0.0.1'));
+
+        $notifications = $this->connection->table('notifications')
+            ->select('user_id, title')
+            ->where('type', 'workflow_attention')
+            ->orderBy('user_id')
+            ->get()
+            ->getResultArray();
+
+        $this->assertSame([
+            ['user_id' => 1, 'title' => 'Technical reviewer unavailable'],
+            ['user_id' => 6, 'title' => 'Technical reviewer unavailable'],
+        ], $notifications);
+        $this->assertSame(1, $this->connection->table('audit_logs')->where('action', 'review_auto_assignment_deferred')->countAllResults());
+    }
+
+    public function testFailedEthicsHandoffSendsOneAlertPerActiveAdministrator(): void
+    {
+        $workflow = new ModerationWorkflow($this->connection);
+        $this->connection->table('users')->where('id', 5)->update(['status' => 'inactive']);
+        $this->insertDataset(71);
+        $technical = $workflow->autoAssign(71, ReviewModel::STAGE_TECHNICAL, 1, '127.0.0.1');
+        $this->assertNotNull($technical);
+
+        $checklist = [];
+        foreach (array_keys(ModerationWorkflow::checklist(ReviewModel::STAGE_TECHNICAL)) as $item) {
+            $checklist[$item] = ['result' => 'confirmed', 'note' => ''];
+        }
+        $workflow->decide(
+            $technical['review_id'],
+            $technical['reviewer_id'],
+            ReviewModel::STATUS_APPROVED,
+            $checklist,
+            '',
+            '127.0.0.1'
+        );
+
+        $recipients = $this->connection->table('notifications')
+            ->select('user_id')
+            ->where(['type' => 'workflow_attention', 'title' => 'Ethics reviewer unavailable'])
+            ->orderBy('user_id')
+            ->get()
+            ->getResultArray();
+
+        $this->assertSame([['user_id' => 1], ['user_id' => 6]], $recipients);
+    }
+
     private function createSchema(): void
     {
         $statements = [
@@ -195,6 +248,8 @@ final class AutomaticReviewAssignmentTest extends CIUnitTestCase
             ['id' => 3, 'name' => 'Reviewer B', 'email' => 'b@example.test', 'status' => 'active'],
             ['id' => 4, 'name' => 'Inactive Reviewer', 'email' => 'inactive@example.test', 'status' => 'inactive'],
             ['id' => 5, 'name' => 'Ethics Reviewer', 'email' => 'ethics@example.test', 'status' => 'active'],
+            ['id' => 6, 'name' => 'Second Administrator', 'email' => 'admin2@example.test', 'status' => 'active'],
+            ['id' => 7, 'name' => 'Inactive Administrator', 'email' => 'admin3@example.test', 'status' => 'inactive'],
         ]);
         $this->connection->table('user_roles')->insertBatch([
             ['user_id' => 1, 'role_id' => 3],
@@ -202,6 +257,8 @@ final class AutomaticReviewAssignmentTest extends CIUnitTestCase
             ['user_id' => 3, 'role_id' => 1],
             ['user_id' => 4, 'role_id' => 1],
             ['user_id' => 5, 'role_id' => 2],
+            ['user_id' => 6, 'role_id' => 3],
+            ['user_id' => 7, 'role_id' => 3],
         ]);
     }
 

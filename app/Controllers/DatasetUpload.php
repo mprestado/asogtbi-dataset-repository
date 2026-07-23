@@ -155,24 +155,24 @@ class DatasetUpload extends BaseController
             'message' => 'Your dataset "' . $title . '" has been submitted and is pending technical review.',
             'link' => '/datasets/' . $datasetId . '/edit',
         ]);
-        $admins = \Config\Database::connect()->table('users')
-            ->select('users.id')
-            ->join('user_roles', 'user_roles.user_id = users.id')
-            ->join('roles', 'roles.id = user_roles.role_id')
-            ->where('roles.name', 'repository_administrator')
-            ->where('users.status', 'active')
-            ->get()
-            ->getResultArray();
-        foreach ($admins as $admin) {
-            model(NotificationModel::class)->insert([
-                'user_id' => (int) $admin['id'],
-                'type' => 'workflow_attention',
-                'title' => $assignment !== null ? 'Technical review assigned' : 'Technical reviewer unavailable',
-                'message' => $assignment !== null
-                    ? 'The new dataset "' . $title . '" was automatically assigned to ' . $assignment['reviewer_name'] . ' for technical review.'
-                    : 'The new dataset "' . $title . '" is waiting because no active technical reviewer is available.',
-                'link' => '/admin/datasets/' . $datasetId,
-            ]);
+        if ($assignment !== null) {
+            $admins = \Config\Database::connect()->table('users')
+                ->select('users.id')
+                ->join('user_roles', 'user_roles.user_id = users.id')
+                ->join('roles', 'roles.id = user_roles.role_id')
+                ->where('roles.name', 'repository_administrator')
+                ->where('users.status', 'active')
+                ->get()
+                ->getResultArray();
+            foreach ($admins as $admin) {
+                model(NotificationModel::class)->insert([
+                    'user_id' => (int) $admin['id'],
+                    'type' => 'workflow_attention',
+                    'title' => 'Technical review assigned',
+                    'message' => 'The new dataset "' . $title . '" was automatically assigned to ' . $assignment['reviewer_name'] . ' for technical review.',
+                    'link' => '/admin/datasets/' . $datasetId,
+                ]);
+            }
         }
 
         return redirect()

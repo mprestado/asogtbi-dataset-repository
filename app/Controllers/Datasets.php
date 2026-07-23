@@ -366,24 +366,24 @@ class Datasets extends BaseController
                 (int) $this->currentUserId(),
                 $this->request->getIPAddress()
             );
-            $admins = \Config\Database::connect()->table('users')
-                ->select('users.id')
-                ->join('user_roles', 'user_roles.user_id = users.id')
-                ->join('roles', 'roles.id = user_roles.role_id')
-                ->where('roles.name', 'repository_administrator')
-                ->where('users.status', 'active')
-                ->get()
-                ->getResultArray();
-            foreach ($admins as $admin) {
-                model(NotificationModel::class)->insert([
-                    'user_id' => (int) $admin['id'],
-                    'type' => 'workflow_attention',
-                    'title' => 'Dataset updated',
-                    'message' => $assignment !== null
-                        ? 'Dataset "' . $title . '" was updated and automatically assigned to ' . $assignment['reviewer_name'] . ' for ' . $reviewStage . ' review.'
-                        : 'Dataset "' . $title . '" was updated but no active ' . $reviewStage . ' reviewer is available.',
-                    'link' => '/admin/datasets/' . $id,
-                ]);
+            if ($assignment !== null) {
+                $admins = \Config\Database::connect()->table('users')
+                    ->select('users.id')
+                    ->join('user_roles', 'user_roles.user_id = users.id')
+                    ->join('roles', 'roles.id = user_roles.role_id')
+                    ->where('roles.name', 'repository_administrator')
+                    ->where('users.status', 'active')
+                    ->get()
+                    ->getResultArray();
+                foreach ($admins as $admin) {
+                    model(NotificationModel::class)->insert([
+                        'user_id' => (int) $admin['id'],
+                        'type' => 'workflow_attention',
+                        'title' => 'Dataset updated',
+                        'message' => 'Dataset "' . $title . '" was updated and automatically assigned to ' . $assignment['reviewer_name'] . ' for ' . $reviewStage . ' review.',
+                        'link' => '/admin/datasets/' . $id,
+                    ]);
+                }
             }
         }
 

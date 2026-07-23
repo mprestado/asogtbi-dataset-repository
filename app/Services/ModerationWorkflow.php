@@ -348,13 +348,18 @@ class ModerationWorkflow
                         : 'The dataset "' . $dataset['title'] . '" passed technical review, but no active ethics reviewer is available.')
                     : 'The dataset "' . $dataset['title'] . '" is ready for final publication.')
                 : ucfirst($stage) . ' review for "' . $dataset['title'] . '" ended with ' . str_replace('_', ' ', $decision) . '.';
-            $this->notifyAdministrators(
-                $stage === ReviewModel::STAGE_TECHNICAL && $decision === ReviewModel::STATUS_APPROVED
-                    ? ($automaticAssignment !== null ? 'Ethics review assigned' : 'Ethics reviewer unavailable')
-                    : ($stage === ReviewModel::STAGE_ETHICS && $decision === ReviewModel::STATUS_APPROVED ? 'Dataset ready to publish' : ucfirst($stage) . ' review completed'),
-                $administratorMessage,
-                '/admin/datasets/' . $dataset['id']
-            );
+            $assignmentFailureAlreadyNotified = $stage === ReviewModel::STAGE_TECHNICAL
+                && $decision === ReviewModel::STATUS_APPROVED
+                && $automaticAssignment === null;
+            if (! $assignmentFailureAlreadyNotified) {
+                $this->notifyAdministrators(
+                    $stage === ReviewModel::STAGE_TECHNICAL && $decision === ReviewModel::STATUS_APPROVED
+                        ? 'Ethics review assigned'
+                        : ($stage === ReviewModel::STAGE_ETHICS && $decision === ReviewModel::STATUS_APPROVED ? 'Dataset ready to publish' : ucfirst($stage) . ' review completed'),
+                    $administratorMessage,
+                    '/admin/datasets/' . $dataset['id']
+                );
+            }
             $this->audit($reviewerId, 'review_' . $decision, 'review', $reviewId, ucfirst($stage) . ' decision for dataset #' . $dataset['id'] . '.', $ip);
         });
     }
@@ -439,6 +444,21 @@ class ModerationWorkflow
 
         $reviewers = $this->eligibleReviewerWorkloads($this->requiredRoleForStage($stage));
         if ($reviewers === []) {
+            $stageLabel = $stage === ReviewModel::STAGE_ETHICS ? 'ethics' : 'technical';
+            $this->notifyAdministrators(
+                ucfirst($stageLabel) . ' reviewer unavailable',
+                'The dataset "' . $dataset['title'] . '" is waiting for ' . $stageLabel . ' review because no eligible active reviewer is available.',
+                '/admin/datasets/' . $datasetId
+            );
+            $this->audit(
+                $actorId,
+                'review_auto_assignment_deferred',
+                'dataset',
+                $datasetId,
+                'Automatic ' . $stageLabel . ' assignment was deferred because no eligible active reviewer was available.',
+                $ip
+            );
+
             return null;
         }
 
